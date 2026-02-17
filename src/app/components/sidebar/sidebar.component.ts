@@ -17,6 +17,9 @@ import { ChartTypesService } from 'src/app/core/services/chart-types.service';
 
     <div class="sidebar" [class.open]="isMenuOpen">
       <ul>
+        <li [class.active]="isTableRoute()" (click)="goToTable()">
+          Table
+        </li>
         <li
           *ngFor="let type of chartTypes; trackBy: trackByFn"
           [class.active]="selectedType === type"
@@ -72,6 +75,18 @@ export class SidebarComponent implements OnInit {
     if (this.isMenuOpen) {
       this.toggleMenu();
     }
+  }
+
+  goToTable() {
+    this.selectedType = null;
+    this.router.navigate(['/table']);
+    if (this.isMenuOpen) {
+      this.toggleMenu();
+    }
+  }
+
+  isTableRoute(): boolean {
+    return this.router.url.startsWith('/table');
   }
 
   toggleMenu() {

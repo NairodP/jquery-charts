@@ -1,0 +1,142 @@
+<section class="jquery-table-wrapper">
+  <header class="table-header">
+    <h3>{{ title }}</h3>
+  </header>
+
+  <div
+    class="table-layout"
+    [class.slice-collapsed]="showCategorySlice && isCategorySliceCollapsed"
+    [class.no-slice]="!showCategorySlice"
+  >
+    <aside *ngIf="showCategorySlice" class="slice-panel" [class.collapsed]="isCategorySliceCollapsed">
+      <button
+        *ngIf="showCategorySliceToggle"
+        type="button"
+        class="slice-toggle"
+        [attr.aria-label]="isCategorySliceCollapsed ? 'Déplier le filtre' : 'Replier le filtre'"
+        (click)="toggleCategorySlice()"
+      >
+        <span class="slice-toggle-icon">{{ isCategorySliceCollapsed ? '›' : '‹' }}</span>
+      </button>
+
+      <ng-container *ngIf="!isCategorySliceCollapsed">
+        <p class="slice-title">{{ categorySliceTitle }}</p>
+
+        <button
+          class="slice-item"
+          type="button"
+          [class.active]="isCategoryActive(allCategoryKey)"
+          [attr.data-category-key]="allCategoryKey"
+          (click)="onCategorySelected(allCategoryKey)"
+        >
+          <span>{{ allCategoryLabel }}</span>
+          <span>{{ categoryCount(allCategoryKey) }}</span>
+        </button>
+
+        <button
+          *ngFor="let category of categories"
+          class="slice-item"
+          type="button"
+          [class.active]="isCategoryActive(category.key)"
+          [attr.data-category-key]="category.key"
+          (click)="onCategorySelected(category.key)"
+        >
+          <span>{{ category.label }}</span>
+          <span>{{ categoryCount(category.key) }}</span>
+        </button>
+      </ng-container>
+    </aside>
+
+    <div class="table-shell">
+      <table mat-table [dataSource]="tableDataSource" class="jquery-table">
+        <ng-container *ngFor="let column of visibleColumns" [matColumnDef]="column.key">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            [class.drag-enabled]="isColumnDragDropEnabled"
+            [class.drop-target]="isHeaderDropTarget(column.key)"
+            [attr.draggable]="isColumnDragDropEnabled"
+            (dragstart)="onHeaderDragStart(column.key, $event)"
+            (dragover)="onHeaderDragOver(column.key, $event)"
+            (drop)="onHeaderDrop(column.key, $event)"
+            (dragend)="onHeaderDragEnd()"
+          >
+            <div class="head-cell">
+              <span class="head-text" [title]="column.header">{{ column.header }}</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="cell-text" [title]="asTitle(row[column.key])">{{ row[column.key] }}</span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="renderedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: renderedColumns"
+          tabindex="0"
+          (click)="onRowClick(row)"
+          (keydown.enter)="onRowClick(row)"
+          (keydown.space)="onRowClick(row)"
+        ></tr>
+        <tr class="mat-mdc-row" *matNoDataRow>
+          <td class="mat-mdc-cell" [attr.colspan]="renderedColumns.length">
+            {{ effectiveIsLoading ? loadingStateLabel : emptyStateLabel }}
+          </td>
+        </tr>
+      </table>
+
+      <div class="bottom-actions-dock" *ngIf="showBottomActionsDock && showPagination">
+        <button
+          *ngIf="showAddColumnButton"
+          mat-icon-button
+          type="button"
+          class="dock-button"
+          data-add-column
+          [attr.aria-label]="addColumnLabel"
+          [matMenuTriggerFor]="columnsMenu"
+        >
+          +
+        </button>
+      </div>
+
+      <mat-paginator
+        *ngIf="showPagination"
+        [length]="totalRows"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+      ></mat-paginator>
+
+      <mat-menu #columnsMenu="matMenu">
+        <div
+          class="columns-menu"
+          (mousedown)="$event.stopPropagation()"
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+        >
+          <p class="columns-menu-title">Colonnes</p>
+          <div class="columns-menu-item" *ngFor="let column of menuBaseColumns">
+            <mat-checkbox
+              [checked]="isColumnVisible(column.key)"
+              [disabled]="isColumnVisible(column.key) && visibleColumns.length === 1"
+              (change)="onColumnVisibilityChange(column, $event.checked)"
+            >
+              {{ column.header }}
+            </mat-checkbox>
+          </div>
+
+          <p class="columns-menu-title" *ngIf="menuOptionalColumns.length > 0">Colonnes optionnelles</p>
+          <div class="columns-menu-item" *ngFor="let column of menuOptionalColumns">
+            <mat-checkbox
+              [checked]="isColumnVisible(column.key)"
+              [disabled]="isColumnVisible(column.key) && visibleColumns.length === 1"
+              (change)="onColumnVisibilityChange(column, $event.checked)"
+            >
+              {{ column.header }}
+            </mat-checkbox>
+          </div>
+        </div>
+      </mat-menu>
+    </div>
+  </div>
+</section>

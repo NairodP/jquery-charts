@@ -1,0 +1,252 @@
+<div class="table-doc-container">
+  <div class="doc-header">
+    <h1>Documentation jquery-table</h1>
+    <a routerLink="/table" class="back-link">Retour à la page de test</a>
+  </div>
+
+  <p class="intro">
+    Cette page explique comment utiliser <strong>jquery-table</strong> en restant
+    compatible avec Angular Material, tout en ajoutant les fonctionnalités métier
+    (slice catégorie, colonnes optionnelles, etc.).
+  </p>
+
+  <section class="doc-section">
+    <h2>1) Angular Material classique vs wrapper jquery-table</h2>
+    <div class="comparison-grid">
+      <article class="comparison-card">
+        <h3>Implémentation Material classique</h3>
+        <ul>
+          <li>Vous gérez explicitement <strong>MatTableDataSource</strong>, pagination, tri et colonnes.</li>
+          <li>Vous implémentez vous-même le filtre latéral et les compteurs de catégorie.</li>
+          <li>Vous ajoutez manuellement les actions d’ajout/retrait de colonnes.</li>
+        </ul>
+      </article>
+
+      <article class="comparison-card">
+        <h3>Implémentation avec jquery-table</h3>
+        <ul>
+          <li>Pagination interne en <strong>MatTableDataSource + MatPaginator</strong> natifs.</li>
+          <li>Configuration unifiée via <strong>TableProvider&lt;T&gt;</strong>.</li>
+          <li>Features métier prêtes à l’emploi (slice, colonnes optionnelles, events).</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="doc-section">
+    <h2>2) Modèle de données métier: RepoRow</h2>
+    <p>
+      <strong>RepoRow</strong> représente une ligne fonctionnelle de votre tableau.
+      Ce modèle est votre source de vérité métier.
+    </p>
+
+    <pre><code>interface RepoRow &#123;
+  issue: string;
+  status: 'Backlog' | 'In Progress' | 'Done';
+  owner: string;
+  priority: 'Low' | 'Medium' | 'High';
+  team: string;
+  updatedAt: string;
+&#125;</code></pre>
+  </section>
+
+  <section class="doc-section">
+    <h2>3) API TableProvider&lt;T&gt;</h2>
+    <p>
+      Tous les champs de <strong>TableProvider</strong> sont techniquement optionnels
+      côté TypeScript, mais certains sont <strong>recommandés</strong> pour un comportement
+      complet.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Champ</th>
+            <th>Optionnel</th>
+            <th>Natif Material</th>
+            <th>Usage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>columns</td>
+            <td>Oui (recommandé)</td>
+            <td>Non</td>
+            <td>Colonnes de base affichées par défaut.</td>
+          </tr>
+          <tr>
+            <td>data</td>
+            <td>Oui (recommandé)</td>
+            <td>Oui (concept dataSource)</td>
+            <td>Données à afficher dans la table.</td>
+          </tr>
+          <tr>
+            <td>title</td>
+            <td>Oui</td>
+            <td>Non</td>
+            <td>Titre de l’exemple/tableau.</td>
+          </tr>
+          <tr>
+            <td>optionalColumns / availableColumns</td>
+            <td>Oui</td>
+            <td>Non</td>
+            <td>Colonnes affichées dans la section « Colonnes optionnelles » du menu Colonnes.</td>
+          </tr>
+          <tr>
+            <td>showAddColumnButton</td>
+            <td>Oui</td>
+            <td>Non</td>
+            <td>Affiche le bouton + ouvrant le menu « Colonnes » (checkbox).</td>
+          </tr>
+          <tr>
+            <td>categorySlice</td>
+            <td>Oui</td>
+            <td>Non</td>
+            <td>Panneau gauche (catégories + filtres).</td>
+          </tr>
+          <tr>
+            <td>enablePagination / pageSize / pageSizeOptions</td>
+            <td>Oui</td>
+            <td>Oui</td>
+            <td>Paramètres de pagination Material.</td>
+          </tr>
+          <tr>
+            <td>isLoading / loadingStateLabel</td>
+            <td>Oui</td>
+            <td>Non (ajout wrapper)</td>
+            <td>État de chargement et texte affiché.</td>
+          </tr>
+          <tr>
+            <td>emptyStateLabel</td>
+            <td>Oui</td>
+            <td>Non (ajout wrapper)</td>
+            <td>Message si aucune donnée.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc-section">
+    <h2>4) Champs natifs vs champs wrapper</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Entrée composant</th>
+            <th>Type</th>
+            <th>Nature</th>
+            <th>Remarque</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>dataSource</td>
+            <td>T[] | &#123; data: T[] &#125;</td>
+            <td>Natif-compatible</td>
+            <td>Compatible migration Material.</td>
+          </tr>
+          <tr>
+            <td>displayedColumns</td>
+            <td>string[]</td>
+            <td>Natif-compatible</td>
+            <td>Même logique que mat-table.</td>
+          </tr>
+          <tr>
+            <td>columnLabels</td>
+            <td>Record&lt;string, string&gt;</td>
+            <td>Wrapper utilitaire</td>
+            <td>Libellés rapides sans mapping manuel.</td>
+          </tr>
+          <tr>
+            <td>config</td>
+            <td>TableProvider&lt;T&gt;</td>
+            <td>Wrapper principal</td>
+            <td>Source de configuration avancée.</td>
+          </tr>
+          <tr>
+            <td>isLoading</td>
+            <td>boolean</td>
+            <td>Wrapper</td>
+            <td>Affichage “chargement” piloté.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc-section">
+    <h2>5) Sur quelle base construire categorySlice ?</h2>
+    <p>
+      <strong>categorySlice</strong> se construit à partir d’un <strong>champ métier de RepoRow</strong>
+      qui segmente naturellement vos données (ex: <strong>status</strong>, <strong>priority</strong>,
+      <strong>team</strong>). Dans l’exemple, la base choisie est <strong>status</strong>.
+    </p>
+
+    <ul>
+      <li>1 catégorie = 1 règle de filtre <strong>filter(row) =&gt; boolean</strong>.</li>
+      <li>Les compteurs affichés proviennent du dataset courant (<strong>data</strong>).</li>
+      <li>Le libellé utilisateur est indépendant de la valeur technique.</li>
+      <li>Si votre métier change, vous adaptez seulement les règles de <strong>categories</strong>.</li>
+    </ul>
+
+    <pre><code>categorySlice: &#123;
+  title: 'Status',
+  allLabel: 'Tous',
+  categories: [
+    &#123; key: 'backlog', label: 'Backlog', filter: (row) =&gt; row.status === 'Backlog' &#125;,
+    &#123; key: 'in-progress', label: 'In Progress', filter: (row) =&gt; row.status === 'In Progress' &#125;,
+    &#123; key: 'done', label: 'Done', filter: (row) =&gt; row.status === 'Done' &#125;,
+  ],
+&#125;</code></pre>
+  </section>
+
+  <section class="doc-section">
+    <h2>6) Exemple complet recommandé</h2>
+    <pre><code>const tableConfig: TableProvider&lt;RepoRow&gt; = &#123;
+  title: 'Ticket board',
+  showAddColumnButton: true,
+  enablePagination: true,
+  pageSize: 5,
+  columns: [
+    col&lt;RepoRow&gt;('issue', 'Issue'),
+    col&lt;RepoRow&gt;('status', 'Status'),
+    col&lt;RepoRow&gt;('owner', 'Owner'),
+  ],
+  optionalColumns: [
+    col&lt;RepoRow&gt;('priority', 'Priorité'),
+    col&lt;RepoRow&gt;('team', 'Équipe'),
+  ],
+  categorySlice: &#123;
+    title: 'Status',
+    allLabel: 'Tous',
+    categories: [...],
+  &#125;,
+  data: rows,
+&#125;;</code></pre>
+
+    <pre><code>&lt;jquery-table
+  [config]="tableConfig"
+  [isLoading]="isLoading"
+  (rowSelected)="onRowSelected($event)"
+&gt;&lt;/jquery-table&gt;</code></pre>
+
+    <p>
+      Le bouton <strong>+</strong> ouvre le menu <strong>Colonnes</strong> avec deux groupes:
+      <strong>Colonnes</strong> puis <strong>Colonnes optionnelles</strong>. Chaque entrée est une
+      checkbox pour afficher/masquer la colonne correspondante.
+    </p>
+  </section>
+
+  <section class="doc-section">
+    <h2>7) Résumé opérationnel</h2>
+    <ul>
+      <li><strong>TableProvider</strong> centralise la config métier.</li>
+      <li><strong>RepoRow</strong> formalise clairement les données passées à la table.</li>
+      <li>Vous gardez les bases Angular Material tout en ajoutant des capacités spécifiques au wrapper.</li>
+      <li>La migration est progressive: mode natif-compatible ou mode config avancée.</li>
+    </ul>
+  </section>
+</div>

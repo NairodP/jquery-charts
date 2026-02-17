@@ -1,0 +1,342 @@
+.jquery-table-wrapper {
+  display: block;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+}
+
+.table-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
+
+  &.no-slice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  &.slice-collapsed {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+}
+
+.slice-panel {
+  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &.collapsed {
+    width: 40px;
+    min-width: 40px;
+    padding: 6px 4px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+}
+
+.slice-toggle {
+  border: 0;
+  background: #fff;
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.slice-toggle-icon {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.slice-panel.collapsed .slice-toggle {
+  align-self: center;
+}
+
+.slice-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.slice-item {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #111827;
+  box-sizing: border-box;
+  min-width: 0;
+  gap: 8px;
+
+  &.active {
+    background: #f3f4f6;
+    font-weight: 600;
+  }
+
+  span:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span:last-child {
+    flex: 0 0 auto;
+    min-width: 1.2em;
+    text-align: right;
+  }
+}
+
+.table-shell {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.jquery-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+:host ::ng-deep .mat-mdc-table {
+  width: 100%;
+}
+
+:host ::ng-deep .mat-mdc-header-cell,
+:host ::ng-deep .mat-mdc-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .mat-mdc-header-cell.drag-enabled {
+  cursor: grab;
+  user-select: none;
+}
+
+:host ::ng-deep .mat-mdc-header-cell.drag-enabled:active {
+  cursor: grabbing;
+}
+
+:host ::ng-deep .mat-mdc-header-cell.drop-target {
+  background: #f3f4f6;
+}
+
+.head-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.head-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cell-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-column-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+
+.column-settings-button {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+
+  &:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+  }
+}
+
+.add-column-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  line-height: 1;
+}
+
+.bottom-actions-dock {
+  position: absolute;
+  left: 8px;
+  bottom: 2px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dock-button,
+.dock-options-button {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+.dock-button {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  line-height: 1;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.columns-menu {
+  min-width: 220px;
+  max-width: 280px;
+  padding: 4px 8px;
+
+  --mdc-checkbox-selected-icon-color: #6b7280;
+  --mdc-checkbox-selected-hover-icon-color: #4b5563;
+  --mdc-checkbox-selected-pressed-icon-color: #4b5563;
+  --mdc-checkbox-unselected-icon-color: #9ca3af;
+  --mdc-checkbox-unselected-hover-icon-color: #6b7280;
+  --mdc-checkbox-unselected-pressed-icon-color: #6b7280;
+  --mdc-checkbox-selected-focus-icon-color: #6b7280;
+  --mdc-checkbox-unselected-focus-icon-color: #6b7280;
+  --mdc-checkbox-selected-focus-state-layer-color: #9ca3af;
+  --mdc-checkbox-selected-hover-state-layer-color: #9ca3af;
+  --mdc-checkbox-selected-pressed-state-layer-color: #9ca3af;
+  --mdc-checkbox-unselected-focus-state-layer-color: #9ca3af;
+  --mdc-checkbox-unselected-hover-state-layer-color: #9ca3af;
+  --mdc-checkbox-unselected-pressed-state-layer-color: #9ca3af;
+  --mat-checkbox-ripple-color: rgba(107, 114, 128, 0.2);
+}
+
+.columns-menu-title {
+  margin: 6px 4px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.columns-menu-item {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .columns-menu-item .mdc-form-field {
+  width: 100%;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+}
+
+:host ::ng-deep .columns-menu-item .mat-mdc-checkbox {
+  display: block;
+}
+
+:host ::ng-deep .columns-menu-item .mdc-checkbox {
+  padding: 3px;
+}
+
+:host ::ng-deep .columns-menu-item .mdc-label {
+  font-size: 13px;
+  line-height: 1.25;
+  color: #374151;
+}
+
+:host ::ng-deep .dock-button .mdc-button__label {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-col-head,
+.add-col-cell {
+  width: 48px;
+  text-align: center;
+}
+
+@media (max-width: 960px) {
+  .table-layout {
+    grid-template-columns: 1fr;
+  }
+}
