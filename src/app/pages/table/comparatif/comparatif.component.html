@@ -1,0 +1,62 @@
+<div class="table-columns-example">
+
+  <div class="breadcrumb">
+    <a routerLink="/table">jquery-table</a>
+    <span class="sep">&rsaquo;</span>
+    <span>Comparatif</span>
+  </div>
+
+  <h1>mat-table vs. jquery-table</h1>
+  <p class="intro">
+    M&#234;me dataset, m&#234;me besoin&nbsp;: recherche, pagination, tri, filtres cat&#233;goriels et colonnes r&#233;organisables.
+    Voici ce que chaque solution demande d&#8217;&#233;crire.
+  </p>
+
+  <!-- Feature matrix -->
+  <div class="compare-grid">
+
+    <section class="compare-card">
+      <h2 class="card-title mat">Angular Material (mat-table seul)</h2>
+      <ul class="feature-list">
+        <li class="ok">  Affichage des données</li>
+        <li class="ok">  Tri via <code>MatSortModule</code></li>
+        <li class="nok"> Recherche &rarr; champ + filtre à coder manuellement</li>
+        <li class="nok"> Pagination &rarr; <code>MatPaginatorModule</code> + DataSource custom</li>
+        <li class="nok"> Filtres catégoriels &rarr; logique entièrement à écrire</li>
+        <li class="nok"> Colonnes masquables &rarr; <code>ngIf</code> sur chaque colonne</li>
+        <li class="nok"> Drag &amp; drop colonnes &rarr; <code>DragDropModule</code> + gestion d&#8217;&#233;tat</li>
+      </ul>
+      <h3 class="code-label">Code nécessaire (extrait)</h3>
+      <pre class="code-block mat-code"><code>{{ matCode }}</code></pre>
+    </section>
+
+    <section class="compare-card">
+      <h2 class="card-title jq">jquery-table</h2>
+      <ul class="feature-list">
+        <li class="ok"> Affichage des données</li>
+        <li class="ok"> Tri intégré (<code>sortable: true</code>)</li>
+        <li class="ok"> Recherche intégrée (<code>enableSearchBar: true</code>)</li>
+        <li class="ok"> Pagination intégrée (<code>enablePagination: true</code>)</li>
+        <li class="ok"> Filtres catégoriels (<code>slices: [...]</code>)</li>
+        <li class="ok"> Colonnes masquables (<code>allowColumnRemoval: true</code>)</li>
+        <li class="ok"> Drag &amp; drop colonnes (<code>enableColumnDragDrop: true</code>)</li>
+      </ul>
+      <h3 class="code-label">Code nécessaire (complet)</h3>
+      <pre class="code-block jq-code"><code>{{ jqCode }}</code></pre>
+    </section>
+
+  </div>
+
+  <!-- Demo live -->
+  <section class="live-demo">
+    <h2>D&#233;mo live</h2>
+    <p class="hint">
+      Recherche, pagination, tri, slices latéraux, masquage et réorganisation des colonnes &#8212;
+      tout configuré avec l&#8217;objet <code>tableConfig</code> ci-dessus.
+    </p>
+    <div class="demo-shell">
+      <jquery-table [data]="tasks" [config]="tableConfig"></jquery-table>
+    </div>
+  </section>
+
+</div>

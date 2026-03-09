@@ -1,0 +1,98 @@
+﻿<div class="slice-chart-page">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/table">jquery-table</a>
+      <span class="sep"></span>
+      <span>Slice avec graphique</span>
+    </div>
+    <h1>Slice panel  usage avec un graphique</h1>
+    <p class="subtitle">
+      Le composant <code>&lt;slice-panel&gt;</code> est découplé de <code>&lt;jquery-table&gt;</code>.
+      Il peut s'utiliser seul pour filtrer n'importe quel jeu de données : graphique, liste, carte, etc.
+    </p>
+  </div>
+
+  <!-- API Recap -->
+  <section class="doc-section">
+    <h2>API rapide</h2>
+
+    <h3>Inputs</h3>
+    <table class="api-table">
+      <thead>
+        <tr><th>Propriété</th><th>Type</th><th>Défaut</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>sliceConfigs</code></td><td><code>SliceConfig&lt;T&gt;[]</code></td><td><code>[]</code></td><td>Groupes de filtres. Chaque entrée génère un panneau de catégories.</td></tr>
+        <tr><td><code>data</code></td><td><code>T[]</code></td><td><code>[]</code></td><td>Données sources. Requis lorsque <code>columnKey</code> est utilisé pour l'inférence automatique.</td></tr>
+        <tr><td><code>showCounts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Affiche le compteur de lignes sur chaque catégorie. Désactiver pour les graphiques.</td></tr>
+        <tr><td><code>alwaysShow</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Affiche le panneau même si <code>data</code> est vide (utile quand la data transite ailleurs).</td></tr>
+        <tr><td><code>showToggle</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Affiche le bouton de repli global du panneau.</td></tr>
+        <tr><td><code>collapsedByDefault</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Replie le panneau à l'initialisation.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Outputs</h3>
+    <table class="api-table">
+      <thead>
+        <tr><th>Événement</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>filterChange</code></td><td><code>(row: T) =&gt; boolean</code></td><td>Prédicat combiné de tous les slices actifs. À passer directement à <code>Array.filter()</code>.</td></tr>
+        <tr><td><code>activeKeysChange</code></td><td><code>string[][]</code></td><td>Clés actives par slice (index 0 = slice 0). Alternatif à <code>filterChange</code> pour alimenter les paramètres d'une requête graphique.</td></tr>
+        <tr><td><code>collapsedChange</code></td><td><code>boolean</code></td><td>Émet <code>true</code> quand le panneau est replié, <code>false</code> quand il est ouvert.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>SliceConfig&lt;T&gt;</h3>
+    <table class="api-table">
+      <thead>
+        <tr><th>Propriété</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>title</code></td><td><code>string</code></td><td>Titre affiché en en-tête du groupe.</td></tr>
+        <tr><td><code>columnKey</code></td><td><code>keyof T</code></td><td>Clé de propriété. Les catégories sont générées automatiquement depuis les valeurs distinctes.</td></tr>
+        <tr><td><code>categories</code></td><td><code>SliceCategory&lt;T&gt;[]</code></td><td>Catégories manuelles. Mutuellement exclusif avec <code>columnKey</code>.</td></tr>
+        <tr><td><code>multiSelect</code></td><td><code>boolean</code></td><td>Sélection multiple dans ce groupe (défaut : <code>false</code>).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Démo visuelle -->
+  <section class="doc-section demo-section">
+    <h2>Démo interactive</h2>
+    <p>Cliquez sur un filtre pour voir le graphique se mettre à jour en temps réel.</p>
+
+    <div class="demo-shell" [class.slice-collapsed]="sliceCollapsed">
+
+      <slice-panel
+        [sliceConfigs]="sliceConfigs"
+        [data]="tasks"
+        [showCounts]="false"
+        [alwaysShow]="true"
+        (collapsedChange)="sliceCollapsed = $event"
+        (filterChange)="onFilterChange($event)"
+      ></slice-panel>
+
+      <div class="chart-area">
+        <chart type="bar" [config]="chartConfig" [data]="chartData"></chart>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Code -->
+  <section class="doc-section">
+    <h2>Code</h2>
+
+    <h3>Template</h3>
+    <pre><code [textContent]="codeHtml"></code></pre>
+
+    <h3>TypeScript</h3>
+    <pre><code [textContent]="codeTs"></code></pre>
+
+    <h3>SCSS</h3>
+    <pre><code [textContent]="codeScss"></code></pre>
+  </section>
+
+</div>

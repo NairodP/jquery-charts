@@ -10,7 +10,7 @@ import { ChartTypesService } from './core/services/chart-types.service';
 import { FooterComponent } from './components/footer/footer.component';
 import { BackToDocButtonComponent } from './components/back-to-doc-button/back-to-doc-button.component';
 import { BasicTestComponent } from './pages/basic-test/basic-test.component';
-import { TableTestComponent } from './pages/table/table.component';
+import { TableExempleComponent } from './pages/table/table.component';
 
 @NgModule({
   declarations: [
@@ -25,10 +25,8 @@ import { TableTestComponent } from './pages/table/table.component';
     BrowserAnimationsModule,
     AppRoutingModule,
     BackToDocButtonComponent,
-
-    // Uncomment if you want to add the test page
     BasicTestComponent,
-    TableTestComponent,
+    TableExempleComponent,
   ],
   providers: [ChartTypesService],
   bootstrap: [AppComponent],
