@@ -12,6 +12,9 @@
       "@oneteme/jquery-highcharts": [
         "dist/oneteme/jquery-highcharts"
       ],
+      "@oneteme/jquery-table": [
+        "dist/oneteme/jquery-table"
+      ],
     },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",

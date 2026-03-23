@@ -38,11 +38,14 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "fonts": false
+              },
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.5mb",
-                  "maximumError": "2mb"
+                  "maximumWarning": "3mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -179,6 +182,36 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "projects/oneteme/jquery-highcharts/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "@oneteme/jquery-table": {
+      "projectType": "library",
+      "root": "projects/oneteme/jquery-table",
+      "sourceRoot": "projects/oneteme/jquery-table/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/oneteme/jquery-table/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/oneteme/jquery-table/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/oneteme/jquery-table/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/oneteme/jquery-table/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }

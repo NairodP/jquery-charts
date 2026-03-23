@@ -1,0 +1,254 @@
+:host { display: block; }
+
+.slice-chart-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: inherit;
+}
+
+// ── En-tête ──────────────────────────────────────────────────────
+
+.page-header {
+  margin-bottom: 2.5rem;
+
+  .breadcrumb {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+
+    a {
+      color: #4f46e5;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+
+    .sep { margin: 0 0.4rem; }
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+  }
+
+  .subtitle {
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// ── Sections ─────────────────────────────────────────────────────
+
+.doc-section {
+  margin-bottom: 3rem;
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.4rem;
+    margin: 0 0 1.25rem;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 1.25rem 0 0.5rem;
+  }
+}
+
+// ── API Table ─────────────────────────────────────────────────────
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th, td {
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  td:first-child code {
+    font-size: 0.82rem;
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #6d28d9;
+    white-space: nowrap;
+  }
+
+  td code {
+    font-size: 0.82rem;
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #0f766e;
+  }
+}
+
+// ── Démo ────────────────────────────────────────────────────────
+
+.demo-section p {
+  color: #475569;
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.demo-shell {
+  display: grid;
+  grid-template-columns: minmax(200px, 220px) minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  height: 420px;
+  padding: 5px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.demo-shell.slice-collapsed {
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+// ── Chart ────────────────────────────────────────────────────────
+
+.chart-area {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+
+  .chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .chart-total {
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+}
+
+.bars-container {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 0;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bar-label {
+  width: 80px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.82rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.bar-track {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 22px;
+}
+
+.bar-fill {
+  height: 100%;
+  min-width: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.empty {
+    background: #f1f5f9;
+    opacity: 0.4;
+  }
+}
+
+.bar-segment {
+  height: 100%;
+  transition: flex 0.35s ease;
+}
+
+.bar-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 16px;
+
+  &.zero { color: #cbd5e1; }
+}
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #64748b;
+
+  em {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    font-style: normal;
+    flex-shrink: 0;
+  }
+}
+
+// ── Code ─────────────────────────────────────────────────────────
+
+pre {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 0 0 0.75rem;
+
+  code {
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    color: #e2e8f0;
+    white-space: pre;
+  }
+}
