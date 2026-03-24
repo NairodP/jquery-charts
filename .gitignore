@@ -45,6 +45,8 @@ Thumbs.db
 # GitHub Copilot
 .github/copilot-instructions.md
 COPILOT_CONTEXT.md
+
+# Context & progress files (local only)
 projects/oneteme/jquery-echarts/CONTEXT.md
 projects/oneteme/jquery-echarts/PROGRESS.md
 projects/oneteme/jquery-table/CONTEXT.md
