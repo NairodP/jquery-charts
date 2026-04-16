@@ -6,6 +6,7 @@ import {
   SimpleChanges, ViewChild, inject
 } from '@angular/core';
 import { SliceColumnDef, SliceConfig } from './slice-panel.model';
+import { JqtI18n, JQT_I18N, JQT_I18N_DEFAULTS } from '../../jqt-i18n.token';
 
 const EMPTY_CATEGORY_KEY = '__empty__';
 const EMPTY_CATEGORY_LABEL = 'Vide';
@@ -38,30 +39,25 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
   @ViewChild('slicePanelBody') slicePanelBodyRef?: ElementRef<HTMLElement>;
 
   private _cdr = inject(ChangeDetectorRef);
+  private _i18nRaw = inject(JQT_I18N, { optional: true });
+  readonly i18n: JqtI18n = { ...JQT_I18N_DEFAULTS, ...(this._i18nRaw ?? {}) };
 
   isCollapsed = false;
   activeKeysBySlice: Map<number, Set<string>> = new Map();
   private _expandedSlices = new Set<number>();
   _dynamicSlices: Array<{ key: string; slice: SliceConfig<T> }> = [];
-  private _hiddenStaticSliceKeys = new Set<string>();
 
-  // ── Cache ─────────────────────────────────────────────────────
+  // ── Cache
   _cachedSlices: SliceConfig<T>[] = [];
   private _countCache = new Map<string, number>();
 
   readonly trackBySliceIndex = (index: number, _: any): number => index;
   readonly trackByCategoryKey = (_: number, cat: any): string => cat.key;
 
-  // ── Lifecycle ─────────────────────────────────────────────────
+  // ── Lifecycle
 
   ngOnInit(): void {
     this.isCollapsed = this.collapsedByDefault;
-    const initiallyHidden = (this.sliceConfigs || [])
-      .filter(s => s.hidden === true && !!s.columnKey)
-      .map(s => s.columnKey!);
-    if (initiallyHidden.length) {
-      this._hiddenStaticSliceKeys = new Set([...this._hiddenStaticSliceKeys, ...initiallyHidden]);
-    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -72,13 +68,10 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
     }
   }
 
-  // ── Computed ──────────────────────────────────────────────────
+  // ── Computed
 
   get showPanel(): boolean {
-    const visibleStaticCount = (this.sliceConfigs || []).filter(
-      (s) => !s.columnKey || !this._hiddenStaticSliceKeys.has(s.columnKey)
-    ).length;
-    const hasCfg = visibleStaticCount > 0 || this._dynamicSlices.length > 0;
+    const hasCfg = (this.sliceConfigs || []).length > 0 || this._dynamicSlices.length > 0;
     if (this.alwaysShow) return hasCfg;
     return hasCfg && (this.data?.length ?? 0) > 0;
   }
@@ -88,9 +81,7 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
   }
 
   get staticSliceCount(): number {
-    return (this.sliceConfigs || []).filter(
-      (s) => !s.columnKey || !this._hiddenStaticSliceKeys.has(s.columnKey)
-    ).length;
+    return (this.sliceConfigs || []).length;
   }
 
   get staticSlicesForMenu(): Array<{ key: string; title: string }> {
@@ -120,22 +111,18 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
   }
 
   get activeSliceByLabel(): string {
-    const staticActiveCount = (this.sliceConfigs || []).filter(
-      (s) => !s.columnKey || !this._hiddenStaticSliceKeys.has(s.columnKey)
-    ).length;
+    const staticActiveCount = (this.sliceConfigs || []).length;
     const total = staticActiveCount + this._dynamicSlices.length;
     if (total === 0) return 'Aucun';
     if (total === 1) {
-      const first = (this.sliceConfigs || []).find(
-        (s) => !s.columnKey || !this._hiddenStaticSliceKeys.has(s.columnKey)
-      );
+      const first = (this.sliceConfigs || [])[0];
       if (first) return first.title || first.columnKey || '1';
       return this.activeDynamicSliceColumns[0]?.header || '1';
     }
     return `${total} actifs`;
   }
 
-  // ── UI state ──────────────────────────────────────────────────
+  // ── UI state
 
   isSliceCollapsed(sliceIndex: number): boolean {
     if (this._cachedSlices.length === 1) {
@@ -193,21 +180,15 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
     return status === 'loading' || status === 'idle';
   }
 
-  isStaticSliceVisible(columnKey: string): boolean {
-    return !this._hiddenStaticSliceKeys.has(columnKey);
+  isStaticSliceVisible(_columnKey: string): boolean {
+    return true;
   }
 
-  toggleStaticSlice(columnKey: string): void {
-    const next = new Set(this._hiddenStaticSliceKeys);
-    if (next.has(columnKey)) next.delete(columnKey);
-    else next.add(columnKey);
-    this._hiddenStaticSliceKeys = next;
-    this._rebuildCache();
-    this._emitFilter();
-    this._cdr.markForCheck();
+  toggleStaticSlice(_columnKey: string): void {
+    // Délégué à table.component via _staticSliceHiddenKeys — ne rien faire ici.
   }
 
-  // ── Selection ─────────────────────────────────────────────────
+  // ── Selection
   getSliceIcon(slice: SliceConfig<T>): string | undefined {
     if (slice.icon) return slice.icon;
     if (slice.columnKey) {
@@ -275,7 +256,28 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
     this._cdr.markForCheck();
   }
 
-  // ── Dynamic slice management ──────────────────────────────────
+  /** Retourne l'état des filtres actifs sous forme sérialisable (sliceIndex → tableau de clés).
+   * Inclut les slices sans sélection (tableau vide) pour distinguer "aucune tranche sélectionnée"
+   * (= filtre ouvert, rien coché) de "slice absente". */
+  getActiveFilters(): Record<number, string[]> {
+    const result: Record<number, string[]> = {};
+    this._cachedSlices.forEach((_, idx) => {
+      const keys = this.activeKeysBySlice.get(idx);
+      result[idx] = keys ? [...keys] : [];
+    });
+    return result;
+  }
+
+  /** Restaure les filtres actifs depuis un snapshot sérialisé et réémet le filtre. */
+  restoreFilters(filters: Record<number, string[]>): void {
+    this.activeKeysBySlice = new Map(
+      Object.entries(filters).map(([idx, keys]) => [Number(idx), new Set(keys)])
+    );
+    this._emitFilter();
+    this._cdr.markForCheck();
+  }
+
+  // ── Dynamic slice management
 
   addDynamicSlice(column: SliceColumnDef<T>): void {
     const distinctValues = this._computeDistinctValues(column.key);
@@ -314,7 +316,7 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
     this.removeDynamicSlice(sliceIndex);
   }
 
-  // ── Private helpers ───────────────────────────────────────────
+  // ── Private helpers
 
   private _emitFilter(): void {
     const slices = this.slices;
@@ -333,7 +335,9 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
         if (!activeKeys || activeKeys.size === 0) return true;
         return [...activeKeys].some((key) => {
           const category = (slice.categories || []).find((c) => c.key === key);
-          return category ? category.filter(row) : false;
+          // Si pas de filter défini (usage chart), on ne filtre pas en mémoire
+          if (!category?.filter) return true;
+          return category.filter(row);
         });
       });
     this.filterChange.emit(pred);
@@ -413,10 +417,7 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
   }
 
   private _rebuildCache(): void {
-    const staticSlices = (this.sliceConfigs || []).filter(
-      (s) => !s.columnKey || !this._hiddenStaticSliceKeys.has(s.columnKey)
-    );
-    const allSlices = [...staticSlices, ...this._dynamicSlices.map((d) => d.slice)];
+    const allSlices = [...(this.sliceConfigs || []), ...this._dynamicSlices.map((d) => d.slice)];
     this._cachedSlices = allSlices.map((slice) => this._materializeSlice(slice));
     this._countCache.clear();
   }
