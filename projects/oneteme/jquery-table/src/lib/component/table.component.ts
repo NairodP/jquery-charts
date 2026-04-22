@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
-import { TableColumnProvider, TableProvider, TableViewConfig } from '../jquery-table.model';
+import { TableColumnProvider, TableExportConfig, TablePreferencesConfig, TableProvider, TableViewConfig } from '../jquery-table.model';
 import { JqtI18n, JQT_I18N, JQT_I18N_DEFAULTS } from '../jqt-i18n.token';
 import { JqtCellDefDirective } from '../directive/jqt-cell-def.directive';
 import { SliceConfig } from './slice-panel/slice-panel.model';
@@ -221,6 +221,8 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   /** Vrai si une configuration est sauvegardée pour ce tableau. */
   _hasSavedConfig = false;
   private _preferencesManager: TablePreferencesManager | null = null;
+  /** true une fois que le group-by par défaut a été initialisé (évite de reconfigurer GroupByManager à chaque changement de données). */
+  private _defaultGroupByApplied = false;
   private _resizeState: { key: string; startX: number; startWidth: number } | null = null;
   /** Dynamic slice keys à restaurer après ngAfterViewInit (slicePanelRef pas encore dispo). */
   private _pendingDynamicSliceKeys: string[] | null = null;
@@ -725,14 +727,18 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
    * Retourne null si aucune colonne n'a de largeur définie (le tableau remplit alors 100% du conteneur).
    * Seules les valeurs explicitement en `px` sont sommables ; les pourcentages ou autres unités sont ignorés. */
   get tableMinWidth(): string | null {
-    const hasSomeExplicitWidth = this.activeColumns.some(c => c.width);
+    const hasResized = Object.keys(this._columnWidths).length > 0;
+    const hasSomeExplicitWidth = hasResized || this.activeColumns.some(c => c.width);
     if (!hasSomeExplicitWidth) return null;
     let sum = 0;
     for (const col of this.activeColumns) {
-      if (col.width) {
+      if (this._columnWidths[col.key] != null) {
+        sum += this._columnWidths[col.key];
+      } else if (col.width) {
         const isPx = col.width.trim().toLowerCase().endsWith('px');
         const px = Number.parseFloat(col.width);
         if (isPx && !Number.isNaN(px)) { sum += px; }
+        else { sum += 150; }
       } else {
         sum += 120; // largeur minimale estimée pour une colonne sans largeur explicite
       }
@@ -829,6 +835,19 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     const th = (event.target as HTMLElement).closest('th') as HTMLElement | null;
     if (!th) return;
 
+    const scrollEl = this.tableBodyScrollRef?.nativeElement;
+    if (scrollEl) {
+      const allTh = scrollEl.querySelectorAll<HTMLElement>('th.mat-mdc-header-cell');
+      allTh.forEach(thEl => {
+        const key = thEl.getAttribute('mat-column-header') || thEl.getAttribute('mat-sort-header') || '';
+        const colClass = Array.from(thEl.classList).find(c => c.startsWith('mat-column-'));
+        const colKey = colClass ? colClass.replace('mat-column-', '') : null;
+        if (colKey && this._columnWidths[colKey] == null) {
+          this._columnWidths = { ...this._columnWidths, [colKey]: thEl.offsetWidth };
+        }
+      });
+    }
+
     this._resizeState = { key: columnKey, startX: event.clientX, startWidth: th.offsetWidth };
 
     const onMove = (e: MouseEvent) => {
@@ -907,6 +926,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
 
     // Colonnes et groupBy : reset via la facade (retire les optionnelles, remet l'ordre config)
     this._view.resetToDefaults();
+    this._defaultGroupByApplied = false;
 
     // Dynamic slices : les retirer du slice panel avec la liste capturée avant le reset
     dynamicSlicesToRemove.forEach(col => {
@@ -1043,7 +1063,15 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       config: this.resolvedConfig.view,
       columns: this.resolvedConfig.columns ?? [],
       sliceConfigs: this.resolvedConfig.slices ?? [],
+      defaultGroupBy: this.resolvedConfig.defaultGroupBy,
     });
+
+    if (!pendingPrefs && !this._defaultGroupByApplied && !this._view.groupBy.userCustomized && this._view.groupBy.activeKey != null) {
+      this._defaultGroupByApplied = true;
+      this._groupBy.setDefaultCollapsed(true);
+      this._groupBy.reset();
+      this._groupBy.groupPageSize = this.resolveDefaultGroupPageSize();
+    }
 
     // Synchronise la propriété stable (évite NG0100 — la facade est source de vérité)
     this.activeColumns = this._view.fields.activeColumns;
@@ -1223,13 +1251,38 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     // Mode HTML : [view] prend le dessus sur config.view si fourni (Phase 3).
     const view = this.view ?? config.view;
 
+    const autoTableId = config.preferences?.tableId || TableComponent._hashColumns((columns || []).map(c => c.key));
+    const exportConfig: TableExportConfig<T> = {
+      enabled: true,
+      filename: autoTableId,
+      ...config.export,
+    };
+
+    const prefsConfig: TablePreferencesConfig = {
+      enabled: true,
+      tableId: autoTableId,
+      ...config.preferences,
+    };
+
     return {
       ...config,
       columns,
       view,
       slices: config.slices || [],
       enableSliceToggle: config.enableSliceToggle ?? true,
+      export: exportConfig,
+      preferences: prefsConfig,
     };
+  }
+
+  private static _hashColumns(keys: string[]): string {
+    const str = keys.join('|');
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h.toString(16).padStart(8, '0');
   }
 
   private resolveData(): T[] {

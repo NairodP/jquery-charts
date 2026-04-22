@@ -87,7 +87,7 @@ export function col<T = any>(
 
 /** Configuration de l’export CSV déclenché depuis la toolbar. */
 export interface TableExportConfig<T = any> {
-  /** Affiche le bouton Export dans la toolbar. Par défaut : `false`. */
+  /** Affiche le bouton Export dans la toolbar. Par défaut : `true`. */
   enabled?: boolean;
   /** Nom du fichier généré. Par défaut : `'export.csv'`. */
   filename?: string;
@@ -109,14 +109,15 @@ export interface TableExportConfig<T = any> {
  * Chaque tableau est identifié par `tableId` (clé localStorage unique).
  */
 export interface TablePreferencesConfig {
-  /** Active la fonctionnalité. Par défaut : `false`. */
+  /** Active la fonctionnalité. Par défaut : `true`. */
   enabled?: boolean;
   /**
    * Identifiant unique du tableau, utilisé comme clé localStorage.
    * Doit être stable entre les rechargements de page.
+   * Si absent, un identifiant est dérivé automatiquement des clés de colonnes.
    * Exemple : `'user-table'`, `'invoice-list'`.
    */
-  tableId: string;
+  tableId?: string;
 }
 
 /** Snapshot de configuration persisté dans le localStorage. */
@@ -152,6 +153,8 @@ export interface TableProvider<T = any> {
   labels?: TableLabelsConfig;
   /** Tri initial appliqué au chargement. N'est pas écrasé par les changements de données. */
   defaultSort?: { active: string; direction: 'asc' | 'desc' };
+  /** Clé de colonne à utiliser comme group-by par défaut au chargement. N'est pas écrasé par les changements de données ni par un reset explicite de l'utilisateur. */
+  defaultGroupBy?: string | null;
   rowClass?: (row: T, index: number) => string | string[] | Record<string, boolean>;
   /** Callback déclenché quand l'utilisateur clique sur une ligne. Alternative au `(rowSelected)` Output. */
   onRowSelected?: (row: T, event: MouseEvent | null) => void;

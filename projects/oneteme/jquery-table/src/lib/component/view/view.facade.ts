@@ -17,6 +17,7 @@ export interface ViewFieldState {
 
 export interface ViewGroupByState {
   activeKey: string | null;
+  userCustomized: boolean;
 }
 
 export interface ViewSliceByState {
@@ -34,8 +35,8 @@ export interface ViewPanelConfig {
   /** Slices statiques */
   sliceConfigs: SliceConfig<any>[];
   /** Label utilisé quand aucun groupe / aucune slice n’est actif. Défaut : 'Aucun'. */
-  noneLabel?: string;
-}
+  noneLabel?: string;  /** Clé de colonne utilisée comme group-by par défaut au chargement. */
+  defaultGroupBy?: string | null;}
 
 // ── Facade
 
@@ -59,6 +60,7 @@ export class ViewFacade<T = any> {
 
   readonly groupBy: ViewGroupByState = {
     activeKey: null,
+    userCustomized: false,
   };
 
   readonly sliceBy: ViewSliceByState = {
@@ -152,6 +154,9 @@ export class ViewFacade<T = any> {
     this._panelConfig = panelConfig;
     this._refreshDefaultColumns();
     this._refreshDynamicSliceMeta();
+    if (!this.groupBy.userCustomized) {
+      this.groupBy.activeKey = panelConfig.defaultGroupBy ?? null;
+    }
   }
 
   // ── Actions Fields
@@ -165,11 +170,12 @@ export class ViewFacade<T = any> {
     this.fields.userCustomized = value;
   }
 
-  /** Remet la vue dans son état initial : colonnes par défaut, pas de groupBy, pas de dynamic slices. */
+  /** Remet la vue dans son état initial : colonnes par défaut, groupBy par défaut, pas de dynamic slices. */
   resetToDefaults(): void {
     this.fields.userCustomized = false;
+    this.groupBy.userCustomized = false;
     this._refreshDefaultColumns();
-    this.groupBy.activeKey = null;
+    this.groupBy.activeKey = this._panelConfig.defaultGroupBy ?? null;
     this.sliceBy.activeDynamicColumns = [];
     this._refreshDynamicSliceMeta();
   }
@@ -237,6 +243,7 @@ export class ViewFacade<T = any> {
 
   setGroupBy(key: string | null): void {
     this.groupBy.activeKey = key;
+    this.groupBy.userCustomized = true;
     this._events$.next({ type: 'groupByChanged', key });
   }
 
