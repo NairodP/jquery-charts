@@ -416,9 +416,12 @@
 }
 
 // Les th doivent être en position relative pour que la poignée s'y positionne
-// overflow visible pour que la poignée ne soit pas rognée
+// overflow visible uniquement en mode édition / drag-drop (sinon le header déborde du scroll container)
 :host ::ng-deep th.mat-mdc-header-cell {
   position: relative;
+}
+
+:host ::ng-deep th.mat-mdc-header-cell.drag-enabled {
   overflow: visible !important;
 }
 
