@@ -1,0 +1,55 @@
+import { buildChart, ChartProvider, ChartType, CommonChart, XaxisType } from '@oneteme/jquery-core';
+import { EChartsOption } from '../types';
+import { EChartTypeConfigurator } from './chart-config-registry';
+
+const RADAR_TYPES: ChartType[] = ['radar', 'radarArea'];
+
+function buildRadarOption(
+  chart: CommonChart<XaxisType, number>,
+  type: ChartType,
+  config: ChartProvider<any, any>
+): EChartsOption {
+  // Max par indicateur calculé depuis les données pour garantir des axes cohérents
+  const maxPerIndicator = chart.categories.map((_, i) =>
+    Math.max(...chart.series.map((s) => (s.data[i] as number) ?? 0)) || 1
+  );
+  const indicator = chart.categories.map((cat, i) => ({
+    name: String(cat),
+    max: maxPerIndicator[i],
+  }));
+  const hasArea = type === 'radarArea';
+
+  return {
+    grid: undefined,
+    xAxis: undefined,
+    yAxis: undefined,
+    radar: {
+      indicator,
+      shape: 'polygon',
+    },
+    legend: { show: true, type: 'scroll', bottom: 0 },
+    series: [
+      {
+        type: 'radar',
+        data: chart.series.map((s) => ({
+          name: s.name,
+          value: s.data,
+          areaStyle: hasArea ? { opacity: 0.3 } : undefined,
+          itemStyle: s.color ? { color: s.color } : undefined,
+          lineStyle: s.color ? { color: s.color } : undefined,
+        })),
+      },
+    ],
+  };
+}
+
+export const radarConfigurator: EChartTypeConfigurator = {
+  supports: (type) => RADAR_TYPES.includes(type),
+
+  buildChartData: (data, config) =>
+    buildChart(data, { ...config, continue: false }),
+
+  buildOption: (chart, type, config) => buildRadarOption(chart as any, type, config),
+
+  tooltipTrigger: 'item',
+};

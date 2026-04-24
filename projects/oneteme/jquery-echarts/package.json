@@ -1,7 +1,7 @@
 {
-  "name": "@oneteme/jquery-core",
-  "version": "0.0.29",
-  "description": "jquery core lib",
+  "name": "@oneteme/jquery-echarts",
+  "version": "0.0.1-beta.0",
+  "description": "jquery echarts lib",
   "homepage": "https://github.com/oneteme/jquery-charts",
   "bugs": "https://github.com/oneteme/jquery-charts/issues",
   "repository": {
@@ -10,7 +10,9 @@
   },
   "peerDependencies": {
     "@angular/common": ">=16.1.0",
-    "@angular/core": ">=16.1.0"
+    "@angular/core": ">=16.1.0",
+    "echarts": "^6.0.0",
+    "@oneteme/jquery-core": "^0.0.29"
   },
   "dependencies": {
     "tslib": "^2.3.0"
