@@ -9,7 +9,14 @@ function buildRadarOption(
   type: ChartType,
   config: ChartProvider<any, any>
 ): EChartsOption {
-  const indicator = chart.categories.map((cat) => ({ name: String(cat) }));
+  // Max par indicateur calculé depuis les données pour garantir des axes cohérents
+  const maxPerIndicator = chart.categories.map((_, i) =>
+    Math.max(...chart.series.map((s) => (s.data[i] as number) ?? 0)) || 1
+  );
+  const indicator = chart.categories.map((cat, i) => ({
+    name: String(cat),
+    max: maxPerIndicator[i],
+  }));
   const hasArea = type === 'radarArea';
 
   return {

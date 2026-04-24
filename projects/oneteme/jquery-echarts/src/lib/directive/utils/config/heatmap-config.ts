@@ -18,8 +18,11 @@ function buildHeatmapOption(
     });
   });
 
-  const maxVal = data.length ? Math.max(...data.map((d) => d[2])) : 1;
-  const minVal = data.length ? Math.min(...data.map((d) => d[2])) : 0;
+  // Utiliser reduce au lieu de Math.max(...array) pour éviter le stack overflow sur grands datasets
+  const maxVal = data.reduce((acc, d) => Math.max(acc, d[2]), -Infinity);
+  const minVal = data.reduce((acc, d) => Math.min(acc, d[2]), Infinity);
+  const safeMax = Number.isFinite(maxVal) ? maxVal : 1;
+  const safeMin = Number.isFinite(minVal) ? minVal : 0;
 
   return {
     grid: { left: '3%', right: '10%', bottom: '20%', containLabel: true },
@@ -40,8 +43,8 @@ function buildHeatmapOption(
       nameGap: 50,
     },
     visualMap: {
-      min: minVal,
-      max: maxVal,
+      min: safeMin,
+      max: safeMax,
       calculable: true,
       orient: 'horizontal',
       left: 'center',

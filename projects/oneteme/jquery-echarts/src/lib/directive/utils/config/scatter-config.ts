@@ -12,8 +12,8 @@ function buildScatterOption(
   const isBubble = type === 'bubble';
 
   return {
-    xAxis: { type: 'value', name: config.xtitle, nameLocation: 'center', nameGap: 30 },
-    yAxis: { type: 'value', name: config.ytitle, nameLocation: 'center', nameGap: 40 },
+    xAxis: { type: 'value' },
+    yAxis: { type: 'value' },
     series: chart.series.map((s) => ({
       type: 'scatter',
       name: s.name,

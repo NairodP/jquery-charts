@@ -92,6 +92,8 @@ function buildRangeOption(
   });
 
   return {
+    // N'afficher dans la légende que les séries "visibles" (pas les bases transparentes)
+    legend: { data: chart.series.map((s) => s.name ?? '').filter(Boolean) },
     xAxis: isHorizontal ? valueAxis : (isContinue ? { type: xType } : categoryAxis),
     yAxis: isHorizontal ? categoryAxis : valueAxis,
     series: seriesList,

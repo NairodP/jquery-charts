@@ -6,9 +6,8 @@ export type ChartCustomEvent = 'previous' | 'next' | 'pivot';
 /** Alias exposé pour les options ECharts natives */
 export type { ECharts, EChartsOption };
 
-/** Options de la loading API native d'ECharts */
+/** Options de la loading API native d'ECharts (hors `text` — fourni par l'Input `loadingLabel`) */
 export const DEFAULT_LOADING_OPTION = {
-  text: 'Chargement des données...',
   color: '#5470c6',
   textColor: '#333',
   maskColor: 'rgba(255, 255, 255, 0.8)',

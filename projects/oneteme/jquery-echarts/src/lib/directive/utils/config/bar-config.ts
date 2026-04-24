@@ -10,15 +10,10 @@ function buildBarOption(
 ): EChartsOption {
   const horizontal = type === 'bar';
   const categoryAxis = { type: 'category', data: chart.categories.map(String) };
-  const valueAxis: any = {
-    type: 'value',
-    name: config.ytitle,
-    nameLocation: 'center',
-    nameGap: 40,
-  };
+  const valueAxis: any = { type: 'value' };
 
   return {
-    xAxis: horizontal ? valueAxis : { ...categoryAxis, name: config.xtitle, nameLocation: 'center', nameGap: 30 },
+    xAxis: horizontal ? valueAxis : categoryAxis,
     yAxis: horizontal ? categoryAxis : valueAxis,
     series: chart.series.map((s) => ({
       type: 'bar',
@@ -32,6 +27,12 @@ function buildBarOption(
 }
 
 export const barConfigurator: EChartTypeConfigurator = {
+  /**
+   * Supporte bar, column et columnpyramid.
+   * Note : `columnpyramid` est rendu comme un `bar` standard (ECharts ne dispose pas
+   * de type pyramidal natif pour les barres cartésiennes ; un rendu via `pictorialBar`
+   * serait nécessaire pour une forme pyramidale réelle).
+   */
   supports: (type) => type === 'bar' || type === 'column' || type === 'columnpyramid',
 
   buildChartData: (data, config, type) =>

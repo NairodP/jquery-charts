@@ -156,7 +156,11 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
 
   ngOnDestroy(): void {
     if (this._group) {
-      ChartDirective._groupRegistry.get(this._group)?.delete(this);
+      const set = ChartDirective._groupRegistry.get(this._group);
+      if (set) {
+        set.delete(this);
+        if (set.size === 0) ChartDirective._groupRegistry.delete(this._group);
+      }
     }
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
@@ -252,10 +256,6 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       }
     });
   }
-
-  /** @deprecated Remplacé par le listener ZRender mousemove — conservé pour compatibilité */
-  private _syncTooltip(_params: any): void {}
-  private _syncHideTip(): void {}
 
   private _setupResizeObserver(dom: HTMLElement): void {
     this._resizeObserver = new ResizeObserver(() => {

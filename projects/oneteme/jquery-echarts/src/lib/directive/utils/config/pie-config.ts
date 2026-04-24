@@ -28,6 +28,8 @@ function buildPieOption(
       type: 'scroll',
       orient: 'vertical',
       left: 'left',
+      // Neutralise le bottom:0 hérité de buildBaseOption (incompatible avec left:'left')
+      bottom: undefined,
     },
     tooltip: { trigger: 'item' },
     series: [

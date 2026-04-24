@@ -26,8 +26,8 @@ export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): 
       // ce qui élimine tout impact sur le scroll de la page.
       // Note : ECharts ajoute rect + window.pageOffset au retour du callback (pour position:absolute).
       // On soustrait ce décalage pour que la position CSS finale corresponde au viewport cible.
-      const sx = window.pageXOffset;
-      const sy = window.pageYOffset;
+      const sx = window.scrollX;
+      const sy = window.scrollY;
       let vx = rect.left + point[0] + gap;
       let vy = rect.top  + point[1] + gap;
       if (vx + tw > vw) vx = rect.left + point[0] - tw - gap;
@@ -88,11 +88,12 @@ export function applyCommonConfig(
   option: EChartsOption,
   config: ChartProvider<any, any>
 ): EChartsOption {
+  // N'injecter le composant title que s'il y a du contenu
+  // (même guard que buildBaseOption pour éviter le padding ECharts inutile)
   const patch: EChartsOption = {
-    title: {
-      text: config.title ?? '',
-      subtext: config.subtitle ?? '',
-    },
+    ...(config.title || config.subtitle
+      ? { title: { text: config.title ?? '', subtext: config.subtitle ?? '' } }
+      : {}),
   };
 
   if (config.xtitle) {

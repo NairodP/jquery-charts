@@ -38,15 +38,9 @@ function buildLineOption(
       type: xType as any,
       data: isContinue ? undefined : chart.categories.map(String),
       boundaryGap: false,
-      name: config.xtitle,
-      nameLocation: 'center',
-      nameGap: 30,
     },
     yAxis: {
       type: 'value',
-      name: config.ytitle,
-      nameLocation: 'center',
-      nameGap: 40,
     },
     series: chart.series.map((s) => {
       // Le type d'une série sans type explicite hérite du type du chart (ex: area, spline...)
