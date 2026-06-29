@@ -16,8 +16,6 @@ export class EChartsTestComponent  {
   @Input() isLoadingChart: boolean = false;
   @ViewChild('chart') chart: EChartsComponent<string, number>;
 
-
-
   reloadChart(): void { if (this.chart) { /* empty */ } }
 
   onCustomEvent(event: any): void {
