@@ -3,6 +3,7 @@ import { EChartsOption } from '../types';
 import { barConfigurator } from './bar-config';
 import { lineConfigurator } from './line-config';
 import { pieConfigurator } from './pie-config';
+import { nestedPieConfigurator } from './nested-pie-config';
 import { scatterConfigurator } from './scatter-config';
 import { heatmapConfigurator } from './heatmap-config';
 import { treemapConfigurator } from './treemap-config';
@@ -52,6 +53,7 @@ const CONFIGURATORS: EChartTypeConfigurator[] = [
   radarConfigurator,
   scatterConfigurator,
   rangeConfigurator,
+  nestedPieConfigurator, // avant pie (plus spécifique)
   pieConfigurator,
   lineConfigurator,
   barConfigurator,       // fallback large (bar / column / columnpyramid)

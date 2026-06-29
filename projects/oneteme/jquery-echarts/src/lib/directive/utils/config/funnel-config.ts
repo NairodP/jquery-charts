@@ -22,9 +22,6 @@ function buildFunnelOption(
     : [...pairs].sort((a, b) => b.value - a.value);
 
   return {
-    grid: undefined,
-    xAxis: undefined,
-    yAxis: undefined,
     legend: { show: true, type: 'scroll', bottom: 0 },
     series: [
       {

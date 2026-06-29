@@ -1,6 +1,6 @@
 {
   "name": "@oneteme/jquery-charts",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "jquery charts project",
   "private": false,
   "homepage": "https://github.com/oneteme/jquery-charts",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4201",
     "b1": "ng build @oneteme/jquery-highcharts",
     "cb1": "ng build \"@oneteme/jquery-core\" && ng build \"@oneteme/jquery-highcharts\"",
     "b2": "ng build @oneteme/jquery-apexcharts",

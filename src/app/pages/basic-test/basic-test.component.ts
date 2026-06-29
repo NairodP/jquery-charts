@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ChartProvider, ChartType, field } from '@oneteme/jquery-core';
 import { ApexChartTestComponent } from './apexcharts-chart-test/apexcharts-chart-test.component';
 import { HighchartsTestComponent } from './highcharts-test/highcharts-test.component';
+import { EChartsTestComponent } from './echarts-test/echarts-test.component';
 import { mapChartConfig, mapChartData } from './highcharts-test/map-test-data';
 
 @Component({
@@ -19,6 +20,7 @@ import { mapChartConfig, mapChartData } from './highcharts-test/map-test-data';
     FormsModule,
     ApexChartTestComponent,
     HighchartsTestComponent,
+    EChartsTestComponent,
   ],
 })
 export class BasicTestComponent implements OnInit {
@@ -30,7 +32,7 @@ export class BasicTestComponent implements OnInit {
   isPanelVisible = false;
   useSimpleData = true;
 
-  chartLibrary: 'apexcharts' | 'highcharts' = 'highcharts';
+  chartLibrary: 'apexcharts' | 'highcharts' | 'echarts' = 'highcharts';
   dataDelay = 0;
 
   // Types de graphiques possibles pour tester la compatibilité des transformations
@@ -156,11 +158,21 @@ export class BasicTestComponent implements OnInit {
   }
 
   toggleChartLibrary(): void {
-    this.chartLibrary =
-      this.chartLibrary === 'apexcharts' ? 'highcharts' : 'apexcharts';
+    if (this.chartLibrary === 'apexcharts') {
+      this.chartLibrary = 'highcharts';
+    } else if (this.chartLibrary === 'highcharts') {
+      this.chartLibrary = 'echarts';
+    } else {
+      this.chartLibrary = 'apexcharts';
+    }
   }
 
   getCurrentLibraryName(): string {
-    return this.chartLibrary === 'apexcharts' ? 'ApexCharts' : 'Highcharts';
+    switch (this.chartLibrary) {
+      case 'apexcharts': return 'ApexCharts';
+      case 'highcharts': return 'Highcharts';
+      case 'echarts': return 'ECharts';
+      default: return 'Unknown';
+    }
   }
 }

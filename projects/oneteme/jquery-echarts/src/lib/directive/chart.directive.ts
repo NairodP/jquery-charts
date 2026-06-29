@@ -57,6 +57,8 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _resizeObserver: ResizeObserver | null = null;
   private _initialized = false;
   private _isSyncing = false;
+  /** Données brutes de l'anneau extérieur pour nestedPie/nestedDonut (avec _seriesName et _origValue). */
+  private _nestedPieOuterData: any[] | null = null;
 
   private _config: ChartProvider<X, Y>;
   private _type: ChartType;
@@ -185,6 +187,13 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       this.ngZone.run(() => this.chartClick.emit(params));
     });
 
+    // Synchronisation anneau extérieur ↔ légende pour nestedPie / nestedDonut
+    this._chartInstance.on('legendselectchanged', (params: any) => {
+      if (this._type === 'nestedPie' || this._type === 'nestedDonut') {
+        this._syncNestedPieLegend(params.selected);
+      }
+    });
+
     if (this._group) {
       const sync = this._resolveSync();
       if (sync === 'all') {
@@ -234,6 +243,27 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     }
 
     this._setupResizeObserver(dom);
+  }
+
+  private _syncNestedPieLegend(selected: Record<string, boolean>): void {
+    if (!this._chartInstance || !this._nestedPieOuterData) return;
+
+    // Reconstruit les données de l'anneau extérieur en masquant les séries désactivées.
+    // On utilise _origValue pour restaurer la valeur réelle quand la série est réactivée.
+    // value: 0 fait en sorte qu'ECharts ignore le segment et redistribue les angles.
+    const updatedData = this._nestedPieOuterData.map((item: any) => {
+      const visible = selected[item._seriesName] !== false;
+      return {
+        ...item,
+        value: visible ? (item._origValue ?? item.value) : 0,
+      };
+    });
+
+    // Cible la série par son id pour ne pas écraser la série intérieure
+    this._chartInstance.setOption(
+      { series: [{ id: '__nested_outer__', data: updatedData }] },
+      { notMerge: false, lazyUpdate: false }
+    );
   }
 
   private _resolveSync(): 'all' | GroupSyncAction[] {
@@ -302,6 +332,12 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
         (option as any).graphic = [];
       }
       if (this.debug) console.log('[jquery-echarts] setOption', option);
+      // Stocker les données de l'anneau extérieur pour la synchro de légende nestedPie
+      if (this._type === 'nestedPie' || this._type === 'nestedDonut') {
+        this._nestedPieOuterData = (option as any).series?.[1]?.data ?? null;
+      } else {
+        this._nestedPieOuterData = null;
+      }
       // notMerge: true uniquement lors du 1er rendu (changes absent) ou si le type de chart change.
       // Pour les mises à jour de données/config on préfère replaceMerge pour une transition animée (morphing).
       const isInitialRender = !changes;
@@ -322,8 +358,8 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     // 1. Construit le CommonChart via le configurateur (buildChart ou buildSingleSerieChart)
     const commonChart = configurator.buildChartData(this.data, this._config, this._type);
 
-    // 2. Option de base : title, legend, grid, toolbox
-    const base = buildBaseOption(this._config);
+    // 2. Option de base : title, legend, grid (si nécessaire), toolbox
+    const base = buildBaseOption(this._config, this._type);
 
     // 3. Option spécifique au type
     const typeSpecific = configurator.buildOption(commonChart, this._type, this._config);
@@ -336,7 +372,8 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     // 5. Fusion dans l'ordre : base ← typeSpecific ← tooltipOverride ← options user
     const merged = applyCommonConfig(
       { ...base, ...typeSpecific, ...tooltipOverride },
-      this._config
+      this._config,
+      this._type
     );
 
     return merged;

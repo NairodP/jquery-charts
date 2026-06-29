@@ -18,18 +18,20 @@ function buildPieOption(
       .filter((d) => d.value != null)
   );
 
+  // Réserver de l'espace sous le titre pour éviter le chevauchement avec la légende.
+  // ~60px pour un titre seul, ~85px si sous-titre présent, 10px sinon.
+  const hasTitle = !!(config.title || config.subtitle);
+  const hasSubtitle = !!config.subtitle;
+  const legendTop = hasTitle ? (hasSubtitle ? 85 : 60) : 10;
+
   return {
-    // Pas de grid pour les pie charts
-    grid: undefined,
-    xAxis: undefined,
-    yAxis: undefined,
     legend: {
       show: true,
       type: 'scroll',
       orient: 'vertical',
       left: 'left',
       bottom: 0,
-      top: undefined,
+      top: legendTop,
     },
     tooltip: { trigger: 'item' },
     series: [

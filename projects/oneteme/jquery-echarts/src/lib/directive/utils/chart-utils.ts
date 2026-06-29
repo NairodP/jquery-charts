@@ -52,12 +52,35 @@ export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): 
 }
 
 /**
+ * Types de charts qui n'ont pas besoin d'axes cartésiens (grid, xAxis, yAxis).
+ * Pour ces types, buildBaseOption n'inclut pas de grid pour éviter la création automatique
+ * d'axes par ECharts, ce qui causerait des axes fantômes à apparaître.
+ */
+const NO_AXIS_TYPES = new Set([
+  'pie',
+  'donut',
+  'nestedPie',
+  'nestedDonut',
+  'funnel',
+  'pyramid',
+  'gauge',
+  'radar',
+  'radarArea',
+  'treemap',
+  'sunburst',
+  'sankey',
+  'graph',
+]);
+
+/**
  * Construit l'option de base commune à tous les types de graphiques.
  * Les options spécifiques au type sont fusionnées par-dessus.
+ * Ne crée un grid que pour les types de charts qui ont besoin d'axes cartésiens.
  */
-export function buildBaseOption(config: ChartProvider<any, any>): EChartsOption {
+export function buildBaseOption(config: ChartProvider<any, any>, type?: string): EChartsOption {
   const hasTitle = !!(config.title || config.subtitle);
   const hasSubtitle = !!config.subtitle;
+  const needsGrid = !type || !NO_AXIS_TYPES.has(type);
   // Réserver suffisamment d'espace en haut pour le titre ECharts :
   // ~60px pour un titre seul, ~80px si sous-titre présent, 10px sinon.
   const gridTop = hasTitle ? (hasSubtitle ? 80 : 60) : 10;
@@ -72,13 +95,17 @@ export function buildBaseOption(config: ChartProvider<any, any>): EChartsOption 
       type: 'scroll',
       bottom: 0,
     },
-    grid: {
-      top: gridTop,
-      left: '3%',
-      right: '4%',
-      bottom: '15%',
-      containLabel: true,
-    },
+    ...(needsGrid ? {
+      grid: {
+        top: gridTop,
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true,
+      },
+    } : {
+      grid: undefined,
+    }),
     toolbox: { show: false },
   };
 }
@@ -90,7 +117,8 @@ export function buildBaseOption(config: ChartProvider<any, any>): EChartsOption 
  */
 export function applyCommonConfig(
   option: EChartsOption,
-  config: ChartProvider<any, any>
+  config: ChartProvider<any, any>,
+  type?: string
 ): EChartsOption {
   // N'injecter le composant title que s'il y a du contenu
   // (même guard que buildBaseOption pour éviter le padding ECharts inutile)
@@ -100,10 +128,12 @@ export function applyCommonConfig(
       : {}),
   };
 
-  if (config.xtitle) {
+  // N'ajouter les titres d'axes que pour les types cartésiens
+  const needsAxes = !type || !NO_AXIS_TYPES.has(type);
+  if (needsAxes && config.xtitle) {
     (patch as any).xAxis = { name: config.xtitle, nameLocation: 'center', nameGap: 30 };
   }
-  if (config.ytitle) {
+  if (needsAxes && config.ytitle) {
     (patch as any).yAxis = { name: config.ytitle, nameLocation: 'center', nameGap: 40 };
   }
 

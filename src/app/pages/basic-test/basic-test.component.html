@@ -4,8 +4,8 @@
   <div class="description">
     <p>
       Cette page permet de tester l'intégration de la bibliothèque jQuery-Charts
-      avec jquery-core + jquery-apexcharts ou jquery-highcharts et de reproduire
-      certains effets de bord relevés. Vous pouvez utiliser le panneau de
+      avec jquery-core + jquery-apexcharts, jquery-highcharts ou jquery-echarts
+      et de reproduire certains effets de bord relevés. Vous pouvez utiliser le panneau de
       contrôle en bas pour sélectionner le graphique à afficher.
     </p>
 
@@ -13,10 +13,16 @@
       <button
         class="library-btn"
         (click)="toggleChartLibrary()"
-        title="Basculer entre ApexCharts et Highcharts"
+        title="Basculer entre ApexCharts, Highcharts et ECharts"
       >
         Utiliser
-        {{ chartLibrary === "apexcharts" ? "Highcharts" : "ApexCharts" }}
+        {{
+          chartLibrary === "apexcharts"
+            ? "Highcharts"
+            : chartLibrary === "highcharts"
+              ? "ECharts"
+              : "ApexCharts"
+        }}
       </button>
 
       <div class="separator"></div>
@@ -68,6 +74,14 @@
         [isLoadingChart]="isLoadingData"
         [possibleTypes]="possibleTypes"
       ></app-highcharts-test>
+
+      <app-echarts-test
+        *ngIf="chartLibrary === 'echarts'"
+        [chartType]="chartType"
+        [chartConfig]="chartConfig"
+        [chartData]="chartData"
+        [isLoadingChart]="isLoadingData"
+      ></app-echarts-test>
     </div>
   </div>
 
@@ -99,6 +113,8 @@
       >
         <option value="pie">Pie</option>
         <option value="donut">Donut</option>
+        <option value="nestedPie">Nested Pie</option>
+        <option value="nestedDonut">Nested Donut</option>
         <option value="funnel">Funnel</option>
         <option value="pyramid">Pyramid</option>
         <option value="polar">Polar</option>

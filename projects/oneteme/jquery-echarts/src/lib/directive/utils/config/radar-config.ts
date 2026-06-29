@@ -20,9 +20,6 @@ function buildRadarOption(
   const hasArea = type === 'radarArea';
 
   return {
-    grid: undefined,
-    xAxis: undefined,
-    yAxis: undefined,
     radar: {
       indicator,
       shape: 'polygon',

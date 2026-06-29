@@ -32,9 +32,6 @@ function buildTreemapOption(
   }
 
   return {
-    grid: undefined,
-    xAxis: undefined,
-    yAxis: undefined,
     series: [
       {
         type: 'treemap',
