@@ -47,13 +47,12 @@ jobs:
     - uses: oneteme/automation-scripts/.github/actions/npm-project-version@main
       id: prj_ver
 
-    # Upload COMPLET : dist/ + node_modules + sources (pour pages et deploy)
+    # Upload COMPLET : dist/ + sources (pour pages et deploy)
     - uses: actions/upload-artifact@v4
       with:
         name: build-complete
         path: |
           dist/
-          node_modules/
           package.json
           package-lock.json
         retention-days: 1
@@ -129,12 +128,12 @@ jobs:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
-    needs: deploy
+    needs: [build, deploy]
     runs-on: ubuntu-latest
     steps:
     - uses: oneteme/automation-scripts/.github/actions/github-release-notes@main
       with:
-        version: ${{ needs.deploy.outputs.version }}
+        version: ${{ needs.build.outputs.version }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -151,12 +150,15 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    # Récupère les artifacts complets (dist + node_modules)
+    # Récupère les artifacts complets
     - uses: actions/download-artifact@v4
       with:
         name: build-complete
 
-    # Build l'app avec base-href (réutilise node_modules du cache)
+    # Réinstalle les dépendances (node_modules n'est pas uploadé)
+    - run: npm ci
+
+    # Build l'app avec base-href
     - run: npx ng build jquery-charts --base-href=/jquery-charts/
 
     - uses: oneteme/automation-scripts/.github/actions/npm-github-pages@main
