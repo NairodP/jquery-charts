@@ -281,6 +281,7 @@ function buildMixedOption(
       : customConfig.splitNumber;
 
     yAxisArray.push({
+      ...customConfig,
       type: 'value',
       gridIndex: 0,
       position: axisLayout.position,
@@ -291,9 +292,8 @@ function buildMixedOption(
       alignTicks: customConfig.alignTicks ?? shouldAlignTicksByDefault,
       axisLine: {
         onZero: false,
-        ...customConfig.axisLine,
+        ...(customConfig.axisLine ?? {}),
       },
-      ...customConfig,
     });
   });
 
@@ -307,7 +307,7 @@ function buildMixedOption(
       return {
         type: 'bar',
         name: s.name,
-        data: s.data,
+        data: getCartesianSeriesData(s, chart, xType, isContinue) as any,
         stack: s.stack,
         yAxisIndex,
         itemStyle: s.color ? { color: s.color } : undefined,

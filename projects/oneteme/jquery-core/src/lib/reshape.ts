@@ -203,6 +203,9 @@ export function pivotRows<T extends Record<string, any>>(
   const separator = options.separator ?? '_';
   const missingKey = options.missingKey ?? 'empty';
   const indexName = getAccessorName(options.index, options.indexName, 'index');
+  if (indexName === '__proto__' || indexName === 'constructor' || indexName === 'prototype') {
+    throw new TypeError(`[jquery-core] Nom de colonne interdit : "${indexName}".`);
+  }
   const discoveredColumns: ReshapeKey[] = [];
   const discoveredColumnKeys = new Set<ReshapeKey>();
   const grouped = new Map<ReshapeKey, PivotGroup<T>>();

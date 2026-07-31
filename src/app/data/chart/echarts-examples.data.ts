@@ -20,13 +20,6 @@ const PIVOT_ROWS_RESULT = pivotRows(PIVOT_ROWS_SOURCE, {
   fill: 0,
 });
 
-console.groupCollapsed('[jquery-echarts] Exemple pivotRows');
-console.log('Donnees source:', PIVOT_ROWS_SOURCE);
-console.log('Resultat pivote:', PIVOT_ROWS_RESULT);
-console.log('Doublon agrege: beneficiaire/Eclairage Public = 150');
-console.log('Combinaison absente remplie: absent = 0');
-console.groupEnd();
-
 export const ECHARTS_EXAMPLES: ChartDataCollection<EChartsExampleData> = {
 
   barExample: {
