@@ -6,12 +6,12 @@ Angular renderer for [Apache ECharts](https://echarts.apache.org/), built on top
 
 This library provides an Angular component and directive to render interactive charts using Apache ECharts, with full integration with the `@oneteme/jquery-core` data model.
 
-**Supported chart types:** `bar`, `columnpyramid`, `line`, `area`, `pie`, `donut`, `scatter`, `heatmap`, `radar`, `treemap`, `funnel`, `range`
+**Supported chart types:** `bar`, `column`, `columnpyramid`, `line`, `spline`, `area`, `areaspline`, `mixed`, `pie`, `donut`, `scatter`, `bubble`, `heatmap`, `radar`, `radarArea`, `treemap`, `funnel`, `pyramid`, `rangeBar`, `rangeColumn`, `arearange`, `areasplinerange`, `columnrange`
 
 ## Installation
 
 ```bash
-npm install @oneteme/jquery-echarts@beta
+npm install @oneteme/jquery-echarts
 ```
 
 > **Note:** This package requires `echarts` as a peer dependency. It is installed automatically with npm v7+. If not, install it manually:
@@ -26,7 +26,7 @@ npm install @oneteme/jquery-echarts@beta
 | `@angular/core`         | `>= 16.1.0`    |
 | `@angular/common`       | `>= 16.1.0`    |
 | `echarts`               | `^6.0.0`       |
-| `@oneteme/jquery-core`  | `^0.0.30`      |
+| `@oneteme/jquery-core`  | `^0.0.34`      |
 
 ## Usage
 
@@ -55,12 +55,12 @@ export class AppModule {}
 ```
 
 ```typescript
-import { ChartProvider } from '@oneteme/jquery-core';
+import { ChartProvider, field } from '@oneteme/jquery-core';
 
 chartConfig: ChartProvider<string, number> = {
   title: 'Monthly Sales',
   series: [
-    { name: 'Revenue', field: 'revenue' }
+    { name: 'Revenue', data: { x: field('month'), y: field('revenue') } }
   ]
 };
 
@@ -79,7 +79,7 @@ chartData = [
 | `config`       | `ChartProvider<X, Y>`       | ✅       | —                               | Chart configuration from `@oneteme/jquery-core`  |
 | `data`         | `any[]`                     | ✅       | —                               | Raw data array                                   |
 | `isLoading`    | `boolean`                   |          | `false`                         | Shows a loading overlay                          |
-| `view`         | `ViewConfig`                |          | —                               | Enables series visibility toggling (View panel)  |
+| `organizer`    | `OrganizerConfig`           |          | —                               | Enables series visibility toggling               |
 | `theme`        | `string`                    |          | `null`                          | ECharts theme name                               |
 | `renderer`     | `'svg' \| 'canvas'`         |          | `'svg'`                         | ECharts rendering mode                           |
 | `loadingLabel` | `string`                    |          | `'Chargement des données...'`   | Label shown during loading                       |
@@ -93,6 +93,7 @@ chartData = [
 | Output        | Type                        | Description                              |
 |---------------|-----------------------------|------------------------------------------|
 | `customEvent` | `EventEmitter<ChartCustomEvent>` | Emitted on toolbar actions (`previous`, `next`, `pivot`) |
+| `chartClick`   | `EventEmitter<any>`             | Emitted when a chart datum is clicked             |
 
 ### Chart synchronization
 
@@ -111,21 +112,101 @@ Charts sharing the same `group` ID can be synchronized:
 
 ### View panel (series visibility)
 
-Pass a `ViewConfig` to enable the series toggle panel:
+Pass an `OrganizerConfig` to enable the series toggle panel:
 
 ```html
-<chart [type]="'line'" [config]="config" [data]="data" [view]="viewConfig"></chart>
+<chart [type]="'line'" [config]="config" [data]="data" [organizer]="organizerConfig"></chart>
 ```
 
 ```typescript
-import { ViewConfig } from '@oneteme/jquery-core';
+import { OrganizerConfig } from '@oneteme/jquery-core';
 
-viewConfig: ViewConfig = {
-  fields: [
-    { key: 'revenue', label: 'Revenue' },
-    { key: 'cost',    label: 'Cost' }
+organizerConfig: OrganizerConfig = {
+  enabled: true,
+  enableFieldRemoval: true,
+  enableFieldDragDrop: true
+};
+```
+
+### Mixed charts and double Y axes
+
+Use `type: 'mixed'` to combine columns, bars and lines. Set `yAxisIndex` to attach each series to the left axis (`0`) or right axis (`1`). A maximum of two Y axes is supported.
+
+```typescript
+import { ChartProvider, field } from '@oneteme/jquery-core';
+
+mixedConfig: ChartProvider<string, number> = {
+  title: 'Production et température',
+  ytitle: ['Production (MWh)', 'Température (°C)'],
+  series: [
+    {
+      name: 'Production',
+      type: 'column',
+      unit: 'MWh',
+      yAxisIndex: 0,
+      data: { x: field('month'), y: field('production') }
+    },
+    {
+      name: 'Température',
+      type: 'line',
+      unit: '°C',
+      yAxisIndex: 1,
+      data: { x: field('month'), y: field('temperature') }
+    }
   ]
 };
+```
+
+`yAxisConfig` permet de personnaliser chaque axe (`min`, `max`, `splitNumber`, `offset`, `alignTicks`, `axisLine`, `axisLabel`, `splitLine`). Les séries rattachées au même axe partagent sa configuration.
+
+### Pivot de données avec `pivotRows`
+
+`pivotRows` appartient à `@oneteme/jquery-core` et prépare des données longues avant leur rendu ECharts. Les doublons sont agrégés et les combinaisons absentes sont remplies avec `fill`.
+
+```typescript
+import { field, pivotRows } from '@oneteme/jquery-core';
+
+const rows = [
+  { usage: 'Eclairage', authorization: 'beneficiaire', consumption: 120 },
+  { usage: 'Eclairage', authorization: 'beneficiaire', consumption: 30 },
+  { usage: 'Eclairage', authorization: 'titulaire', consumption: 80 }
+];
+
+const data = pivotRows(rows, {
+  index: 'usage',
+  columns: 'authorization',
+  values: ['consumption'],
+  aggregate: 'sum',
+  columnValues: ['beneficiaire', 'titulaire', 'absent'],
+  fill: 0
+});
+
+chartData = data;
+chartConfig = {
+  title: 'Consommation par usage',
+  series: [
+    { name: 'Bénéficiaire', data: { x: field('usage'), y: field('consumption_beneficiaire') } },
+    { name: 'Titulaire', data: { x: field('usage'), y: field('consumption_titulaire') } }
+  ]
+};
+```
+
+Options complémentaires : `indexValues` force des lignes attendues, `missingKey` vaut `empty`, `skip` ou `error`, `normalizeKey` normalise les clés et `columnName` personnalise les noms générés. Les agrégations `sum`, `min` et `max` nécessitent des valeurs numériques ; `count` compte les valeurs non nulles.
+
+### Export
+
+Le composant expose deux méthodes publiques :
+
+```typescript
+@ViewChild(ChartComponent) chart?: ChartComponent<any, any>;
+
+exportPng(): void {
+  this.chart?.exportImage('rapport', 'png', 2);
+}
+
+exportCsv(): void {
+  this.chart?.exportData('rapport.csv', ';');
+}
 ```
 
 ### Low-level directive
