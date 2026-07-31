@@ -38,7 +38,7 @@ function buildHeatmapOption(
       type: 'category',
       data: yCategories,
       splitArea: { show: true },
-      name: config.ytitle,
+      name: Array.isArray(config.ytitle) ? config.ytitle[0] : config.ytitle,
       nameLocation: 'center',
       nameGap: 50,
     },

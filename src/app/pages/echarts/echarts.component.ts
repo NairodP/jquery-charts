@@ -39,6 +39,11 @@ export class EChartsComponent implements OnInit {
     { id: 'radar', label: 'Radar', type: 'radar', exampleKey: 'radarExample' },
     { id: 'rangeBar', label: 'Range Bar (Gantt)', type: 'rangeBar', exampleKey: 'rangeBarExample' },
     { id: 'rangeColumn', label: 'Range Column', type: 'rangeColumn', exampleKey: 'rangeColumnExample' },
+    { id: 'multiSeries', label: 'Multi-Series (Bar+Line)', type: 'mixed', exampleKey: 'multiSeriesExample' },
+    { id: 'dualAxis', label: 'Dual Axis (Different Units)', type: 'mixed', exampleKey: 'dualAxisExample' },
+    { id: 'customAxis', label: 'Custom Y Axes', type: 'mixed', exampleKey: 'customAxisExample' },
+    { id: 'mixedCategory', label: 'Stacked Columns + Target', type: 'mixed', exampleKey: 'mixedCategoryExample' },
+    { id: 'pivotRows', label: 'Pivot Rows (Core)', type: 'mixed', exampleKey: 'pivotRowsExample' },
   ];
 
   openCodeBlocks: Record<string, boolean> = {};

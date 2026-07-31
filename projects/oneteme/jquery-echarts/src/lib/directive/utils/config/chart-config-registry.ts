@@ -9,6 +9,7 @@ import { treemapConfigurator } from './treemap-config';
 import { funnelConfigurator } from './funnel-config';
 import { radarConfigurator } from './radar-config';
 import { rangeConfigurator } from './range-config';
+import { mixedConfigurator } from './mixed-config';
 
 /**
  * Contrat d'un configurateur de type de graphique ECharts.
@@ -46,6 +47,7 @@ export interface EChartTypeConfigurator {
 
 /** Liste des configurateurs enregistrés — ordre : du plus spécifique au plus général */
 const CONFIGURATORS: EChartTypeConfigurator[] = [
+  mixedConfigurator,     // mixed types (bar+line, etc.)
   heatmapConfigurator,   // avant bar (heatmap != bar malgré ressemblance)
   treemapConfigurator,
   funnelConfigurator,

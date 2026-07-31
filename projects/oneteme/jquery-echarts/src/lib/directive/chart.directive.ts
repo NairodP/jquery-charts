@@ -1,5 +1,5 @@
 import { AfterViewInit, Directive, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
-import { ChartProvider, ChartType, ChartView, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { ChartProvider, ChartType, ChartView, mergeDeep, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { asapScheduler } from 'rxjs';
 
 import { echarts } from './utils/echarts-init';
@@ -256,7 +256,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       tooltip: buildTooltipOption(configurator.tooltipTrigger, this.el.nativeElement),
     };
     const merged = applyCommonConfig(
-      { ...base, ...typeSpecific, ...tooltipOverride },
+      mergeDeep({}, base, typeSpecific, tooltipOverride),
       this._config
     );
     return merged;

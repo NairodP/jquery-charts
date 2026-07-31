@@ -94,7 +94,7 @@ export function applyCommonConfig(
   if (config.xtitle) {
     (patch as any).xAxis = { name: config.xtitle, nameLocation: 'center', nameGap: 30 };
   }
-  if (config.ytitle) {
+  if (config.ytitle && !Array.isArray(config.ytitle)) {
     (patch as any).yAxis = { name: config.ytitle, nameLocation: 'center', nameGap: 40 };
   }
 
