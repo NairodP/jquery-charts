@@ -23,6 +23,8 @@ on:
 
 env:
   NODE_VERSION: 20
+  NODE_ENV: development
+  NPM_CONFIG_PRODUCTION: 'false'
 
 permissions:
   contents: read
@@ -40,6 +42,11 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - run: npm ci --include=dev
+
+    - name: Verify Angular CLI
+      run: |
+        test -x node_modules/.bin/ng
+        npm exec -- ng version
 
     - run: npm run build
 
@@ -169,6 +176,11 @@ jobs:
 
     # Réinstalle les dépendances (node_modules n'est pas uploadé)
     - run: npm ci --include=dev
+
+    - name: Verify Angular CLI
+      run: |
+        test -x node_modules/.bin/ng
+        npm exec -- ng version
 
     # Build l'app avec base-href
     - run: npx ng build jquery-charts --base-href=/jquery-charts/

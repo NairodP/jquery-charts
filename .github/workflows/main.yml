@@ -8,6 +8,8 @@ on:
 
 env:
   NODE_VERSION: 20
+  NODE_ENV: development
+  NPM_CONFIG_PRODUCTION: 'false'
 
 permissions:
   contents: read
@@ -26,6 +28,11 @@ jobs:
         cache: 'npm'
 
     - run: npm ci --include=dev
+
+    - name: Verify Angular CLI
+      run: |
+        test -x node_modules/.bin/ng
+        npm exec -- ng version
 
     - run: npm run build
 
