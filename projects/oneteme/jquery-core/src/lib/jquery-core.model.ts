@@ -109,6 +109,8 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
     const cp = resolveDataProvider(m.color);
     const tp = resolveDataProvider(m.type);
     const vp = resolveDataProvider(m.visible);
+    const yap = resolveDataProvider(m.yAxisIndex);
+    const unit = m.unit;
 
     objects.forEach((o, i) => {
       const name = np(o, i) || ''; // can't use undefined as a map key
@@ -123,6 +125,7 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
         const color = cp(o, i);
         const type = tp(o, i);
         const visible = vp(o, i);
+        const yAxisIndex = yap(o, i);
 
         if (name) {
           series[name].name = name;
@@ -138,6 +141,16 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
         }
         if (visible !== undefined) {
           series[name].visible = visible;
+        }
+        if (unit) {
+          series[name].unit = unit;
+        }
+        if (yAxisIndex !== undefined) {
+          series[name].yAxisIndex = yAxisIndex;
+        }
+        const yAxisConfig = (m as any).yAxisConfig;
+        if (yAxisConfig) {
+          series[name].yAxisConfig = yAxisConfig;
         }
         const noDataStyle = (m as any).noDataStyle;
         if (noDataStyle) {
@@ -242,7 +255,7 @@ export interface ChartProvider<X extends XaxisType, Y extends YaxisType> {
   title?: string;
   subtitle?: string;
   xtitle?: string;
-  ytitle?: string; // multiple  {key: val}
+  ytitle?: string | string[]; // single axis or multiple axes
   width?: number;
   height?: number;
   stacked?: boolean; // barChart only
@@ -270,6 +283,8 @@ export interface SerieProvider<X extends XaxisType, Y extends YaxisType> {
   type?: string | DataProvider<string>; // first time at init
   visible?: boolean | DataProvider<boolean>; // pour masquer/afficher une série
   unit?: string;
+  yAxisIndex?: number; // Pour les dual/multi-axis : 0 (défaut), 1, 2, etc.
+  yAxisConfig?: Record<string, any>; // Options personnalisées pour cet axe Y (ex: splitNumber)
 }
 
 export declare type Coordinate2D = { x: XaxisType; y: YaxisType };
@@ -296,7 +311,7 @@ export interface CommonChart<
   title?: string;
   subtitle?: string;
   xtitle?: string;
-  ytitle?: string;
+  ytitle?: string | string[];
   width?: number;
   height?: number;
   pivot?: boolean; // transpose data
@@ -312,8 +327,11 @@ export interface CommonSerie<Y extends YaxisType | Coordinate2D> {
   name?: string;
   stack?: string;
   color?: string;
+  unit?: string;
   visible?: boolean;
-  // type
+  type?: string;
+  yAxisIndex?: number; // Pour les dual/multi-axis : 0 (défaut), 1, 2, etc.
+  yAxisConfig?: Record<string, any>; // Options personnalisées pour cet axe Y (ex: splitNumber)
 }
 
 export function naturalFieldComparator<T>(

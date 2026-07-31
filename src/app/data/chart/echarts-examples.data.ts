@@ -1,7 +1,24 @@
-import { field, rangeFields, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { field, pivotRows, rangeFields, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { ChartData, ChartDataCollection } from '../../core/models/chart.model';
 
 export type EChartsExampleData = ChartData<XaxisType, YaxisType>;
+
+const PIVOT_ROWS_SOURCE = [
+  { usage_type: 'Eclairage Public', authorization_type: 'beneficiaire', consumption: 120 },
+  { usage_type: 'Eclairage Public', authorization_type: 'beneficiaire', consumption: 30 },
+  { usage_type: 'Eclairage Public', authorization_type: 'titulaire', consumption: 80 },
+  { usage_type: 'Industrie', authorization_type: 'beneficiaire', consumption: 240 },
+  { usage_type: 'Industrie', authorization_type: 'titulaire', consumption: 160 },
+];
+
+const PIVOT_ROWS_RESULT = pivotRows(PIVOT_ROWS_SOURCE, {
+  index: 'usage_type',
+  columns: 'authorization_type',
+  values: ['consumption'],
+  columnValues: ['beneficiaire', 'titulaire', 'absent'],
+  aggregate: 'sum',
+  fill: 0,
+});
 
 export const ECHARTS_EXAMPLES: ChartDataCollection<EChartsExampleData> = {
 
@@ -267,6 +284,162 @@ export const ECHARTS_EXAMPLES: ChartDataCollection<EChartsExampleData> = {
     config: {
       title: 'SLA : plage de disponibilité (%)',
       series: [{ data: { x: field('mois'), y: rangeFields('min', 'max') }, name: 'Uptime' }],
+    },
+  },
+
+  multiSeriesExample: {
+    data: [
+      { date: '19 nov', authorized: 0.21, unauthorized: 0.12, trend: 0.15 },
+      { date: '20 nov', authorized: 0.20, unauthorized: 0.13, trend: 0.18 },
+      { date: '21 nov', authorized: 0.23, unauthorized: 0.18, trend: 0.22 },
+      { date: '22 nov', authorized: 0.28, unauthorized: 0.12, trend: 0.25 },
+      { date: '23 nov', authorized: 0.17, unauthorized: 0.10, trend: 0.20 },
+    ],
+    config: {
+      title: 'Production multi-séries',
+      xtitle: 'Date',
+      ytitle: 'Production (MWh)',
+      series: [
+        { data: { x: field('date'), y: field('authorized') }, name: 'Autorisé', type: 'column', stack: 'production' },
+        { data: { x: field('date'), y: field('unauthorized') }, name: 'Effectif', type: 'column', stack: 'production' },
+        { data: { x: field('date'), y: field('trend') }, name: 'Tendance', type: 'line' },
+      ],
+    },
+  },
+
+  dualAxisExample: {
+    data: [
+      { mois: 'Jan', production: 420, temperature: 8   },
+      { mois: 'Fév', production: 390, temperature: 10  },
+      { mois: 'Mar', production: 450, temperature: 14  },
+      { mois: 'Avr', production: 480, temperature: 18  },
+      { mois: 'Mai', production: 520, temperature: 22  },
+      { mois: 'Jun', production: 580, temperature: 26  },
+      { mois: 'Jul', production: 620, temperature: 28  },
+      { mois: 'Aoû', production: 610, temperature: 27  },
+      { mois: 'Sep', production: 550, temperature: 24  },
+      { mois: 'Oct', production: 480, temperature: 18  },
+      { mois: 'Nov', production: 420, temperature: 12  },
+      { mois: 'Déc', production: 380, temperature: 6   },
+    ],
+    config: {
+      title: 'Production solaire vs température',
+      series: [
+        { data: { x: field('mois'), y: field('production') }, name: 'Production', type: 'column', unit: 'MWh', yAxisIndex: 0 },
+        { data: { x: field('mois'), y: field('temperature') }, name: 'Température', type: 'line', unit: '°C', yAxisIndex: 1 },
+      ],
+    },
+  },
+
+  customAxisExample: {
+    data: [
+      { mois: 'Jan', production: 420, temperature: 8 },
+      { mois: 'Fév', production: 390, temperature: 10 },
+      { mois: 'Mar', production: 450, temperature: 14 },
+      { mois: 'Avr', production: 480, temperature: 18 },
+      { mois: 'Mai', production: 520, temperature: 22 },
+      { mois: 'Jun', production: 580, temperature: 26 },
+    ],
+    config: {
+      title: 'Axes Y personnalisés',
+      ytitle: ['Production (MWh)', 'Température (°C)'],
+      series: [
+        {
+          data: { x: field('mois'), y: field('production') },
+          name: 'Production',
+          type: 'column',
+          unit: 'MWh',
+          yAxisIndex: 0,
+          yAxisConfig: {
+            min: 0,
+            splitNumber: 4,
+            axisLine: { lineStyle: { color: '#4f6fd8' } },
+            axisLabel: { formatter: (value: number) => `${value} MWh` },
+          },
+        },
+        {
+          data: { x: field('mois'), y: field('temperature') },
+          name: 'Température',
+          type: 'line',
+          unit: '°C',
+          yAxisIndex: 1,
+          yAxisConfig: {
+            min: 0,
+            max: 40,
+            splitNumber: 4,
+            axisLine: { lineStyle: { color: '#9dcc18' } },
+            axisLabel: { formatter: (value: number) => `${value} °C` },
+          },
+        },
+      ],
+    },
+  },
+
+  mixedCategoryExample: {
+    data: [
+      { trimestre: 'T1', produit: 120, service: 80, objectif: 180 },
+      { trimestre: 'T2', produit: 150, service: 95, objectif: 210 },
+      { trimestre: 'T3', produit: 135, service: 110, objectif: 230 },
+      { trimestre: 'T4', produit: 180, service: 125, objectif: 250 },
+    ],
+    config: {
+      title: 'Colonnes empilées et ligne objectif',
+      ytitle: ['Chiffre d’affaires (k€)', 'Objectif (k€)'],
+      series: [
+        {
+          data: { x: field('trimestre'), y: field('produit') },
+          name: 'Produit',
+          type: 'column',
+          stack: 'ca',
+          yAxisIndex: 0,
+        },
+        {
+          data: { x: field('trimestre'), y: field('service') },
+          name: 'Service',
+          type: 'column',
+          stack: 'ca',
+          yAxisIndex: 0,
+        },
+        {
+          data: { x: field('trimestre'), y: field('objectif') },
+          name: 'Objectif',
+          type: 'line',
+          yAxisIndex: 1,
+          yAxisConfig: {
+            min: 0,
+            splitNumber: 5,
+            alignTicks: false,
+            axisLine: { lineStyle: { color: '#555b82' } },
+          },
+        },
+      ],
+    },
+  },
+
+  pivotRowsExample: {
+    data: PIVOT_ROWS_RESULT,
+    config: {
+      title: 'Pivot de donnees longues vers donnees larges',
+      xtitle: 'Type d usage',
+      ytitle: 'Consommation',
+      series: [
+        {
+          data: { x: field('usage_type'), y: field('consumption_beneficiaire') },
+          name: 'Beneficiaire',
+          type: 'column',
+        },
+        {
+          data: { x: field('usage_type'), y: field('consumption_titulaire') },
+          name: 'Titulaire',
+          type: 'column',
+        },
+        {
+          data: { x: field('usage_type'), y: field('consumption_absent') },
+          name: 'Categorie absente',
+          type: 'line',
+          color: '#9aa4b2',
+        },
+      ],
     },
   },
 };
