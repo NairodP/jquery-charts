@@ -24,6 +24,9 @@ on:
 env:
   NODE_VERSION: 20
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,7 +39,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - run: npm install
+    - run: npm ci
 
     - run: npm run build
 
@@ -46,6 +49,12 @@ jobs:
 
     - uses: oneteme/automation-scripts/.github/actions/npm-project-version@main
       id: prj_ver
+
+    - name: Validate release version
+      env:
+        VERSION: ${{ steps.prj_ver.outputs.version }}
+      run: |
+        node -e "const v = process.env.VERSION; if (!/^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(v || '')) { throw new Error('Invalid release version: ' + JSON.stringify(v)); } console.log('Release version: ' + v);"
 
     # Upload COMPLET : dist/ + sources (pour pages et deploy)
     - uses: actions/upload-artifact@v4
@@ -130,6 +139,8 @@ jobs:
   release:
     needs: [build, deploy]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: oneteme/automation-scripts/.github/actions/github-release-notes@main
       with:
@@ -141,6 +152,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
     steps:
