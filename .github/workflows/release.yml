@@ -39,7 +39,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - run: npm ci
+    - run: npm ci --include=dev
 
     - run: npm run build
 
@@ -168,7 +168,7 @@ jobs:
         name: build-complete
 
     # Réinstalle les dépendances (node_modules n'est pas uploadé)
-    - run: npm ci
+    - run: npm ci --include=dev
 
     # Build l'app avec base-href
     - run: npx ng build jquery-charts --base-href=/jquery-charts/
