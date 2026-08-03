@@ -24,6 +24,7 @@ on:
 env:
   NODE_VERSION: 20
   NODE_ENV: development
+  NPM_CONFIG_PRODUCTION: 'false'
   NPM_CONFIG_AUDIT: 'false'
   NPM_CONFIG_FETCH_RETRIES: '5'
   NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: '20000'
@@ -88,6 +89,11 @@ jobs:
           exit 1
         fi
         npm exec --no -- ng version
+
+    - name: Verify Angular CLI
+      run: |
+        test -x node_modules/.bin/ng
+        npm exec -- ng version
 
     - run: npm run build
 
