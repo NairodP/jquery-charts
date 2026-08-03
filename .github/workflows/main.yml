@@ -9,7 +9,10 @@ on:
 env:
   NODE_VERSION: 20
   NODE_ENV: development
-  NPM_CONFIG_PRODUCTION: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+  NPM_CONFIG_FETCH_RETRIES: '5'
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: '20000'
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: '120000'
 
 permissions:
   contents: read
@@ -27,12 +30,49 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - run: npm ci --include=dev
+    - name: Report npm environment
+      run: |
+        node --version
+        npm --version
+        npm config get registry
+        npm config get omit
+        npm config get production
+        node -e "const lock = require('./package-lock.json'); const packages = Object.values(lock.packages); const privateUrls = packages.filter((entry) => String(entry?.resolved ?? '').includes('proxy-repositoi')).length; console.log('lockfileVersion=' + lock.lockfileVersion + ', packages=' + packages.length + ', privateResolvedUrls=' + privateUrls); if (privateUrls) process.exit(1);"
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        set +e
+        npm ci --include=dev --no-audit --no-fund 2>&1 | tee npm-ci.log
+        status=${PIPESTATUS[0]}
+        if [ "$status" -ne 0 ]; then
+          echo "::error::npm ci failed with exit code $status"
+          npm config get registry
+          npm config get omit
+          npm config get production
+          find "$HOME/.npm/_logs" -type f -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -5 | cut -d' ' -f2- | xargs -r -n1 sh -c 'echo "--- $0"; tail -200 "$0"'
+          exit "$status"
+        fi
+
+    - name: Upload npm diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: npm-diagnostics-${{ github.run_id }}
+        path: npm-ci.log
+        if-no-files-found: ignore
+        retention-days: 7
 
     - name: Verify Angular CLI
       run: |
-        test -x node_modules/.bin/ng
-        npm exec -- ng version
+        if ! test -x node_modules/.bin/ng; then
+          echo "::error::Angular CLI binary is missing after npm ci"
+          npm ls @angular/cli --include=dev || true
+          ls -la node_modules/.bin || true
+          node -e "const lock = require('./package-lock.json'); console.log(lock.packages['node_modules/@angular/cli'] ?? 'Angular CLI is absent from package-lock.json');"
+          exit 1
+        fi
+        npm exec --no -- ng version
 
     - run: npm run build
 
