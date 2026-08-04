@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterContentInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, HostBinding, HostListener, inject, Input, NgZone, OnChanges, OnDestroy, Output, QueryList, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -25,6 +25,7 @@ import {
   LAZY_LOADING_VALUE, LAZY_ERROR_VALUE,
 } from './table.constants';
 import { OrganizerButtonWrapperComponent } from './organizer-button/organizer-button.component';
+import { FullscreenManager, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage } from '@oneteme/jquery-core';
 
 /** Cache interne du groupement — invalidé dès que les données, la clé ou les paramètres de tri changent. */
 interface GroupByCache<T> {
@@ -47,6 +48,7 @@ interface GroupByCache<T> {
   providers: [{ provide: MatPaginatorIntl, useFactory: getFrenchPaginatorIntl }],
 })
 export class TableComponent<T = any> implements OnChanges, AfterContentInit, AfterViewInit, OnDestroy {
+  @HostBinding('class.visual-fullscreen') _isFullscreen = false;
   @Input() config?: TableProvider<T>;
 
   @Input() dataSource?: T[] | { data: T[] };
@@ -63,6 +65,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
 
   @Input() columnLabels?: Record<string, string>;
   @Input() isLoading = false;
+  @Input() copyFeedback: VisualCopyFeedbackConfig = {};
 
   /** Paramètre de contrôle pour réinitialiser barre de recherche. */
   @Input()
@@ -89,6 +92,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   @Output() groupByChange = new EventEmitter<string | null>();
   /** Émis quand la liste des colonnes visibles change (clés dans l’ordre d’affichage). */
   @Output() columnsChange = new EventEmitter<string[]>();
+  @Output() visualCopied = new EventEmitter<VisualSnapshot>();
 
   @ViewChild(MatPaginator)
   set paginator(value: MatPaginator | undefined) {
@@ -180,6 +184,8 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   private _el = inject(ElementRef<HTMLElement>);
   private _ngZone = inject(NgZone);
   private _i18nRaw = inject(JQT_I18N, { optional: true });
+  copyFeedbackMessage = '';
+  private _copyFeedbackTimer?: number;
 
   /** Labels de l’interface. Fusionnés depuis JQT_I18N_DEFAULTS et le token JQT_I18N injecté. */
   readonly i18n: JqtI18n = { ...JQT_I18N_DEFAULTS, ...(this._i18nRaw ?? {}) };
@@ -321,6 +327,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   }
 
   ngOnDestroy(): void {
+    if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
     if (this._pendingRender !== null) {
       clearTimeout(this._pendingRender);
     }
@@ -379,6 +386,10 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       onPreferencesEdit: () => this.enterEditMode(),
       onPreferencesSave: () => this.savePreferences(),
       onPreferencesClear: () => this.clearPreferences(),
+      showActions: this.resolvedConfig.showActions === true,
+      onCopyVisual: this.resolvedConfig.onCopyVisual ?? (() => this.copyVisualSnapshot()),
+      onToggleFullscreen: this.resolvedConfig.onToggleFullscreen ?? (this.fullscreenSupported ? () => this.toggleFullscreen() : undefined),
+      isFullscreen: this._isFullscreen,
     };
     return this._organizerConfigCache;
   }
@@ -408,7 +419,9 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       this.onGroupByChange(newKey === this.activeGroupByKey ? null : newKey);
     } else if (event.type === 'sliceSelected') {
       const prevSlices = new Set(this.organizerState.selectedSlices ?? []);
-      const clickedId = (event.state.selectedSlices ?? []).find(id => !prevSlices.has(id));
+      const nextSlices = new Set(event.state.selectedSlices ?? []);
+      const clickedId = [...prevSlices].find(id => !nextSlices.has(id))
+        ?? [...nextSlices].find(id => !prevSlices.has(id));
       if (clickedId) {
         const item = this._sliceByMenuItems.find(i => i.key === clickedId);
         if (item) this.onSliceMenuItemClick(item);
@@ -448,6 +461,41 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   get hasSavedPreferences(): boolean { return this._hasSavedConfig; }
 
   get showToolbar(): boolean { return this.showSearchBar || this.showViewButton || this.showSliceExpandBtn; }
+  get fullscreenSupported(): boolean { return FullscreenManager.isSupported(this._el.nativeElement); }
+
+  async toggleFullscreen(): Promise<void> {
+    try {
+      await FullscreenManager.toggle(this._el.nativeElement);
+    } catch {
+      this._isFullscreen = false;
+    }
+    this._invalidateOrganizerConfig();
+    this._cdr.markForCheck();
+  }
+
+  /** Crée un snapshot autonome et le place dans le stockage partagé. */
+  copyVisualSnapshot(label?: string): VisualSnapshot | null {
+    const snapshotLabel = label ?? (this.title || 'Tableau');
+    if (!snapshotLabel?.trim()) return null;
+    const snapshot = new VisualSnapshotStorage().create(this.createVisualSnapshot(snapshotLabel.trim()));
+    this.visualCopied.emit(snapshot);
+    this.showCopyFeedback();
+    return snapshot;
+  }
+
+  private showCopyFeedback(): void {
+    if (this.copyFeedback.enabled === false) return;
+    this.copyFeedbackMessage = this.copyFeedback.message || 'Copié';
+    if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
+    this._copyFeedbackTimer = window.setTimeout(() => this.copyFeedbackMessage = '', this.copyFeedback.durationMs ?? 2200);
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    this._isFullscreen = FullscreenManager.isActive(this._el.nativeElement);
+    this._invalidateOrganizerConfig();
+    this._cdr.markForCheck();
+  }
 
   expandSlicePanel(): void {
     this.slicePanelRef?.togglePanel();
@@ -1121,6 +1169,86 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     this._export.export();
   }
 
+  /** Capture les lignes et l'état actuellement visibles dans un snapshot autonome. */
+  createVisualSnapshot(label = this.title || 'Tableau'): VisualSnapshotDraft {
+    const warnings: string[] = [];
+    if (containsFunction(this.resolvedConfig)) {
+      warnings.push('Certaines fonctions de configuration ne sont pas transportables.');
+    }
+    return {
+      type: 'table',
+      label,
+      config: jsonClone({
+        title: this.title,
+        columns: this.resolvedConfig.columns?.map(column => serializableColumn(column)),
+        search: this.resolvedConfig.search,
+        pagination: this.resolvedConfig.pagination,
+        view: this.resolvedConfig.view,
+        export: this.resolvedConfig.export,
+      }),
+      state: jsonClone({
+        search: this.searchQuery,
+        groupBy: this.activeGroupByKey,
+        columnOrder: this.activeFields.map(column => column.key),
+        visibleColumns: this.activeFields.map(column => column.key),
+        columnWidths: this._columnWidths,
+        slicePanelCollapsed: this._slicePanelCollapsed,
+        sliceFilters: this.slicePanelRef?.getActiveFilters() ?? {},
+        pageIndex: this.paginator?.pageIndex ?? 0,
+        pageSize: this.paginator?.pageSize ?? this.pageSize,
+      }),
+      data: jsonClone(this._allFilteredRows),
+      warnings,
+    };
+  }
+
+  /** Applique l'état compatible et retourne les données à fournir au composant cible. */
+  applyVisualSnapshot(snapshot: VisualSnapshot): VisualSnapshotApplyResult {
+    if (snapshot.type !== 'table') {
+      return { applied: false, restored: [], skipped: ['type'], warnings: ['Le snapshot n\'est pas un tableau.'] };
+    }
+
+    const state = snapshot.state as {
+      search?: string;
+      groupBy?: string | null;
+      visibleColumns?: string[];
+      columnOrder?: string[];
+      columnWidths?: Record<string, number>;
+    };
+    const available = new Map((this.resolvedConfig.columns ?? []).map(column => [column.key, column]));
+    const requestedKeys = state.columnOrder ?? state.visibleColumns ?? [];
+    const compatibleKeys = requestedKeys.filter(key => available.has(key));
+    const skipped = requestedKeys.filter(key => !available.has(key));
+    const restored: string[] = [];
+
+    if (compatibleKeys.length) {
+      this._organizer.setActiveFields(compatibleKeys.map(key => available.get(key)!));
+      restored.push('columns');
+      this.refreshViewModel();
+    }
+    if (typeof state.search === 'string') {
+      this.searchQuery = state.search;
+      restored.push('search');
+    }
+    if (state.groupBy === null || typeof state.groupBy === 'string') {
+      const groupKey = state.groupBy && available.has(state.groupBy) ? state.groupBy : null;
+      this._organizer.setGroupBy(groupKey);
+      restored.push('groupBy');
+    }
+    if (state.columnWidths) {
+      this._columnWidths = { ...state.columnWidths };
+      restored.push('columnWidths');
+    }
+    this.refreshViewModel();
+    return {
+      applied: true,
+      restored,
+      skipped,
+      warnings: snapshot.warnings ?? [],
+      data: jsonClone(snapshot.data),
+    };
+  }
+
   // ── Pipeline de données (privé)
 
   private refreshViewModel(): void {
@@ -1745,4 +1873,33 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       });
     }
   }
+}
+
+function serializableColumn<T>(column: TableColumnProvider<T>): Record<string, unknown> {
+  return {
+    key: column.key,
+    header: column.header,
+    icon: column.icon,
+    sortable: column.sortable,
+    removable: column.removable,
+    optional: column.optional,
+    width: column.width,
+    groupable: column.groupable,
+    sliceable: column.sliceable,
+    lazy: !!column.lazy,
+  };
+}
+
+function jsonClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, nested) =>
+    typeof nested === 'function' ? undefined : nested,
+  )) as T;
+}
+
+function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'function') return true;
+  if (!value || typeof value !== 'object') return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some(nested => containsFunction(nested, seen));
 }

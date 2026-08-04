@@ -16,12 +16,14 @@ import { ApexChartsDetailComponent } from './pages/apexcharts/apexcharts-detail.
 import { HighchartsGalleryComponent } from './pages/highcharts/highcharts-gallery.component';
 import { HighchartsDetailComponent } from './pages/highcharts/highcharts-detail.component';
 import { TablePresentationComponent } from './pages/table/table-presentation.component';
+import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
 
   { path: 'basic-test', component: BasicTestComponent },
   { path: 'basic-test/sandbox', component: SandboxComponent },
+  { path: 'snapshots', component: SnapshotsComponent },
 
   // ─── jquery-table — shell avec tabs ──────────────────────────────────
   {

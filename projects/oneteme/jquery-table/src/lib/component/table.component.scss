@@ -43,7 +43,15 @@
   --jqt-footer-icon-color:  #374151;      // icônes/flèches navigateur de page
 }
 
+:host.visual-fullscreen {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: #fff;
+}
+
 .jquery-table-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -51,6 +59,21 @@
   min-height: inherit;
   padding: 2px 2px 0 2px;
   box-sizing: border-box;
+}
+
+.visual-copy-feedback {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border: 1px solid #c7dfd1;
+  border-radius: 5px;
+  background: rgba(244, 251, 247, 0.96);
+  color: #24613b;
+  font-size: 12px;
+  pointer-events: none;
 }
 
 .table-header {
@@ -165,6 +188,21 @@
   align-items: center;
   gap: 6px;
 }
+
+.table-action-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.table-action-btn:hover { background: rgba(0, 0, 0, 0.08); }
 
 .search-input-wrapper {
   position: relative;

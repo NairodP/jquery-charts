@@ -20,6 +20,7 @@ const SEARCH_INDEX: SearchItem[] = [
 
   // jquery-table
   { label: 'jquery-table — Démo',              sublabel: 'Tableau avec 100 posts',       route: '/table',                category: 'jquery-table' },
+  { label: 'Snapshots visuels',                sublabel: 'Copier et composer un dashboard', route: '/snapshots',          category: 'Outils' },
   { label: 'jquery-table — Comparatif',        sublabel: 'mat-table vs jquery-table',     route: '/table/comparatif',     category: 'jquery-table' },
   { label: 'jquery-table — Slice + Graphique', sublabel: 'slice-panel standalone',        route: '/table/slice-chart',    category: 'jquery-table' },
   { label: 'jquery-table — Documentation',     sublabel: 'Référence API complète',        route: '/table/documentation',  category: 'jquery-table' },

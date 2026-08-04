@@ -1,22 +1,40 @@
-﻿.organizer-btn {
+﻿:host {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.organizer-btn {
+  position: relative;
+  display: block;
   height: 34px;
+  width: 34px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #fff;
-  padding: 0 10px;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
   box-sizing: border-box;
 
   &:hover { border-color: #9e9e9e; }
 }
 
-.organizer-btn-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  line-height: 1;
+.organizer-btn-icon.mat-icon,
+.organizer-btn-icon.material-icons {
+  position: absolute;
+  inset: 0;
+  display: block !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: auto !important;
+  padding: 0 !important;
+  font-size: 18px !important;
+  line-height: 18px !important;
+  text-align: center;
+  vertical-align: middle;
+  transform: none;
   color: #000000;
 }
 

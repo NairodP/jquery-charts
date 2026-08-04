@@ -1,4 +1,6 @@
-<div style="width: 100%; height: 100%;"
+<div class="chart-frame">
+  <div class="visual-copy-feedback" *ngIf="copyFeedbackMessage" role="status">{{ copyFeedbackMessage }}</div>
+  <div class="chart-canvas"
   echarts-chart
   [type]="type"
   [config]="_effectiveConfig"
@@ -11,6 +13,8 @@
   [noDataLabel]="noDataLabel"
   [group]="group"
   [groupSync]="groupSync"
+  [renderedOption]="renderedOption"
   (customEvent)="customEvent.emit($event)"
   (chartClick)="chartClick.emit($event)">
+  </div>
 </div>

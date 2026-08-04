@@ -39,6 +39,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     this._config = config;
   }
   @Input({ required: true }) data: any[];
+  @Input() renderedOption?: EChartsOption | null;
   @Input() set isLoading(loading: boolean) {
     this._isLoading = loading;
     this._applyLoadingState();
@@ -248,6 +249,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   }
 
   private _buildFullOption(): EChartsOption {
+    if (this.renderedOption) return this.renderedOption;
     const configurator = resolveConfigurator(this._type);
     const commonChart = configurator.buildChartData(this.data, this._config, this._type);
     const base = buildBaseOption(this._config);
@@ -314,4 +316,20 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     link.click();
     URL.revokeObjectURL(url);
   }
+
+  /** Retourne une copie sérialisable de l'option ECharts actuellement calculée. */
+  getRenderedOption(): EChartsOption | null {
+    if (!this._config || !this._type || !this.data?.length) return null;
+    try {
+      return cloneSerializable(this._buildFullOption());
+    } catch {
+      return null;
+    }
+  }
+}
+
+function cloneSerializable<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, nested) =>
+    typeof nested === 'function' ? undefined : nested,
+  )) as T;
 }

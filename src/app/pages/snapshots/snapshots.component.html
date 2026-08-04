@@ -1,0 +1,127 @@
+<main class="snapshots-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">jquery-organizer</p>
+      <h1>Snapshots visuels</h1>
+      <p class="intro">Copie un graphique ou un tableau, puis réutilise-le dans un emplacement de dashboard.</p>
+    </div>
+    <button type="button" class="refresh-button" (click)="refreshSnapshots()">Actualiser les copies</button>
+  </header>
+
+  <section class="demo-stack">
+    <article class="visual-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">01 · Graphique</p>
+          <h2>Graphique avec Organizer</h2>
+        </div>
+        <organizer-button
+          [config]="chartOrganizerConfig"
+          [state]="chartOrganizerState"
+          (viewChange)="onChartOrganizerChange($event)">
+        </organizer-button>
+      </div>
+      <div class="chart-frame">
+        <chart
+          #demoChart
+          type="line"
+          [config]="chartConfig"
+          [data]="rows">
+        </chart>
+        <div class="copy-modal" *ngIf="activeCopyTarget === 'chart'" role="dialog" aria-modal="true" aria-labelledby="chart-copy-title">
+          <div class="copy-modal-card">
+            <p class="copy-modal-kicker">Copie du graphique</p>
+            <h3 id="chart-copy-title">Nommer ce snapshot</h3>
+            <input [(ngModel)]="copyTitle" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <div class="copy-modal-actions">
+              <button type="button" class="copy-cancel" (click)="closeCopyModal()">Annuler</button>
+              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim()" (click)="confirmCopy()">Copier</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="visual-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">02 · Tableau</p>
+          <h2>Tableau avec Organizer</h2>
+        </div>
+      </div>
+      <div class="table-frame">
+        <jquery-table #demoTable [config]="tableConfig" [data]="rows"></jquery-table>
+        <div class="copy-modal" *ngIf="activeCopyTarget === 'table'" role="dialog" aria-modal="true" aria-labelledby="table-copy-title">
+          <div class="copy-modal-card">
+            <p class="copy-modal-kicker">Copie du tableau</p>
+            <h3 id="table-copy-title">Nommer ce snapshot</h3>
+            <input [(ngModel)]="copyTitle" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <div class="copy-modal-actions">
+              <button type="button" class="copy-cancel" (click)="closeCopyModal()">Annuler</button>
+              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim()" (click)="confirmCopy()">Copier</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-section">
+    <div class="section-heading dashboard-heading">
+      <div>
+        <p class="section-kicker">03 · Composition</p>
+        <h2>Dashboard vide</h2>
+        <p class="section-note">Ajoute ici une copie disponible dans le stockage local.</p>
+      </div>
+      <div class="add-control">
+        <button type="button" class="add-button" aria-label="Ajouter un visuel" [matMenuTriggerFor]="addTypeMenu">
+          <mat-icon>add</mat-icon>
+        </button>
+        <mat-menu #addTypeMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="chartSnapshotsMenu">Ajouter un graphique</button>
+          <button mat-menu-item [matMenuTriggerFor]="tableSnapshotsMenu">Ajouter un tableau</button>
+        </mat-menu>
+        <mat-menu #chartSnapshotsMenu="matMenu">
+          <button mat-menu-item disabled *ngIf="!snapshotsOfType('chart').length">Aucun graphique disponible</button>
+          <button mat-menu-item *ngFor="let snapshot of snapshotsOfType('chart')" (click)="addSnapshot(snapshot)">
+            {{ snapshot.label }}
+          </button>
+        </mat-menu>
+        <mat-menu #tableSnapshotsMenu="matMenu">
+          <button mat-menu-item disabled *ngIf="!snapshotsOfType('table').length">Aucun tableau disponible</button>
+          <button mat-menu-item *ngFor="let snapshot of snapshotsOfType('table')" (click)="addSnapshot(snapshot)">
+            {{ snapshot.label }}
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <div class="dashboard-grid" *ngIf="dashboardSlots.length; else emptyDashboard">
+      <article class="dashboard-slot" *ngFor="let slot of dashboardSlots">
+        <header class="slot-header">
+          <div>
+            <span class="slot-type">{{ slot.snapshot.type === 'chart' ? 'Graphique' : 'Tableau' }}</span>
+          </div>
+          <button type="button" class="remove-slot" aria-label="Supprimer cet emplacement" (click)="removeSlot(slot.id)">×</button>
+        </header>
+        <div class="slot-content" *ngIf="slot.snapshot.type === 'chart'">
+          <chart
+            [type]="snapshotChartType(slot.snapshot)"
+            [config]="snapshotChartConfig(slot.snapshot)"
+            [data]="slot.snapshot.data"
+            [renderedOption]="snapshotRenderedOption(slot.snapshot)">
+          </chart>
+        </div>
+        <div class="slot-content table-slot" *ngIf="slot.snapshot.type === 'table'">
+          <jquery-table [config]="snapshotTableConfig(slot.snapshot)" [data]="slot.snapshot.data"></jquery-table>
+        </div>
+      </article>
+    </div>
+    <ng-template #emptyDashboard>
+      <div class="empty-dashboard">
+        <span class="empty-plus">+</span>
+        <p>Les copies ajoutées apparaîtront ici.</p>
+      </div>
+    </ng-template>
+  </section>
+</main>
