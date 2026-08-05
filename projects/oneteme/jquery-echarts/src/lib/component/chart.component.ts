@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, inject, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartProvider, ChartType, FullscreenManager, OrganizerConfig, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { ChartDirective, GroupSyncMode } from '../directive/chart.directive';
-import { EChartsOption } from '../directive/utils/types';
-import { ChartCustomEvent } from '../directive/utils/types';
+import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, EChartsOption } from '../directive/utils/types';
 import { ChartViewFacade } from './view/chart-view.facade';
 
 @Component({
@@ -15,7 +14,12 @@ import { ChartViewFacade } from './view/chart-view.facade';
     :host { display: block; width: 100%; height: 100%; }
     :host.visual-fullscreen { width: 100vw; height: 100vh; background: #fff; }
     .chart-frame { position: relative; width: 100%; height: 100%; }
-    .chart-canvas { width: 100%; height: 100%; }
+    .chart-drilldown { display: flex; flex-direction: column; }
+    .chart-drilldown-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 28px; padding: 4px 8px 0; }
+    .chart-drilldown-link { padding: 0; border: 0; background: transparent; color: #1b6ca8; cursor: pointer; font: inherit; font-size: 12px; }
+    .chart-drilldown-link[aria-current='page'] { color: #18323a; cursor: default; font-weight: 700; }
+    .chart-drilldown-separator { color: #8aa0a5; font-size: 12px; }
+    .chart-canvas { min-height: 0; width: 100%; height: 100%; flex: 1; }
     .visual-copy-feedback {
       position: absolute;
       top: 10px;
@@ -36,9 +40,9 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   private readonly _element = inject(ElementRef<HTMLElement>);
   @HostBinding('class.visual-fullscreen') _isFullscreen = false;
 
-  @Input({ required: true }) type: ChartType;
-  @Input({ required: true }) config: ChartProvider<X, Y>;
-  @Input({ required: true }) data: any[];
+  @Input({ required: true }) readonly type: ChartType;
+  @Input({ required: true }) readonly config: ChartProvider<X, Y>;
+  @Input({ required: true }) readonly data: any[];
 
   @Input() isLoading: boolean;
   @Input() debug: boolean;
@@ -49,6 +53,7 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   @Input() group: string | null = null;
   @Input() groupSync: GroupSyncMode | null = null;
   @Input() renderedOption?: EChartsOption | null;
+  @Input() drilldown?: ChartDrilldownConfig;
 
   /** Active la gestion de la visibilité des séries via le panneau Organizer. */
   @Input() organizer?: OrganizerConfig;
@@ -63,13 +68,30 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   }
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
-  @Output() chartClick = new EventEmitter<any>();
+  @Output() chartClick = new EventEmitter<ChartClickEvent>();
+  @Output() drilldownNavigate = new EventEmitter<string>();
   @Output() visualCopied = new EventEmitter<VisualSnapshot>();
 
   copyFeedbackMessage = '';
   private _copyFeedbackTimer?: number;
 
   @ViewChild(ChartDirective) private _directive: ChartDirective<X, Y>;
+
+  get drilldownLevels(): ChartDrilldownConfig['levels'] {
+    const levels = this.drilldown?.levels ?? [];
+    const activeIndex = levels.findIndex(level => level.id === this.drilldown?.activeLevel);
+    return activeIndex < 0 ? levels : levels.slice(0, activeIndex + 1);
+  }
+
+  get drilldownIsActive(): boolean {
+    const levels = this.drilldown?.levels ?? [];
+    return levels.findIndex(level => level.id === this.drilldown?.activeLevel) > 0;
+  }
+
+  navigateDrilldown(levelId: string): void {
+    if (levelId === this.drilldown?.activeLevel) return;
+    this.drilldownNavigate.emit(levelId);
+  }
 
   exportImage(fileName?: string, type?: 'png' | 'jpeg' | 'svg', pixelRatio?: number): void {
     this._directive?.exportImage(fileName, type, pixelRatio);

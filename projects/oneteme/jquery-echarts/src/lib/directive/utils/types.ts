@@ -1,10 +1,31 @@
-import type { ECharts, EChartsOption } from 'echarts';
-
 /** Type EventEmitter pour les events toolbar */
 export type ChartCustomEvent = 'previous' | 'next' | 'pivot';
 
+/** Paramètres utiles lors d'un clic sur un élément ECharts. */
+export interface ChartClickEvent {
+  componentType?: string;
+  seriesType?: string;
+  seriesIndex?: number;
+  dataIndex?: number;
+  name?: string;
+  value?: unknown;
+  data?: unknown;
+  encode?: Record<string, number[]>;
+  event?: unknown;
+}
+
+export interface ChartDrilldownLevel {
+  id: string;
+  label: string;
+}
+
+export interface ChartDrilldownConfig {
+  levels: ChartDrilldownLevel[];
+  activeLevel: string;
+}
+
 /** Alias exposé pour les options ECharts natives */
-export type { ECharts, EChartsOption };
+export type { ECharts, EChartsOption } from 'echarts';
 
 /** Options de la loading API native d'ECharts (hors `text` — fourni par l'Input `loadingLabel`) */
 export const DEFAULT_LOADING_OPTION = {

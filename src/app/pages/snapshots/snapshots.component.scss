@@ -107,6 +107,24 @@ h3 {
   margin-top: 20px;
 }
 
+.drilldown-section {
+  margin-top: 18px;
+}
+
+.drilldown-status {
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-left: 3px solid #1b6ca8;
+  background: #eef6fa;
+  color: #315c68;
+}
+
+.drilldown-error {
+  border-left-color: #b84c3d;
+  background: #fff2ef;
+  color: #8b3329;
+}
+
 .table-frame {
   height: 430px;
   margin-top: 20px;

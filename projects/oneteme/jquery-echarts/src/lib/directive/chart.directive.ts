@@ -3,7 +3,7 @@ import { ChartProvider, ChartType, ChartView, mergeDeep, XaxisType, YaxisType } 
 import { asapScheduler } from 'rxjs';
 
 import { echarts } from './utils/echarts-init';
-import { EChartsOption, ChartCustomEvent, DEFAULT_LOADING_OPTION } from './utils/types';
+import { EChartsOption, ChartClickEvent, ChartCustomEvent, DEFAULT_LOADING_OPTION } from './utils/types';
 import { applyCommonConfig, buildBaseOption, buildNoDataGraphic, buildTooltipOption } from './utils/chart-utils';
 import { resolveConfigurator } from './utils/config/chart-config-registry';
 
@@ -61,7 +61,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   }
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
-  @Output() chartClick = new EventEmitter<any>();
+  @Output() chartClick = new EventEmitter<ChartClickEvent>();
 
   ngAfterViewInit(): void {
     this.ngZone.runOutsideAngular(() => {
@@ -305,7 +305,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     const rows = this.data.map(row => keys.map(k => {
       const v = row[k];
       const s = v == null ? '' : String(v);
-      return s.includes(separator) || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+      return s.includes(separator) || s.includes('"') || s.includes('\n') ? `"${s.replaceAll('"', '""')}"` : s;
     }).join(separator));
     const csv = [keys.join(separator), ...rows].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });

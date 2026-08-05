@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ChartProvider, VisualSnapshot, VisualSnapshotStorage, field } from '@oneteme/jquery-core';
-import { ChartComponent } from '@oneteme/jquery-echarts';
+import { ChartClickEvent, ChartComponent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
 import { OrganizerButtonComponent, OrganizerButtonEvent, OrganizerConfig, OrganizerState } from '@oneteme/jquery-organizer';
 import { TableComponent, TableProvider } from '@oneteme/jquery-table';
 
@@ -17,6 +17,12 @@ interface DemoRow {
 interface DashboardSlot {
   id: string;
   snapshot: VisualSnapshot;
+}
+
+interface DrilldownRow {
+  month: string;
+  sales: number;
+  orders: number;
 }
 
 @Component({
@@ -44,6 +50,17 @@ export class SnapshotsComponent {
     title: 'Activité commerciale',
     subtitle: 'Démonstration des snapshots',
     xtitle: 'Mois',
+    ytitle: 'Valeur',
+    series: [
+      { name: 'Ventes', data: { x: field('month'), y: field('sales') }, color: '#1b6ca8' },
+      { name: 'Commandes', data: { x: field('month'), y: field('orders') }, color: '#d97732' },
+    ],
+    options: { legend: { show: true }, grid: { left: 48, right: 24, bottom: 48 } },
+  };
+
+  readonly drilldownChartConfig: ChartProvider<string, number> = {
+    subtitle: '',
+    xtitle: 'Période',
     ytitle: 'Valeur',
     series: [
       { name: 'Ventes', data: { x: field('month'), y: field('sales') }, color: '#1b6ca8' },
@@ -83,8 +100,22 @@ export class SnapshotsComponent {
   dashboardSlots: DashboardSlot[] = [];
   activeCopyTarget: 'chart' | 'table' | null = null;
   copyTitle = '';
+  drilldownRows: DrilldownRow[] = this.rows;
+  selectedDrilldownMonth: string | null = null;
+  drilldownLoading = false;
+  drilldownError = '';
+  drilldownConfig: ChartDrilldownConfig = {
+    levels: [
+      { id: 'months', label: 'Mois' },
+      { id: 'days', label: 'Jours' },
+    ],
+    activeLevel: 'months',
+  };
+  private readonly drilldownCache = new Map<string, DrilldownRow[]>();
+  private drilldownRequestId = 0;
 
   constructor() {
+    this.drilldownCache.set('months', this.rows);
     this.refreshSnapshots();
   }
 
@@ -118,6 +149,55 @@ export class SnapshotsComponent {
     if (event.type === 'fieldToggled') {
       this.chartOrganizerState = event.state;
     }
+  }
+
+  onDrilldownClick(event: ChartClickEvent): void {
+    const month = typeof event.name === 'string' ? event.name : null;
+    if (!month || this.drilldownConfig.activeLevel !== 'months') return;
+    void this.loadDrilldown(month);
+  }
+
+  onDrilldownNavigate(levelId: string): void {
+    if (levelId !== 'months') return;
+    this.drilldownRequestId++;
+    this.selectedDrilldownMonth = null;
+    this.drilldownLoading = false;
+    this.drilldownError = '';
+    this.drilldownRows = this.drilldownCache.get('months') || this.rows;
+    this.drilldownConfig = { ...this.drilldownConfig, activeLevel: 'months' };
+  }
+
+  private async loadDrilldown(month: string): Promise<void> {
+    const requestId = ++this.drilldownRequestId;
+    this.selectedDrilldownMonth = month;
+    this.drilldownLoading = true;
+    this.drilldownError = '';
+
+    try {
+      const rows = this.drilldownCache.get(month) || await this.fetchMonthDetails(month);
+      if (requestId !== this.drilldownRequestId) return;
+      this.drilldownCache.set(month, rows);
+      this.drilldownRows = rows;
+      this.drilldownConfig = { ...this.drilldownConfig, activeLevel: 'days' };
+    } catch {
+      if (requestId !== this.drilldownRequestId) return;
+      this.drilldownError = `Impossible de charger le détail de ${month}.`;
+    } finally {
+      if (requestId === this.drilldownRequestId) this.drilldownLoading = false;
+    }
+  }
+
+  private fetchMonthDetails(month: string): Promise<DrilldownRow[]> {
+    // Remplacer ce fournisseur local par l'appel HTTP vers l'API métier.
+    const monthIndex = this.rows.findIndex(row => row.month === month);
+    const source = this.rows[Math.max(monthIndex, 0)];
+    return new Promise(resolve => {
+      window.setTimeout(() => resolve(Array.from({ length: 28 }, (_, index) => ({
+        month: `${String(index + 1).padStart(2, '0')} ${month.slice(0, 3).toLowerCase()}`,
+        sales: Math.round(source.sales * (0.65 + ((index * 17) % 31) / 100)),
+        orders: Math.max(1, Math.round(source.orders * (0.7 + ((index * 11) % 21) / 100))),
+      }))), 2000);
+    });
   }
 
   snapshotsOfType(type: 'chart' | 'table'): VisualSnapshot[] {
