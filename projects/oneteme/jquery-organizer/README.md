@@ -137,6 +137,17 @@ export interface OrganizerConfig {
   onPreferencesSave?: () => void;
   onPreferencesClear?: () => void;
 
+  // Actions du visuel
+  showActions?: boolean;
+  actions?: {
+    label?: string;           // Défaut: Action ou Actions selon les entrées visibles
+    showCopy?: boolean;       // Défaut: true si onCopyVisual est fourni
+    showFullscreen?: boolean; // Défaut: true si onToggleFullscreen est fourni
+    icon?: string;            // Icône Material optionnelle, aucune par défaut
+  };
+  onCopyVisual?: () => void;
+  onToggleFullscreen?: () => void;
+
   // UI
   showReset?: boolean;                   // Défaut: true
   buttonLabel?: string;

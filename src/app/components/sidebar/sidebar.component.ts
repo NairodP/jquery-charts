@@ -18,6 +18,7 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
         <span class="sidebar-section-label">Composants</span>
         <ul>
           <li [class.active]="isTableRoute()" (click)="goToTable()">jquery-table</li>
+          <li [class.active]="isOrganizerRoute()" (click)="goToOrganizer()">jquery-organizer</li>
         </ul>
       </div>
 
@@ -35,6 +36,14 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
               >{{ type.label }}</li>
             </ul>
           </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="sidebar-section-label">API</span>
+        <ul>
+          <li [class.active]="isApiRoute()" (click)="goToApi()">jquery-echarts</li>
+          <li [class.active]="isOrganizerApiRoute()" (click)="goToOrganizerApi()">jquery-organizer</li>
         </ul>
       </div>
 
@@ -140,6 +149,12 @@ export class SidebarComponent implements OnInit {
 
   isTableRoute(): boolean { return this.router.url.startsWith('/table'); }
 
+  isApiRoute(): boolean { return this.router.url === '/api/echarts'; }
+
+  isOrganizerRoute(): boolean { return this.router.url === '/organizer'; }
+
+  isOrganizerApiRoute(): boolean { return this.router.url === '/api/organizer'; }
+
   isChartsLib(key: string): boolean { return this.router.url.startsWith(`/charts/${key}`); }
 
   isExpanded(key: string): boolean { return this.expandedLibs.has(key); }
@@ -150,6 +165,21 @@ export class SidebarComponent implements OnInit {
 
   goToTable() {
     this.router.navigate(['/table']);
+    if (this.isMenuOpen) this.toggleMenu();
+  }
+
+  goToApi() {
+    this.router.navigate(['/api/echarts']);
+    if (this.isMenuOpen) this.toggleMenu();
+  }
+
+  goToOrganizer() {
+    this.router.navigate(['/organizer']);
+    if (this.isMenuOpen) this.toggleMenu();
+  }
+
+  goToOrganizerApi() {
+    this.router.navigate(['/api/organizer']);
     if (this.isMenuOpen) this.toggleMenu();
   }
 

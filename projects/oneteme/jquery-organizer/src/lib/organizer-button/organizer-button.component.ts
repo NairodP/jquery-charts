@@ -135,7 +135,9 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
     const selectedSlices = this.state?.selectedSlices || [];
     let updated: string[];
     if (sliceId) {
-      updated = selectedSlices.includes(sliceId) ? [] : [sliceId];
+      updated = selectedSlices.includes(sliceId)
+        ? selectedSlices.filter(id => id !== sliceId)
+        : [...selectedSlices, sliceId];
     } else {
       updated = selectedSlices;
     }
@@ -219,6 +221,48 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
 
   hasExportSubMenu(): boolean {
     return !!(this.config.onExportVisual || this.config.onExportData);
+  }
+
+  isCopyActionVisible(): boolean {
+    return !!this.config.onCopyVisual && this.config.actions?.showCopy !== false;
+  }
+
+  isFullscreenActionVisible(): boolean {
+    return !!this.config.onToggleFullscreen && this.config.actions?.showFullscreen !== false;
+  }
+
+  hasActions(): boolean {
+    return this.config.showActions === true && (this.isCopyActionVisible() || this.isFullscreenActionVisible());
+  }
+
+  hasMenuItemsBeforeActions(): boolean {
+    return this.hasChartFields()
+      || this.hasTableFields()
+      || (this.config.groups?.length ?? 0) > 0
+      || (this.config.slices?.length ?? 0) > 0
+      || (this.config.templates?.length ?? 0) > 0;
+  }
+
+  hasOtherMenuItems(): boolean {
+    return this.hasMenuItemsBeforeActions()
+      || !!this.config.showExport
+      || !!this.config.showPreferences
+      || this.hasSwitchView();
+  }
+
+  actionsLabel(): string {
+    if (this.config.actions?.label) return this.config.actions.label;
+    return this.isCopyActionVisible() && this.isFullscreenActionVisible() ? 'Actions' : 'Action';
+  }
+
+  onCopyVisual(): void {
+    this.config.onCopyVisual?.();
+    this.mainMenuTrigger?.closeMenu();
+  }
+
+  onToggleFullscreen(): void {
+    this.config.onToggleFullscreen?.();
+    this.mainMenuTrigger?.closeMenu();
   }
 
   hasSwitchView(): boolean {

@@ -1,4 +1,5 @@
 ﻿<section class="jquery-table-wrapper">
+  <div class="visual-copy-feedback" *ngIf="copyFeedbackMessage" role="status">{{ copyFeedbackMessage }}</div>
   <header class="table-header" *ngIf="showTitle">
     <h3>{{ title }}</h3>
   </header>

@@ -5,6 +5,7 @@ export { SliceConfig, SliceColumnDef, SliceCategory } from './slice-panel/slice-
 
 export {
   OrganizerConfig,
+  OrganizerActionsConfig,
   OrganizerState,
   OrganizerSliceState,
   OrganizerButtonEvent,

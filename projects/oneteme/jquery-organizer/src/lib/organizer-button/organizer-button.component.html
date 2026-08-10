@@ -36,6 +36,25 @@
     <span class="organizer-menu-value" *ngIf="!hideMenuValues && activeTemplateLabel()">{{ activeTemplateLabel() }}</span>
   </button>
 
+  <!-- Actions du visuel courant -->
+  <mat-divider *ngIf="hasActions() && hasMenuItemsBeforeActions()" class="organizer-divider"></mat-divider>
+  <button *ngIf="hasActions() && hasOtherMenuItems()" mat-menu-item [matMenuTriggerFor]="actionsSubMenu" class="organizer-menu-trigger">
+    <mat-icon *ngIf="config.actions?.icon" class="organizer-menu-export-icon">{{ config.actions?.icon }}</mat-icon>
+    <span class="organizer-menu-label">{{ actionsLabel() }}</span>
+  </button>
+
+  <!-- Actions directes lorsqu'il n'y a aucun autre item principal -->
+  <ng-container *ngIf="hasActions() && !hasOtherMenuItems()">
+    <button *ngIf="isCopyActionVisible()" mat-menu-item type="button" (click)="onCopyVisual()">
+      <mat-icon class="organizer-menu-export-icon">content_copy</mat-icon>
+      <span class="organizer-menu-label">Copier</span>
+    </button>
+    <button *ngIf="isFullscreenActionVisible()" mat-menu-item type="button" (click)="onToggleFullscreen()">
+      <mat-icon class="organizer-menu-export-icon">{{ config.isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+      <span class="organizer-menu-label">{{ config.isFullscreen ? 'Quitter le plein écran' : 'Plein écran' }}</span>
+    </button>
+  </ng-container>
+
   <!-- Export direct (mode table) -->
   <mat-divider *ngIf="config.showExport" class="organizer-divider"></mat-divider>
   <button *ngIf="config.showExport && !hasExportSubMenu()" mat-menu-item type="button" class="organizer-menu-export" (click)="onExport()">
@@ -62,6 +81,27 @@
     <span class="organizer-menu-label">{{ config.switchView?.currentView === 'chart' ? 'Tableau' : 'Graphique' }}</span>
   </button>
 
+</mat-menu>
+
+<!-- Sous-menu : actions du visuel -->
+<mat-menu #actionsSubMenu="matMenu" panelClass="organizer-submenu-panel">
+  <div class="organizer-submenu"
+       (mousedown)="$event.stopPropagation()"
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()">
+    <button *ngIf="isCopyActionVisible()" type="button" class="organizer-submenu-item"
+      (mousedown)="onCopyVisual()">
+      <span class="organizer-submenu-check"></span>
+      <mat-icon class="organizer-submenu-icon">content_copy</mat-icon>
+      Copier
+    </button>
+    <button *ngIf="isFullscreenActionVisible()" type="button" class="organizer-submenu-item"
+      (mousedown)="onToggleFullscreen()">
+      <span class="organizer-submenu-check"></span>
+      <mat-icon class="organizer-submenu-icon">{{ config.isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+      {{ config.isFullscreen ? 'Quitter le plein écran' : 'Plein écran' }}
+    </button>
+  </div>
 </mat-menu>
 
 <!-- Sous-menu : Export graphique -->

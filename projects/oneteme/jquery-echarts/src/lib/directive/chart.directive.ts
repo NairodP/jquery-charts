@@ -3,7 +3,7 @@ import { ChartProvider, ChartType, ChartView, mergeDeep, XaxisType, YaxisType } 
 import { asapScheduler } from 'rxjs';
 
 import { echarts } from './utils/echarts-init';
-import { EChartsOption, ChartCustomEvent, DEFAULT_LOADING_OPTION } from './utils/types';
+import { EChartsOption, ChartClickEvent, ChartCustomEvent, DEFAULT_LOADING_OPTION } from './utils/types';
 import { applyCommonConfig, buildBaseOption, buildNoDataGraphic, buildTooltipOption } from './utils/chart-utils';
 import { resolveConfigurator } from './utils/config/chart-config-registry';
 
@@ -39,6 +39,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     this._config = config;
   }
   @Input({ required: true }) data: any[];
+  @Input() renderedOption?: EChartsOption | null;
   @Input() set isLoading(loading: boolean) {
     this._isLoading = loading;
     this._applyLoadingState();
@@ -60,7 +61,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   }
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
-  @Output() chartClick = new EventEmitter<any>();
+  @Output() chartClick = new EventEmitter<ChartClickEvent>();
 
   ngAfterViewInit(): void {
     this.ngZone.runOutsideAngular(() => {
@@ -248,6 +249,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   }
 
   private _buildFullOption(): EChartsOption {
+    if (this.renderedOption) return this.renderedOption;
     const configurator = resolveConfigurator(this._type);
     const commonChart = configurator.buildChartData(this.data, this._config, this._type);
     const base = buildBaseOption(this._config);
@@ -267,7 +269,6 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _applyLoadingState(): void {
     if (!this._chartInstance) return;
     if (this._isLoading) {
-      this._chartInstance.setOption({ series: [], graphic: [] }, { notMerge: true });
       this._chartInstance.showLoading('default', { ...DEFAULT_LOADING_OPTION, text: this.loadingLabel });
     } else {
       this._chartInstance.hideLoading();
@@ -303,7 +304,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     const rows = this.data.map(row => keys.map(k => {
       const v = row[k];
       const s = v == null ? '' : String(v);
-      return s.includes(separator) || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+      return s.includes(separator) || s.includes('"') || s.includes('\n') ? `"${s.replaceAll('"', '""')}"` : s;
     }).join(separator));
     const csv = [keys.join(separator), ...rows].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -314,4 +315,20 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     link.click();
     URL.revokeObjectURL(url);
   }
+
+  /** Retourne une copie sérialisable de l'option ECharts actuellement calculée. */
+  getRenderedOption(): EChartsOption | null {
+    if (!this._config || !this._type || !this.data?.length) return null;
+    try {
+      return cloneSerializable(this._buildFullOption());
+    } catch {
+      return null;
+    }
+  }
+}
+
+function cloneSerializable<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, nested) =>
+    typeof nested === 'function' ? undefined : nested,
+  )) as T;
 }

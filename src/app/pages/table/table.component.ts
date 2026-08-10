@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { col, TableProvider, TableComponent } from '@oneteme/jquery-table';
@@ -18,7 +17,7 @@ interface Post {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, TableComponent, RouterLink],
+  imports: [CommonModule, TableComponent],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
 })
@@ -28,7 +27,6 @@ export class TableExempleComponent implements OnInit {
   isLoading = true;
   tableData: Post[] = [];
   selectedRow: Post | null = null;
-  isCodeVisible = false;
 
   // État des outputs
   lastSort: { active: string; direction: string } | null = null;
@@ -183,8 +181,6 @@ export class TableExempleComponent implements OnInit {
     this.visibleColumns = keys;
   }
 
-  toggleCodeVisibility(): void {
-    this.isCodeVisible = !this.isCodeVisible;
-  }
 }
+
 

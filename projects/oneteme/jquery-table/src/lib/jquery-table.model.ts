@@ -145,6 +145,9 @@ export interface SavedTableConfig {
 export interface TableProvider<T = any> {
   columns?: TableColumnProvider<T>[];
   title?: string;
+  showActions?: boolean;
+  onCopyVisual?: () => void;
+  onToggleFullscreen?: () => void;
   slices?: SliceConfig<T>[];
   /** Affiche le bouton toggle pour replier/déplier le panneau de slices. Par défaut : `true`. */
   enableSliceToggle?: boolean;

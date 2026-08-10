@@ -1,0 +1,150 @@
+<main class="organizer-page">
+  <header class="organizer-hero">
+    <div>
+      <a class="back-link" routerLink="/">← Accueil</a>
+      <p class="eyebrow">jquery-organizer / documentation</p>
+      <h1>Un menu pour laisser l’utilisateur construire sa vue.</h1>
+      <p class="intro">
+        jquery-organizer fournit le menu de configuration et l’état des choix utilisateur.
+        Il ne modifie pas automatiquement votre graphique : votre composant doit appliquer les événements au modèle de données.
+      </p>
+    </div>
+    <a class="api-link" routerLink="/api/organizer">Voir l’API complète ↗</a>
+  </header>
+
+  <section class="content-section setup-section">
+    <p class="section-kicker">Avant de commencer</p>
+    <h2>Installer et importer</h2>
+    <p>
+      La librairie attend Angular 16.1 ou supérieur, Angular Material/CDK 16 et <code>@oneteme/jquery-core</code>.
+      Le composant est standalone ; dans un composant standalone, importez directement <code>OrganizerButtonComponent</code>.
+      Dans un module Angular classique, utilisez <code>OrganizerButtonModule</code>.
+    </p>
+    <pre><code>npm install @oneteme/jquery-organizer @oneteme/jquery-core
+
+import {{ '{' }} OrganizerButtonComponent {{ '}' }} from '@oneteme/jquery-organizer';
+
+@Component({{ '{' }}
+  standalone: true,
+  imports: [OrganizerButtonComponent],
+{{ '}' }})</code></pre>
+  </section>
+
+  <section class="demo-section">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">01 · Démo</p>
+        <h2>Essayez le menu Organizer</h2>
+        <p>Cette démo montre uniquement le composant Organizer : les changements sont renvoyés par <code>viewChange</code> et affichés sous le bouton. Le branchement avec le composant hôte est décrit plus bas.</p>
+      </div>
+      <organizer-button
+        [config]="organizerConfig"
+        [state]="organizerState"
+        (viewChange)="onViewChange($event)">
+      </organizer-button>
+    </div>
+    <div class="event-output">
+      <span>Dernier événement</span>
+      <strong>{{ lastEvent }}</strong>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <p class="section-kicker">02 · Intégration</p>
+    <h2>Le principe en trois morceaux</h2>
+    <div class="principles">
+      <article>
+        <span class="number">01</span>
+        <h3>Décrire la vue</h3>
+        <p><code>OrganizerConfig</code> déclare les choix proposés dans le menu. Il ne contient pas vos données et ne construit pas les séries ou lignes de votre composant hôte.</p>
+      </article>
+      <article>
+        <span class="number">02</span>
+        <h3>Conserver l’état</h3>
+        <p><code>OrganizerState</code> contient les choix courants. Le parent le conserve et le repasse au composant.</p>
+      </article>
+      <article>
+        <span class="number">03</span>
+        <h3>Appliquer la vue</h3>
+        <p>Le parent écoute <code>viewChange</code> et applique l’état reçu à ses données, son graphique ou son tableau. La traduction dépend du modèle utilisé par votre composant hôte.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="code-section integration-section">
+    <div>
+      <p class="section-kicker">03 · Avec un composant hôte</p>
+      <h2>Relier le menu à votre vue</h2>
+      <p>
+        Le bouton Organizer ne connaît ni votre graphique ni votre tableau. Votre composant parent reçoit l’état,
+        l’applique à son modèle et recharge ses données si nécessaire.
+      </p>
+      <p>Pour une intégration avec un graphique, le package fournit aussi des adaptateurs pour le modèle <code>OrganizerChartConfig</code>. Ils sont indépendants d’un renderer précis, mais votre application reste responsable de produire les données et la configuration attendues par le composant utilisé.</p>
+      <p class="important-note"><strong>À retenir :</strong> <code>OrganizerConfig</code> configure le bouton. Il ne remplace pas la configuration de votre tableau ou de votre librairie graphique.</p>
+    </div>
+    <pre><code>import {{ '{' }}
+  buildOrganizerChartBinding,
+  handleOrganizerChartEvent,
+  OrganizerChartConfig,
+  OrganizerButtonEvent,
+{{ '}' }} from '@oneteme/jquery-organizer';
+
+  private viewConfig: OrganizerChartConfig = this.getViewConfig();
+  organizer = buildOrganizerChartBinding(this.viewConfig);
+
+  onOrganizerChange(event: OrganizerButtonEvent): void {{ '{' }}
+  const result = handleOrganizerChartEvent(
+    event,
+    this.viewConfig,
+    this.organizer
+  );
+  this.organizer = result.binding;
+  if (result.shouldRefetch) this.loadViewData();
+{{ '}' }}</code></pre>
+    <pre><code>&lt;organizer-button
+  [config]="organizer.config"
+  [state]="organizer.state"
+  (viewChange)="onOrganizerChange($event)"&gt;
+&lt;/organizer-button&gt;
+
+&lt;!-- Votre graphique ou tableau utilise ici son propre modèle. --&gt;</code></pre>
+  </section>
+
+  <section class="code-section">
+    <div>
+      <p class="section-kicker">04 · Exemple minimal</p>
+      <h2>Un bouton connecté à votre état</h2>
+      <p>La configuration ci-dessous suffit pour afficher un menu de champs. Ajoutez les autres blocs uniquement si votre écran les utilise.</p>
+    </div>
+    <pre><code>readonly organizerConfig: OrganizerConfig = {{ '{' }}
+  fields: [
+    {{ '{' }} id: 'sales', label: 'Ventes', visible: true {{ '}' }},
+    {{ '{' }} id: 'orders', label: 'Commandes', visible: true {{ '}' }},
+  ],
+{{ '}' }};
+
+organizerState: OrganizerState = {{ '{' }}
+  visibleFields: ['sales', 'orders'],
+{{ '}' }};</code></pre>
+    <pre><code>&lt;organizer-button
+  [config]="organizerConfig"
+  [state]="organizerState"
+  (viewChange)="organizerState = $event.state"&gt;
+&lt;/organizer-button&gt;</code></pre>
+  </section>
+
+  <section class="content-section details-section">
+    <p class="section-kicker">04 · Choisir les fonctionnalités</p>
+    <h2>Ce que vous pouvez exposer</h2>
+    <div class="detail-grid">
+      <div><code>fields</code><span>Afficher ou masquer des indicateurs.</span></div>
+      <div><code>xFields / yFields</code><span>Changer la dimension et la mesure.</span></div>
+      <div><code>groups</code><span>Choisir une clé de regroupement.</span></div>
+      <div><code>slices</code><span>Proposer des filtres chargés à la demande.</span></div>
+      <div><code>templates</code><span>Préparer des vues nommées réutilisables.</span></div>
+      <div><code>showExport</code><span>Afficher Export, avec visuel et/ou données selon les callbacks fournis.</span></div>
+      <div><code>showPreferences</code><span>Afficher le menu Préférences pour éditer, sauvegarder ou effacer une préférence.</span></div>
+      <div><code>showActions</code><span>Afficher Actions pour copier le visuel ou basculer en plein écran.</span></div>
+    </div>
+  </section>
+</main>

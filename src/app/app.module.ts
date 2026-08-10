@@ -16,12 +16,14 @@ import { TableShellComponent } from './pages/table/table-shell.component';
 import { ChartsShellComponent } from './pages/charts/charts-shell.component';
 import { ApexChartsPageComponent } from './pages/apexcharts/apexcharts.component';
 import { EChartsComponent } from './pages/echarts/echarts.component';
+import { EChartsApiComponent } from './pages/echarts/api/echarts-api.component';
 import { HighchartsGalleryComponent } from './pages/highcharts/highcharts-gallery.component';
 import { EChartsDetailComponent } from './pages/echarts/echarts-detail.component';
 import { HighchartsDetailComponent } from './pages/highcharts/highcharts-detail.component';
 import { ApexChartsDetailComponent } from './pages/apexcharts/apexcharts-detail.component';
 import { QuickSearchComponent } from './components/quick-search/quick-search.component';
 import { TablePresentationComponent } from './pages/table/table-presentation.component';
+import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 
 @NgModule({
   declarations: [
@@ -43,12 +45,14 @@ import { TablePresentationComponent } from './pages/table/table-presentation.com
     ChartsShellComponent,
     ApexChartsPageComponent,
     EChartsComponent,
+    EChartsApiComponent,
     HighchartsGalleryComponent,
     EChartsDetailComponent,
     HighchartsDetailComponent,
     ApexChartsDetailComponent,
     QuickSearchComponent,
     TablePresentationComponent,
+    SnapshotsComponent,
   ],
   providers: [ChartTypesService],
   bootstrap: [AppComponent],

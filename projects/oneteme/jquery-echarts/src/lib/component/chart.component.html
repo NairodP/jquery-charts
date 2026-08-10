@@ -1,4 +1,21 @@
-<div style="width: 100%; height: 100%;"
+<div class="chart-frame" [class.chart-drilldown]="drilldown?.levels?.length">
+  <nav class="chart-drilldown-nav" *ngIf="drilldown?.levels?.length" [class.chart-drilldown-nav-visible]="drilldownIsActive" aria-label="Navigation du graphique">
+    <ng-container *ngIf="drilldownIsActive">
+      <ng-container *ngFor="let level of drilldownLevels; let last = last">
+      <button
+        type="button"
+        class="chart-drilldown-link"
+        [attr.aria-current]="last ? 'page' : null"
+        [disabled]="last"
+        (click)="navigateDrilldown(level.id)">
+        {{ level.label }}
+      </button>
+      <span class="chart-drilldown-separator" *ngIf="!last" aria-hidden="true">&gt;</span>
+      </ng-container>
+    </ng-container>
+  </nav>
+  <div class="visual-copy-feedback" *ngIf="copyFeedbackMessage" role="status">{{ copyFeedbackMessage }}</div>
+  <div class="chart-canvas"
   echarts-chart
   [type]="type"
   [config]="_effectiveConfig"
@@ -11,6 +28,8 @@
   [noDataLabel]="noDataLabel"
   [group]="group"
   [groupSync]="groupSync"
+  [renderedOption]="renderedOption"
   (customEvent)="customEvent.emit($event)"
   (chartClick)="chartClick.emit($event)">
+  </div>
 </div>

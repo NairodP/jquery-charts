@@ -1,6 +1,11 @@
 import {ChartProvider, XaxisType, YaxisType } from '@oneteme/jquery-core';
 
-export interface ChartData<X extends XaxisType, Y extends YaxisType> { data: any[]; config: ChartProvider<X, Y>; }
+export interface ChartData<X extends XaxisType, Y extends YaxisType> {
+	data: any[];
+	config: ChartProvider<X, Y>;
+	/** Code explicite affiché lorsque la sérialisation automatique serait ambiguë. */
+	code?: string;
+}
 
 export type PieChartData = ChartData<string, number>;
 export type BarChartData = ChartData<string | XaxisType, number>;

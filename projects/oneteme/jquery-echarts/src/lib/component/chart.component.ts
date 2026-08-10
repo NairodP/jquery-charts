@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostBinding, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { ChartProvider, ChartType, OrganizerConfig, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { Component, ElementRef, EventEmitter, HostBinding, HostListener, inject, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChartProvider, ChartType, FullscreenManager, OrganizerConfig, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { ChartDirective, GroupSyncMode } from '../directive/chart.directive';
-import { ChartCustomEvent } from '../directive/utils/types';
+import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, ChartDrilldownState, EChartsOption } from '../directive/utils/types';
 import { ChartViewFacade } from './view/chart-view.facade';
 
 @Component({
@@ -10,13 +10,40 @@ import { ChartViewFacade } from './view/chart-view.facade';
   imports: [CommonModule, ChartDirective],
   selector: 'chart',
   templateUrl: './chart.component.html',
-  styles: [`:host { display: block; width: 100%; height: 100%; }`],
+  styles: [`
+    :host { display: block; width: 100%; height: 100%; }
+    :host.visual-fullscreen { width: 100vw; height: 100vh; background: #fff; }
+    .chart-frame { position: relative; width: 100%; height: 100%; }
+    .chart-drilldown { display: flex; flex-direction: column; }
+    .chart-drilldown-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 28px; padding: 4px 8px 0; }
+    .chart-drilldown-link { padding: 0; border: 0; background: transparent; color: #1b6ca8; cursor: pointer; font: inherit; font-size: 12px; }
+    .chart-drilldown-link[aria-current='page'] { color: #18323a; cursor: default; font-weight: 700; }
+    .chart-drilldown-separator { color: #8aa0a5; font-size: 12px; }
+    .chart-canvas { min-height: 0; width: 100%; height: 100%; flex: 1; }
+    .visual-copy-feedback {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      z-index: 2;
+      transform: translateX(-50%);
+      padding: 7px 12px;
+      border: 1px solid #c7dfd1;
+      border-radius: 5px;
+      background: rgba(244, 251, 247, 0.96);
+      color: #24613b;
+      font-size: 12px;
+      pointer-events: none;
+    }
+  `],
 })
 export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements OnChanges, OnDestroy {
+  private readonly _element = inject(ElementRef<HTMLElement>);
+  @HostBinding('class.visual-fullscreen') _isFullscreen = false;
+  @HostBinding('class.drilldown-active') get hasActiveDrilldown(): boolean { return this.drilldownIsActive; }
 
-  @Input({ required: true }) type: ChartType;
-  @Input({ required: true }) config: ChartProvider<X, Y>;
-  @Input({ required: true }) data: any[];
+  @Input({ required: true }) readonly type: ChartType;
+  @Input({ required: true }) readonly config: ChartProvider<X, Y>;
+  @Input({ required: true }) readonly data: any[];
 
   @Input() isLoading: boolean;
   @Input() debug: boolean;
@@ -26,9 +53,12 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   @Input() noDataLabel = 'Aucune donnée';
   @Input() group: string | null = null;
   @Input() groupSync: GroupSyncMode | null = null;
+  @Input() renderedOption?: EChartsOption | null;
+  @Input() drilldown?: ChartDrilldownConfig;
 
   /** Active la gestion de la visibilité des séries via le panneau Organizer. */
   @Input() organizer?: OrganizerConfig;
+  @Input() copyFeedback: VisualCopyFeedbackConfig = {};
 
   _effectiveConfig!: ChartProvider<X, Y>;
 
@@ -39,9 +69,39 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   }
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
-  @Output() chartClick = new EventEmitter<any>();
+  @Output() chartClick = new EventEmitter<ChartClickEvent>();
+  @Output() drilldownNavigate = new EventEmitter<string>();
+  @Output() drilldownStateChange = new EventEmitter<ChartDrilldownState>();
+  @Output() visualCopied = new EventEmitter<VisualSnapshot>();
+
+  copyFeedbackMessage = '';
+  private _copyFeedbackTimer?: number;
 
   @ViewChild(ChartDirective) private _directive: ChartDirective<X, Y>;
+
+  get drilldownLevels(): ChartDrilldownConfig['levels'] {
+    const levels = this.drilldown?.levels ?? [];
+    const activeIndex = levels.findIndex(level => level.id === this.drilldown?.activeLevel);
+    return activeIndex < 0 ? levels : levels.slice(0, activeIndex + 1);
+  }
+
+  get drilldownIsActive(): boolean {
+    const levels = this.drilldown?.levels ?? [];
+    return levels.findIndex(level => level.id === this.drilldown?.activeLevel) > 0;
+  }
+
+  get drilldownState(): ChartDrilldownState {
+    return {
+      active: this.drilldownIsActive,
+      activeLevel: this.drilldown?.activeLevel ?? '',
+      rootLevel: this.drilldown?.levels?.[0]?.id ?? null,
+    };
+  }
+
+  navigateDrilldown(levelId: string): void {
+    if (levelId === this.drilldown?.activeLevel) return;
+    this.drilldownNavigate.emit(levelId);
+  }
 
   exportImage(fileName?: string, type?: 'png' | 'jpeg' | 'svg', pixelRatio?: number): void {
     this._directive?.exportImage(fileName, type, pixelRatio);
@@ -51,7 +111,80 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     this._directive?.exportData(fileName, separator);
   }
 
+  get fullscreenSupported(): boolean { return FullscreenManager.isSupported(this._element.nativeElement); }
+
+  async toggleFullscreen(): Promise<void> {
+    try {
+      await FullscreenManager.toggle(this._element.nativeElement);
+    } catch {
+      this._isFullscreen = false;
+    }
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    this._isFullscreen = FullscreenManager.isActive(this._element.nativeElement);
+  }
+
+  /** Capture les données courantes et la configuration sérialisable du graphique. */
+  createVisualSnapshot(label = this.config?.title || 'Graphique'): VisualSnapshotDraft {
+    const warnings: string[] = [];
+    if (containsFunction(this.config)) {
+      warnings.push('Certains providers ou callbacks du graphique ne sont pas transportables.');
+    }
+    return {
+      type: 'chart',
+      label,
+      config: jsonClone({
+        type: this.type,
+        provider: this._effectiveConfig,
+        theme: this.theme,
+        renderer: this.renderer,
+        renderedOption: this._directive?.getRenderedOption(),
+      }),
+      state: jsonClone({
+        selectedFieldIds: this._organizerFacade.state.selectedFieldIds,
+      }),
+      data: jsonClone(this.data ?? []),
+      warnings,
+    };
+  }
+
+  copyVisualSnapshot(label?: string): VisualSnapshot | null {
+    const snapshotLabel = label ?? (this.config?.title || 'Graphique');
+    if (!snapshotLabel?.trim()) return null;
+    const snapshot = new VisualSnapshotStorage().create(this.createVisualSnapshot(snapshotLabel.trim()));
+    this.visualCopied.emit(snapshot);
+    this.showCopyFeedback();
+    return snapshot;
+  }
+
+  /** Applique l'état de visibilité compatible et retourne les données capturées. */
+  applyVisualSnapshot(snapshot: VisualSnapshot): VisualSnapshotApplyResult {
+    if (snapshot.type !== 'chart') {
+      return { applied: false, restored: [], skipped: ['type'], warnings: ['Le snapshot n\'est pas un graphique.'] };
+    }
+    const selectedFieldIds = (snapshot.state as { selectedFieldIds?: string[] }).selectedFieldIds;
+    const availableIds = new Set(this._organizerFacade.viewFields.map(field => field.id));
+    const compatibleIds = selectedFieldIds?.filter(id => availableIds.has(id)) ?? [];
+    const skipped = selectedFieldIds?.filter(id => !availableIds.has(id)) ?? [];
+    if (selectedFieldIds) {
+      this._organizerFacade.state.selectedFieldIds = compatibleIds;
+      this._effectiveConfig = this._organizerFacade.getEffectiveProvider();
+    }
+    return {
+      applied: true,
+      restored: selectedFieldIds ? ['seriesVisibility'] : [],
+      skipped,
+      warnings: snapshot.warnings ?? [],
+      data: jsonClone(snapshot.data),
+    };
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['drilldown']) {
+      this.drilldownStateChange.emit(this.drilldownState);
+    }
     if (changes['config'] || changes['organizer']) {
       if (this.config) {
         this._organizerFacade.update(this.organizer ?? {}, this.config);
@@ -61,6 +194,28 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   }
 
   ngOnDestroy(): void {
+    if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
     this._organizerFacade.destroy();
   }
+
+  private showCopyFeedback(): void {
+    if (this.copyFeedback.enabled === false) return;
+    this.copyFeedbackMessage = this.copyFeedback.message || 'Copié';
+    if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
+    this._copyFeedbackTimer = window.setTimeout(() => this.copyFeedbackMessage = '', this.copyFeedback.durationMs ?? 2200);
+  }
+}
+
+function jsonClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, nested) =>
+    typeof nested === 'function' ? undefined : nested,
+  )) as T;
+}
+
+function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'function') return true;
+  if (!value || typeof value !== 'object') return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some(nested => containsFunction(nested, seen));
 }
