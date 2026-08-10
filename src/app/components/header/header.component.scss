@@ -100,8 +100,8 @@
           }
 
           &:hover {
-            border-color: var(--clr-accent, #6366f1);
-            color: var(--clr-accent, #6366f1);
+            border-color: var(--clr-text-primary, #111827);
+            color: var(--clr-text-primary, #111827);
           }
         }
 
@@ -135,8 +135,8 @@
             .library-name { font-weight: 500; }
 
             &:hover {
-              background: var(--clr-accent-subtle, rgba(99,102,241,0.08));
-              color: var(--clr-accent, #6366f1);
+              background: var(--clr-surface-raised, #f1f5f9);
+              color: var(--clr-text-primary, #111827);
             }
 
             &:not(:last-child) {
@@ -194,7 +194,7 @@
         }
 
         &:hover {
-          border-color: var(--clr-accent, #6366f1);
+          border-color: var(--clr-text-primary, #111827);
           color: var(--clr-text-secondary, #475569);
         }
       }
