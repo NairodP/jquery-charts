@@ -19,44 +19,44 @@ const SEARCH_INDEX: SearchItem[] = [
   { label: 'Accueil', route: '/', category: 'Navigation' },
 
   // jquery-table
-  { label: 'jquery-table — Démo',              sublabel: 'Tableau avec 100 posts',       route: '/table',                category: 'jquery-table' },
-  { label: 'Snapshots visuels',                sublabel: 'Copier et composer un dashboard', route: '/snapshots',          category: 'Outils' },
-  { label: 'jquery-table — Comparatif',        sublabel: 'mat-table vs jquery-table',     route: '/table/comparatif',     category: 'jquery-table' },
-  { label: 'jquery-table — Slice + Graphique', sublabel: 'slice-panel standalone',        route: '/table/slice-chart',    category: 'jquery-table' },
-  { label: 'jquery-table — Documentation',     sublabel: 'Référence API complète',        route: '/table/documentation',  category: 'jquery-table' },
+  { label: 'jquery-table — Démo', sublabel: 'Tableau avec 100 posts', route: '/table', category: 'jquery-table' },
+  { label: 'Snapshots visuels', sublabel: 'Copier et composer un dashboard', route: '/snapshots', category: 'Outils' },
+  { label: 'jquery-table — Comparatif', sublabel: 'mat-table vs jquery-table', route: '/table/comparatif', category: 'jquery-table' },
+  { label: 'jquery-table — Slice + Graphique', sublabel: 'slice-panel standalone', route: '/table/slice-chart', category: 'jquery-table' },
+  { label: 'jquery-table — Documentation', sublabel: 'Référence API complète', route: '/table/documentation', category: 'jquery-table' },
 
   // jquery-organizer
-  { label: 'jquery-organizer — Documentation', sublabel: 'Démo et guide d’intégration',    route: '/organizer',             category: 'jquery-organizer' },
-  { label: 'jquery-organizer — API',           sublabel: 'Configuration, état et événements', route: '/api/organizer',       category: 'jquery-organizer' },
+  { label: 'jquery-organizer — Documentation', sublabel: 'Démo et guide d’intégration', route: '/organizer', category: 'jquery-organizer' },
+  { label: 'jquery-organizer — API', sublabel: 'Configuration, état et événements', route: '/api/organizer', category: 'jquery-organizer' },
 
   // Graphiques — ECharts
   { label: 'ECharts — API du wrapper', sublabel: 'Propriétés, providers, pivotRows et drill-down', route: '/api/echarts', category: 'ECharts' },
-  { label: 'ECharts — Tous les types',  route: '/charts/echarts',    category: 'ECharts'    },
-  { label: 'ECharts — Bar',             route: '/charts/echarts',    category: 'ECharts',    keywords: ['bar', 'horizontal'] },
-  { label: 'ECharts — Line',            route: '/charts/echarts',    category: 'ECharts',    keywords: ['line', 'ligne'] },
-  { label: 'ECharts — Pie / Donut',     route: '/charts/echarts',    category: 'ECharts',    keywords: ['pie', 'donut', 'camembert'] },
-  { label: 'ECharts — Heatmap',         route: '/charts/echarts',    category: 'ECharts',    keywords: ['heatmap', 'chaleur'] },
-  { label: 'ECharts — Treemap',         route: '/charts/echarts',    category: 'ECharts',    keywords: ['treemap', 'arbre'] },
+  { label: 'ECharts — Tous les types', route: '/charts/echarts', category: 'ECharts' },
+  { label: 'ECharts — Bar', route: '/charts/echarts', category: 'ECharts', keywords: ['bar', 'horizontal'] },
+  { label: 'ECharts — Line', route: '/charts/echarts', category: 'ECharts', keywords: ['line', 'ligne'] },
+  { label: 'ECharts — Pie / Donut', route: '/charts/echarts', category: 'ECharts', keywords: ['pie', 'donut', 'camembert'] },
+  { label: 'ECharts — Heatmap', route: '/charts/echarts', category: 'ECharts', keywords: ['heatmap', 'chaleur'] },
+  { label: 'ECharts — Treemap', route: '/charts/echarts', category: 'ECharts', keywords: ['treemap', 'arbre'] },
 
   // Graphiques — Highcharts
-  { label: 'Highcharts — Tous les types', route: '/charts/highcharts',       category: 'Highcharts' },
-  { label: 'Highcharts — Pie',            route: '/charts/highcharts/pie',   category: 'Highcharts', keywords: ['pie', 'donut'] },
-  { label: 'Highcharts — Bar',            route: '/charts/highcharts/bar',   category: 'Highcharts', keywords: ['bar', 'barre'] },
-  { label: 'Highcharts — Line',           route: '/charts/highcharts/line',  category: 'Highcharts', keywords: ['line', 'ligne'] },
-  { label: 'Highcharts — Scatter',        route: '/charts/highcharts/scatter',  category: 'Highcharts' },
-  { label: 'Highcharts — Heatmap',        route: '/charts/highcharts/heatmap',  category: 'Highcharts' },
-  { label: 'Highcharts — Treemap',        route: '/charts/highcharts/treemap',  category: 'Highcharts' },
-  { label: 'Highcharts — Funnel',         route: '/charts/highcharts/funnel',   category: 'Highcharts' },
-  { label: 'Highcharts — Map',            route: '/charts/highcharts/map',      category: 'Highcharts' },
+  { label: 'Highcharts — Tous les types', route: '/charts/highcharts', category: 'Highcharts' },
+  { label: 'Highcharts — Pie', route: '/charts/highcharts/pie', category: 'Highcharts', keywords: ['pie', 'donut'] },
+  { label: 'Highcharts — Bar', route: '/charts/highcharts/bar', category: 'Highcharts', keywords: ['bar', 'barre'] },
+  { label: 'Highcharts — Line', route: '/charts/highcharts/line', category: 'Highcharts', keywords: ['line', 'ligne'] },
+  { label: 'Highcharts — Scatter', route: '/charts/highcharts/scatter', category: 'Highcharts' },
+  { label: 'Highcharts — Heatmap', route: '/charts/highcharts/heatmap', category: 'Highcharts' },
+  { label: 'Highcharts — Treemap', route: '/charts/highcharts/treemap', category: 'Highcharts' },
+  { label: 'Highcharts — Funnel', route: '/charts/highcharts/funnel', category: 'Highcharts' },
+  { label: 'Highcharts — Map', route: '/charts/highcharts/map', category: 'Highcharts' },
 
   // Graphiques — ApexCharts
-  { label: 'ApexCharts — Tous les types', route: '/charts/apexcharts',     category: 'ApexCharts' },
-  { label: 'ApexCharts — Bar',            route: '/charts/apexcharts',     category: 'ApexCharts', keywords: ['bar'] },
-  { label: 'ApexCharts — Pie',            route: '/charts/apexcharts',     category: 'ApexCharts', keywords: ['pie'] },
+  { label: 'ApexCharts — Tous les types', route: '/charts/apexcharts', category: 'ApexCharts' },
+  { label: 'ApexCharts — Bar', route: '/charts/apexcharts', category: 'ApexCharts', keywords: ['bar'] },
+  { label: 'ApexCharts — Pie', route: '/charts/apexcharts', category: 'ApexCharts', keywords: ['pie'] },
 
   // Documentation
-  { label: 'Documentation — Démarrage',    route: '/documentation/getting-started', category: 'Documentation' },
-  { label: 'Documentation — Types',        route: '/documentation/graph-types',     category: 'Documentation' },
+  { label: 'Documentation — Démarrage', route: '/documentation/getting-started', category: 'Documentation' },
+  { label: 'Documentation — Types', route: '/documentation/graph-types', category: 'Documentation' },
 ];
 
 @Component({
@@ -93,10 +93,10 @@ export class QuickSearchComponent implements OnInit, OnDestroy {
     }
     if (!this.isOpen) return;
 
-    if (event.key === 'Escape')      { this.close(); return; }
-    if (event.key === 'ArrowDown')   { event.preventDefault(); this.moveDown(); return; }
-    if (event.key === 'ArrowUp')     { event.preventDefault(); this.moveUp(); return; }
-    if (event.key === 'Enter')       { this.selectActive(); return; }
+    if (event.key === 'Escape') { this.close(); return; }
+    if (event.key === 'ArrowDown') { event.preventDefault(); this.moveDown(); return; }
+    if (event.key === 'ArrowUp') { event.preventDefault(); this.moveUp(); return; }
+    if (event.key === 'Enter') { this.selectActive(); return; }
   }
 
   open() {
