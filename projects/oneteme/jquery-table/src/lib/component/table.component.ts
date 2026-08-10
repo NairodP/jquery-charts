@@ -245,6 +245,8 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   private _resolvedData: T[] = [];
   private _preservePageIndex: number | null = null;
   private _lastConfigClearSearchInput: string | number | boolean | null | undefined;
+  private _initialSearchQueryApplied = false;
+  private _lastInitialSearchQuery: string | undefined;
 
   // Seuil au-delà duquel le rendu groupé est bloqué pour protéger le navigateur
   private static readonly MAX_GROUP_COUNT = 500;
@@ -272,7 +274,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     this.refreshViewModel();
     if (changes['config']) {
       this.applyConfigSearchReset();
-      this.applyInitialSearchQuery();
+      this.applyInitialSearchQuery(changes['config'].firstChange);
       this._invalidateOrganizerConfig(); // les colonnes ont pu changer
     }
     if (dataChanged) {
@@ -1183,17 +1185,12 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         columns: this.resolvedConfig.columns?.map(column => serializableColumn(column)),
         search: this.resolvedConfig.search,
         pagination: this.resolvedConfig.pagination,
-        view: this.resolvedConfig.view,
-        export: this.resolvedConfig.export,
       }),
       state: jsonClone({
         search: this.searchQuery,
         groupBy: this.activeGroupByKey,
         columnOrder: this.activeFields.map(column => column.key),
         visibleColumns: this.activeFields.map(column => column.key),
-        columnWidths: this._columnWidths,
-        slicePanelCollapsed: this._slicePanelCollapsed,
-        sliceFilters: this.slicePanelRef?.getActiveFilters() ?? {},
         pageIndex: this.paginator?.pageIndex ?? 0,
         pageSize: this.paginator?.pageSize ?? this.pageSize,
       }),
@@ -1504,13 +1501,16 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     this.onSearchChange();
   }
 
-  private applyInitialSearchQuery(): void {
+  private applyInitialSearchQuery(isFirstConfigChange = false): void {
     const initialQuery = this.resolvedConfig.search?.initialQuery;
-    if (initialQuery == null) {
+    if (initialQuery === this._lastInitialSearchQuery
+      && (this._initialSearchQueryApplied || !isFirstConfigChange)) {
       return;
     }
 
-    this.searchQuery = initialQuery;
+    this._lastInitialSearchQuery = initialQuery;
+    this._initialSearchQueryApplied = true;
+    this.searchQuery = initialQuery ?? '';
     this.onSearchChange();
   }
 

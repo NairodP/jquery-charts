@@ -3,6 +3,7 @@
  */
 
 export * from './lib/jquery-table.model';
+export * from './lib/snapshot-table-config';
 export * from './lib/jqt-i18n.token';
 export * from './lib/component/table.component';
 export * from './lib/component/organizer-button/organizer-button.component';

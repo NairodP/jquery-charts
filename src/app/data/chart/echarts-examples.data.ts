@@ -30,7 +30,7 @@ export const ECHARTS_EXAMPLES: ChartDataCollection<EChartsExampleData> = {
       { palier: 'P4 Faible', count: 124 },
     ],
     config: {
-      title: 'Tickets par priorité (par mois',
+      title: 'Tickets par priorité (par mois)',
       series: [{ data: { x: field('palier'), y: field('count') }, name: 'Tickets' }],
     },
   },
@@ -441,5 +441,40 @@ export const ECHARTS_EXAMPLES: ChartDataCollection<EChartsExampleData> = {
         },
       ],
     },
+    code: `import { field, pivotRows } from '@oneteme/jquery-core';
+import { ChartProvider } from '@oneteme/jquery-core';
+
+// Données longues : une ligne par usage et par catégorie.
+const source = [
+  { usage_type: 'Eclairage Public', authorization_type: 'beneficiaire', consumption: 120 },
+  { usage_type: 'Eclairage Public', authorization_type: 'beneficiaire', consumption: 30 },
+  { usage_type: 'Eclairage Public', authorization_type: 'titulaire', consumption: 80 },
+  { usage_type: 'Industrie', authorization_type: 'beneficiaire', consumption: 240 },
+  { usage_type: 'Industrie', authorization_type: 'titulaire', consumption: 160 },
+];
+
+// Le pivot crée une colonne par catégorie et remplit les absences avec 0.
+const data = pivotRows(source, {
+  index: 'usage_type',
+  columns: 'authorization_type',
+  values: ['consumption'],
+  columnValues: ['beneficiaire', 'titulaire', 'absent'],
+  aggregate: 'sum',
+  fill: 0,
+});
+
+const config: ChartProvider<string, number> = {
+  title: 'Pivot de donnees longues vers donnees larges',
+  xtitle: 'Type d usage',
+  ytitle: 'Consommation',
+  series: [
+    { data: { x: field('usage_type'), y: field('consumption_beneficiaire') }, name: 'Beneficiaire', type: 'column' },
+    { data: { x: field('usage_type'), y: field('consumption_titulaire') }, name: 'Titulaire', type: 'column' },
+    { data: { x: field('usage_type'), y: field('consumption_absent') }, name: 'Categorie absente', type: 'line', color: '#9aa4b2' }
+  ]
+};
+
+// Template Angular
+<chart type="mixed" [config]="config" [data]="data"></chart>`
   },
 };

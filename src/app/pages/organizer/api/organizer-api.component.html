@@ -1,0 +1,38 @@
+<main class="api-page">
+  <header class="api-hero">
+    <div>
+      <a class="back-link" routerLink="/organizer">← Documentation jquery-organizer</a>
+      <p class="eyebrow">jquery-organizer / référence</p>
+      <h1>API Organizer</h1>
+      <p class="intro">Les propriétés, événements et modèles nécessaires pour intégrer le menu de personnalisation dans un graphique ou un tableau.</p>
+    </div>
+  </header>
+
+  <section *ngFor="let section of sections" class="api-section">
+    <div class="section-heading">
+      <p class="section-kicker">API</p>
+      <h2>{{ section.title }}</h2>
+      <p>{{ section.description }}</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Propriété</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Exemple</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of section.entries">
+            <td><code>{{ entry.name }}</code></td>
+            <td><code>{{ entry.type }}</code></td>
+            <td>{{ entry.description }}</td>
+            <td><pre *ngIf="entry.example"><code>{{ entry.example }}</code></pre></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

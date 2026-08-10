@@ -898,6 +898,40 @@ readonly cfg: TableProvider&lt;Row&gt; = &#123;
 &lt;/jquery-table&gt;</code></pre>
   </section>
 
+  <!-- 10b. SNAPSHOTS -->
+  <section class="doc-section">
+    <h2>10b) Copier une vue du tableau</h2>
+    <p>
+      L&apos;action <strong>Copier</strong> capture la vue du tableau au moment du clic. La copie conserve
+      les colonnes visibles et leur ordre, les lignes apr&egrave;s recherche et filtres, le groupement actif,
+      ainsi que l&apos;&eacute;tat de pagination utile au rendu.
+    </p>
+    <p>
+      La copie est volontairement plus simple que le tableau source&nbsp;: elle n&apos;embarque pas Organizer,
+      les pr&eacute;f&eacute;rences, l&apos;export ou une seconde action de copie. La barre de recherche reste disponible
+      et fonctionne aussi sur les valeurs num&eacute;riques.
+    </p>
+    <pre><code>import &#123; VisualSnapshot &#125; from &apos;@oneteme/jquery-core&apos;;
+import &#123; tableProviderFromSnapshot &#125; from &apos;@oneteme/jquery-table&apos;;
+
+// Le snapshot est cr&eacute;&eacute; apr&egrave;s les interactions utilisateur.
+const snapshot: VisualSnapshot = table.createVisualSnapshot(&apos;Ventes filtrées&apos;);
+
+// Dans une vue de dashboard, reconstruire une copie autonome.
+const copyConfig = tableProviderFromSnapshot(snapshot);
+
+// La copie n&apos;a pas besoin d&apos;Organizer.
+&lt;jquery-table
+  [config]=&quot;copyConfig&quot;
+  [data]=&quot;snapshot.data&quot;&gt;
+&lt;/jquery-table&gt;</code></pre>
+    <p>
+      Pour utiliser l&apos;action standard, fournissez simplement <code>onCopyVisual</code> ou laissez
+      <code>jquery-table</code> appeler <code>copyVisualSnapshot()</code>. L&apos;application peut ensuite
+      afficher une modale de nommage ou brancher sa propre interface.
+    </p>
+  </section>
+
   <!-- 11. PERSONNALISATION VISUELLE -->
   <section class="doc-section">
     <h2>11) Personnalisation visuelle &mdash; CSS custom properties</h2>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { ChartComponent } from '@oneteme/jquery-echarts';
+import { RouterLink } from '@angular/router';
+import { ChartClickEvent, ChartComponent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
 import { ECHARTS_EXAMPLES } from 'src/app/data/chart/echarts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
 
@@ -13,7 +14,7 @@ interface EChartsSection {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ChartComponent],
+  imports: [CommonModule, RouterLink, ChartComponent],
   selector: 'app-echarts',
   templateUrl: './echarts.component.html',
   styleUrls: ['./echarts.component.scss'],
@@ -21,6 +22,130 @@ interface EChartsSection {
 export class EChartsComponent implements OnInit {
 
   readonly examples = ECHARTS_EXAMPLES;
+
+  readonly drilldownConfig: any = {
+    xtitle: 'Période',
+    ytitle: 'Valeur',
+    series: [
+      { name: 'Ventes', data: { x: (row: any) => row.period, y: (row: any) => row.sales }, color: '#1b6ca8' },
+      { name: 'Commandes', data: { x: (row: any) => row.period, y: (row: any) => row.orders }, color: '#d97732' },
+    ],
+  };
+  drilldownNavigation: ChartDrilldownConfig = {
+    levels: [{ id: 'months', label: 'Mois' }, { id: 'days', label: 'Jours' }],
+    activeLevel: 'months',
+  };
+  drilldownRows = [
+    { period: 'Janvier', sales: 120, orders: 18 }, { period: 'Février', sales: 168, orders: 24 },
+    { period: 'Mars', sales: 142, orders: 21 }, { period: 'Avril', sales: 214, orders: 31 },
+  ];
+  drilldownLoading = false;
+  private readonly drilldownCache = new Map<string, any[]>();
+  private selectedMonth: string | null = null;
+  private drilldownRequest = 0;
+
+  readonly drilldownCode = `import { ChartClickEvent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
+import { ChartProvider, field } from '@oneteme/jquery-core';
+
+interface Row { period: string; sales: number; orders: number; }
+
+// Les données initiales restent en mémoire pour le retour sans requête.
+const monthlyRows: Row[] = [
+  { period: 'Janvier', sales: 120, orders: 18 },
+  { period: 'Février', sales: 168, orders: 24 },
+  { period: 'Mars', sales: 142, orders: 21 },
+  { period: 'Avril', sales: 214, orders: 31 },
+];
+
+readonly config: ChartProvider<string, number> = {
+  xtitle: 'Période',
+  ytitle: 'Valeur',
+  series: [
+    { name: 'Ventes', data: { x: field('period'), y: field('sales') }, color: '#1b6ca8' },
+    { name: 'Commandes', data: { x: field('period'), y: field('orders') }, color: '#d97732' },
+  ],
+};
+
+rows = monthlyRows;
+loading = false;
+drilldown: ChartDrilldownConfig = {
+  levels: [{ id: 'months', label: 'Mois' }, { id: 'days', label: 'Jours' }],
+  activeLevel: 'months',
+};
+private readonly cache = new Map<string, Row[]>();
+
+onChartClick(event: ChartClickEvent): void {
+  if (event.dataIndex === undefined || this.drilldown.activeLevel !== 'months') return;
+  const month = typeof event.name === 'string' ? event.name : null;
+  if (!month) return;
+  this.loading = true;
+  const request = this.cache.get(month) ?? this.fetchMonthDetails(month);
+  request.then(rows => {
+    this.cache.set(month, rows);
+    this.rows = rows;
+    this.drilldown = { ...this.drilldown, activeLevel: 'days' };
+  }).finally(() => this.loading = false);
+}
+
+onDrilldownNavigate(level: string): void {
+  if (level !== 'months') return;
+  this.rows = monthlyRows; // aucune requête pour revenir au niveau initial
+  this.drilldown = { ...this.drilldown, activeLevel: 'months' };
+}
+
+private fetchMonthDetails(month: string): Promise<Row[]> {
+  // Remplacer cette fonction par this.http.get<Row[]>(...).
+  return new Promise(resolve => setTimeout(() => resolve([
+    { period: month + ' 01', sales: 42, orders: 6 },
+    { period: month + ' 02', sales: 51, orders: 8 },
+    { period: month + ' 03', sales: 38, orders: 5 },
+  ]), 2000));
+}
+
+// Template
+<chart type="line" [config]="config" [data]="rows"
+  [isLoading]="loading" [drilldown]="drilldown"
+  (chartClick)="onChartClick($event)"
+  (drilldownNavigate)="onDrilldownNavigate($event)"></chart>`;
+
+  onDrilldownClick(event: ChartClickEvent): void {
+    if (event.dataIndex === undefined || this.drilldownNavigation.activeLevel !== 'months') return;
+    const month = typeof event.name === 'string' ? event.name : null;
+    if (!month) return;
+    this.selectedMonth = month;
+    this.drilldownLoading = true;
+    const requestId = ++this.drilldownRequest;
+    const cached = this.drilldownCache.get(month);
+    (cached ? Promise.resolve(cached) : this.fetchMonthDetails(month)).then(rows => {
+      if (requestId !== this.drilldownRequest) return;
+      this.drilldownCache.set(month, rows);
+      this.drilldownRows = rows;
+      this.drilldownNavigation = { ...this.drilldownNavigation, activeLevel: 'days' };
+    }).finally(() => {
+      if (requestId === this.drilldownRequest) this.drilldownLoading = false;
+    });
+  }
+
+  onDrilldownNavigate(levelId: string): void {
+    if (levelId !== 'months') return;
+    this.drilldownRequest++;
+    this.drilldownLoading = false;
+    this.drilldownRows = [
+      { period: 'Janvier', sales: 120, orders: 18 }, { period: 'Février', sales: 168, orders: 24 },
+      { period: 'Mars', sales: 142, orders: 21 }, { period: 'Avril', sales: 214, orders: 31 },
+    ];
+    this.selectedMonth = null;
+    this.drilldownNavigation = { ...this.drilldownNavigation, activeLevel: 'months' };
+  }
+
+  private fetchMonthDetails(month: string): Promise<any[]> {
+    const source = this.drilldownRows.find(row => row.period === month) ?? { sales: 100, orders: 10 };
+    return new Promise(resolve => window.setTimeout(() => resolve(Array.from({ length: 7 }, (_, index) => ({
+      period: `${month.slice(0, 3)} ${index + 1}`,
+      sales: Math.round(source.sales * (0.7 + index / 20)),
+      orders: Math.round(source.orders * (0.8 + index / 25)),
+    }))), 2000));
+  }
 
   readonly sections: EChartsSection[] = [
     { id: 'bar', label: 'Bar (horizontal)', type: 'bar', exampleKey: 'barExample' },
@@ -76,6 +201,7 @@ export class EChartsComponent implements OnInit {
   getHighlightedCode(type: ChartType, exampleKey: string): string {
     const example = this.examples[exampleKey];
     if (!example) return '';
+    if (example.code) return this._highlightCode(example.code);
 
     const formatValue = (val: any, indent = 0): string => {
       if (val === null) return 'null';
@@ -106,12 +232,12 @@ export class EChartsComponent implements OnInit {
 
     let code = `// Données\nconst data = ${formatValue(example.data)};\n\n`;
     code    += `// Configuration\nconst config = ${formatValue(example.config)};\n\n`;
-    code    += `// Template HTML\n<echarts-chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></echarts-chart>`;
+    code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
 
     return this._highlightCode(code);
   }
 
-  private _highlightCode(code: string): string {
+  _highlightCode(code: string): string {
     const escaped = code
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -122,8 +248,8 @@ export class EChartsComponent implements OnInit {
       .replace(/\b(const|let|var|function|return)\b/g, '<span class="keyword">$1</span>')
       .replace(/('[^']*')/g, '<span class="string">$1</span>')
       .replace(/\b(\d+(\.\d+)?)\b/g, '<span class="number">$1</span>')
-      .replace(/&lt;echarts-chart/g, '<span class="tag">&lt;echarts-chart</span>')
-      .replace(/&lt;\/echarts-chart&gt;/g, '<span class="tag">&lt;/echarts-chart&gt;</span>')
+      .replace(/&lt;(echarts-chart|chart)/g, '<span class="tag">&lt;$1</span>')
+      .replace(/&lt;\/(echarts-chart|chart)&gt;/g, '<span class="tag">&lt;/$1&gt;</span>')
       .replace(/(type|config|data)=/g, '<span class="attr">$1</span>=')
       .replace(/\b(field|rangeFields|values|joinFields)\b/g, '<span class="fn">$1</span>');
   }

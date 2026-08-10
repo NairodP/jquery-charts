@@ -269,7 +269,6 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _applyLoadingState(): void {
     if (!this._chartInstance) return;
     if (this._isLoading) {
-      this._chartInstance.setOption({ series: [], graphic: [] }, { notMerge: true });
       this._chartInstance.showLoading('default', { ...DEFAULT_LOADING_OPTION, text: this.loadingLabel });
     } else {
       this._chartInstance.hideLoading();

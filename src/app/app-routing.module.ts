@@ -10,6 +10,7 @@ import { TableComparatifComponent } from './pages/table/comparatif/comparatif.co
 import { SliceChartComponent } from './pages/table/slice-chart/slice-chart.component';
 import { ChartsShellComponent } from './pages/charts/charts-shell.component';
 import { EChartsComponent } from './pages/echarts/echarts.component';
+import { EChartsApiComponent } from './pages/echarts/api/echarts-api.component';
 import { EChartsDetailComponent } from './pages/echarts/echarts-detail.component';
 import { ApexChartsPageComponent } from './pages/apexcharts/apexcharts.component';
 import { ApexChartsDetailComponent } from './pages/apexcharts/apexcharts-detail.component';
@@ -17,6 +18,8 @@ import { HighchartsGalleryComponent } from './pages/highcharts/highcharts-galler
 import { HighchartsDetailComponent } from './pages/highcharts/highcharts-detail.component';
 import { TablePresentationComponent } from './pages/table/table-presentation.component';
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
+import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
+import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -24,6 +27,9 @@ const routes: Routes = [
   { path: 'basic-test', component: BasicTestComponent },
   { path: 'basic-test/sandbox', component: SandboxComponent },
   { path: 'snapshots', component: SnapshotsComponent },
+  { path: 'api/echarts', component: EChartsApiComponent },
+  { path: 'organizer', component: OrganizerDocumentationComponent },
+  { path: 'api/organizer', component: OrganizerApiComponent },
 
   // ─── jquery-table — shell avec tabs ──────────────────────────────────
   {

@@ -55,7 +55,7 @@ export interface OrganizerTemplate {
 export interface OrganizerActionsConfig {
   /** Libellé du sous-menu. Par défaut : Action ou Actions selon le nombre d'actions visibles. */
   label?: string;
-  /** Affiche l'action de copie lorsque onCopyVisual est fourni. */
+  /** Affiche l'action de copie lorsque onCopyVisual est fourni. Le callback peut ouvrir une modale ou une UI personnalisée. */
   showCopy?: boolean;
   /** Affiche l'action de plein écran lorsque onToggleFullscreen est fourni. */
   showFullscreen?: boolean;

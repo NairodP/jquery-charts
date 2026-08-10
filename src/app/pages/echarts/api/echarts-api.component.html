@@ -1,0 +1,58 @@
+<div class="api-page">
+  <header class="api-hero">
+    <div>
+      <a class="back-link" routerLink="/charts/echarts">← Retour aux exemples</a>
+      <p class="eyebrow">jquery-echarts / référence</p>
+      <h1>API du wrapper ECharts</h1>
+      <p class="intro">
+        Retrouvez rapidement les propriétés et utilitaires disponibles dans jquery-echarts et jquery-core,
+        au-delà des exemples. Les options natives ECharts restent disponibles dans la documentation officielle.
+      </p>
+    </div>
+    <a class="official-link" href="https://echarts.apache.org/en/option.html" target="_blank" rel="noopener">
+      Documentation officielle ECharts ↗
+    </a>
+  </header>
+
+  <div class="api-layout">
+    <main class="api-content">
+      <section *ngFor="let section of sections" class="api-section" [id]="section.id">
+        <div class="section-heading">
+          <p class="section-number">API</p>
+          <h2>{{ section.title }}</h2>
+          <p>{{ section.description }}</p>
+        </div>
+
+        <div class="api-table-wrap">
+          <table class="api-table">
+            <thead>
+              <tr>
+                <th>Propriété</th>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Description</th>
+                <th>Exemple</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entry of section.entries">
+                <td>
+                  <code>{{ entry.name }}</code>
+                  <small *ngIf="entry.types">{{ entry.types }}</small>
+                </td>
+                <td><code>{{ entry.type }}</code></td>
+                <td><span class="source-badge" [attr.data-source]="entry.source">{{ entry.source }}</span></td>
+                <td>
+                  {{ entry.description }}
+                </td>
+                <td><pre><code>{{ entry.code }}</code></pre></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+</div>

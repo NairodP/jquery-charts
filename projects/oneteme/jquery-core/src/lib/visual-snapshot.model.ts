@@ -40,6 +40,13 @@ export interface VisualSnapshotStorageOptions {
   maxBytes?: number;
 }
 
+export class DuplicateVisualSnapshotLabelError extends Error {
+  constructor(label: string) {
+    super(`A visual snapshot named "${label}" already exists.`);
+    this.name = 'DuplicateVisualSnapshotLabelError';
+  }
+}
+
 export const VISUAL_SNAPSHOT_SCHEMA_VERSION = 1 as const;
 export const VISUAL_SNAPSHOT_STORAGE_KEY = 'jquery_visual_snapshots';
 export const VISUAL_SNAPSHOT_DEFAULT_MAX_BYTES = 4 * 1024 * 1024;

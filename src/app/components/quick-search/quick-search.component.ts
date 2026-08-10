@@ -25,7 +25,12 @@ const SEARCH_INDEX: SearchItem[] = [
   { label: 'jquery-table — Slice + Graphique', sublabel: 'slice-panel standalone',        route: '/table/slice-chart',    category: 'jquery-table' },
   { label: 'jquery-table — Documentation',     sublabel: 'Référence API complète',        route: '/table/documentation',  category: 'jquery-table' },
 
+  // jquery-organizer
+  { label: 'jquery-organizer — Documentation', sublabel: 'Démo et guide d’intégration',    route: '/organizer',             category: 'jquery-organizer' },
+  { label: 'jquery-organizer — API',           sublabel: 'Configuration, état et événements', route: '/api/organizer',       category: 'jquery-organizer' },
+
   // Graphiques — ECharts
+  { label: 'ECharts — API du wrapper', sublabel: 'Propriétés, providers, pivotRows et drill-down', route: '/api/echarts', category: 'ECharts' },
   { label: 'ECharts — Tous les types',  route: '/charts/echarts',    category: 'ECharts'    },
   { label: 'ECharts — Bar',             route: '/charts/echarts',    category: 'ECharts',    keywords: ['bar', 'horizontal'] },
   { label: 'ECharts — Line',            route: '/charts/echarts',    category: 'ECharts',    keywords: ['line', 'ligne'] },

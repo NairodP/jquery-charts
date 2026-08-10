@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, inject, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartProvider, ChartType, FullscreenManager, OrganizerConfig, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { ChartDirective, GroupSyncMode } from '../directive/chart.directive';
-import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, EChartsOption } from '../directive/utils/types';
+import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, ChartDrilldownState, EChartsOption } from '../directive/utils/types';
 import { ChartViewFacade } from './view/chart-view.facade';
 
 @Component({
@@ -39,6 +39,7 @@ import { ChartViewFacade } from './view/chart-view.facade';
 export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements OnChanges, OnDestroy {
   private readonly _element = inject(ElementRef<HTMLElement>);
   @HostBinding('class.visual-fullscreen') _isFullscreen = false;
+  @HostBinding('class.drilldown-active') get hasActiveDrilldown(): boolean { return this.drilldownIsActive; }
 
   @Input({ required: true }) readonly type: ChartType;
   @Input({ required: true }) readonly config: ChartProvider<X, Y>;
@@ -70,6 +71,7 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
   @Output() chartClick = new EventEmitter<ChartClickEvent>();
   @Output() drilldownNavigate = new EventEmitter<string>();
+  @Output() drilldownStateChange = new EventEmitter<ChartDrilldownState>();
   @Output() visualCopied = new EventEmitter<VisualSnapshot>();
 
   copyFeedbackMessage = '';
@@ -86,6 +88,14 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   get drilldownIsActive(): boolean {
     const levels = this.drilldown?.levels ?? [];
     return levels.findIndex(level => level.id === this.drilldown?.activeLevel) > 0;
+  }
+
+  get drilldownState(): ChartDrilldownState {
+    return {
+      active: this.drilldownIsActive,
+      activeLevel: this.drilldown?.activeLevel ?? '',
+      rootLevel: this.drilldown?.levels?.[0]?.id ?? null,
+    };
   }
 
   navigateDrilldown(levelId: string): void {
@@ -172,6 +182,9 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['drilldown']) {
+      this.drilldownStateChange.emit(this.drilldownState);
+    }
     if (changes['config'] || changes['organizer']) {
       if (this.config) {
         this._organizerFacade.update(this.organizer ?? {}, this.config);

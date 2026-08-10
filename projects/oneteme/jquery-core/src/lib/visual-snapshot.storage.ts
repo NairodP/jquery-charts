@@ -7,6 +7,7 @@ import {
   VisualSnapshotDraft,
   VisualSnapshotCollection,
   VisualSnapshotStorageOptions,
+  DuplicateVisualSnapshotLabelError,
 } from './visual-snapshot.model';
 
 export class VisualSnapshotStorage {
@@ -29,10 +30,25 @@ export class VisualSnapshotStorage {
     return this.readCollection().snapshots.find(snapshot => snapshot.id === snapshotId) ?? null;
   }
 
+  isLabelAvailable(label: string, excludeSnapshotId?: string): boolean {
+    const normalizedLabel = normalizeLabelKey(label);
+    if (!normalizedLabel) return false;
+    return !this.readCollection().snapshots.some(snapshot =>
+      snapshot.id !== excludeSnapshotId && normalizeLabelKey(snapshot.label) === normalizedLabel,
+    );
+  }
+
   create(snapshot: VisualSnapshotDraft): VisualSnapshot {
+    const normalizedLabel = normalizeLabel(snapshot.label);
+    if (!normalizedLabel) throw new Error('A visual snapshot label is required.');
+    const collection = this.readCollection();
+    if (!this.isLabelAvailable(normalizedLabel)) {
+      throw new DuplicateVisualSnapshotLabelError(normalizedLabel);
+    }
     const now = new Date().toISOString();
     const created: VisualSnapshot = {
       ...snapshot,
+      label: normalizedLabel,
       id: createId(),
       schemaVersion: VISUAL_SNAPSHOT_SCHEMA_VERSION,
       createdAt: now,
@@ -40,7 +56,7 @@ export class VisualSnapshotStorage {
     };
     this.writeCollection({
       schemaVersion: VISUAL_SNAPSHOT_SCHEMA_VERSION,
-      snapshots: [created, ...this.readCollection().snapshots],
+      snapshots: [created, ...collection.snapshots],
     });
     return created;
   }
@@ -57,7 +73,12 @@ export class VisualSnapshotStorage {
   rename(snapshotId: string, label: string): void {
     const snapshot = this.get(snapshotId);
     if (!snapshot) throw new Error(`Unknown visual snapshot: ${snapshotId}`);
-    this.replace({ ...snapshot, label: label.trim() || snapshot.label });
+    const normalizedLabel = normalizeLabel(label);
+    if (!normalizedLabel) return;
+    if (!this.isLabelAvailable(normalizedLabel, snapshotId)) {
+      throw new DuplicateVisualSnapshotLabelError(normalizedLabel);
+    }
+    this.replace({ ...snapshot, label: normalizedLabel });
   }
 
   remove(snapshotId: string): void {
@@ -103,6 +124,14 @@ export class VisualSnapshotStorage {
       throw new Error(`Unable to persist visual snapshots: ${String(error)}`);
     }
   }
+}
+
+function normalizeLabel(label: string): string {
+  return label.trim().replace(/\s+/g, ' ');
+}
+
+function normalizeLabelKey(label: string): string {
+  return normalizeLabel(label).toLocaleLowerCase();
 }
 
 function isCollection(value: unknown): value is VisualSnapshotCollection {

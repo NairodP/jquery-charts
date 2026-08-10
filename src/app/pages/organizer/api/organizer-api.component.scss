@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f4f7f7;
+}
+
+.api-page {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 2.5rem clamp(1rem, 3vw, 3.5rem) 0;
+  color: #18323a;
+}
+
+.api-hero {
+  padding: 1rem 0 2.5rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  color: #176b72;
+  font-size: .82rem;
+  text-decoration: none;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.eyebrow,
+.section-kicker {
+  color: #bc5b35;
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.eyebrow { margin: 0 0 .5rem; }
+.section-kicker { margin: 0 0 .55rem; }
+
+h1,
+h2,
+p { margin-top: 0; }
+
+h1 {
+  max-width: 760px;
+  margin-bottom: .8rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.3rem, 5vw, 4.6rem);
+  font-weight: 500;
+  line-height: .98;
+}
+
+h2 {
+  margin-bottom: .55rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.intro,
+.section-heading > p:last-child {
+  max-width: 760px;
+  color: #526b73;
+  line-height: 1.55;
+}
+
+.api-section { margin-bottom: 3.5rem; }
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #cbd9da;
+  background: #fff;
+}
+
+table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: .87rem;
+}
+
+th {
+  padding: .8rem .75rem;
+  background: #e7efef;
+  color: #526b73;
+  font-size: .7rem;
+  letter-spacing: .08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+td {
+  padding: .9rem .75rem;
+  border-top: 1px solid #e2ebeb;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+td:first-child { width: 17%; }
+td:nth-child(2) { width: 25%; }
+td:nth-child(3) { width: 31%; }
+
+code {
+  color: #176b72;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: .82rem;
+}
+
+td:first-child code { font-weight: 700; }
+
+pre {
+  max-width: 340px;
+  margin: 0;
+  padding: .45rem .55rem;
+  overflow-x: auto;
+  background: #f4f7f7;
+  white-space: pre-wrap;
+}
+
+pre code { color: #526b73; font-size: .76rem; }

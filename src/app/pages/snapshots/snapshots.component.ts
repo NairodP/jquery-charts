@@ -3,10 +3,10 @@ import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { ChartProvider, VisualSnapshot, VisualSnapshotStorage, field } from '@oneteme/jquery-core';
-import { ChartClickEvent, ChartComponent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
+import { ChartProvider, DuplicateVisualSnapshotLabelError, VisualSnapshot, VisualSnapshotStorage, field } from '@oneteme/jquery-core';
+import { ChartClickEvent, ChartComponent, ChartDrilldownConfig, ChartDrilldownState } from '@oneteme/jquery-echarts';
 import { OrganizerButtonComponent, OrganizerButtonEvent, OrganizerConfig, OrganizerState } from '@oneteme/jquery-organizer';
-import { TableComponent, TableProvider } from '@oneteme/jquery-table';
+import { tableProviderFromSnapshot, TableComponent, TableProvider } from '@oneteme/jquery-table';
 
 interface DemoRow {
   month: string;
@@ -71,7 +71,7 @@ export class SnapshotsComponent {
 
   readonly tableConfig: TableProvider<DemoRow> = {
     title: 'Activité commerciale',
-    search: { enabled: true, searchColumns: ['month'] },
+    search: { enabled: true },
     view: { enabled: true, enableColumnRemoval: true },
     export: { enabled: true, filename: 'activite-commerciale' },
     preferences: { enabled: true, tableId: 'snapshot-demo-table' },
@@ -98,8 +98,10 @@ export class SnapshotsComponent {
   chartOrganizerState: OrganizerState = { visibleFields: ['Ventes', 'Commandes'] };
   snapshots: VisualSnapshot[] = [];
   dashboardSlots: DashboardSlot[] = [];
+  private readonly tableConfigCache = new Map<string, TableProvider<any>>();
   activeCopyTarget: 'chart' | 'table' | null = null;
   copyTitle = '';
+  copyError = '';
   drilldownRows: DrilldownRow[] = this.rows;
   selectedDrilldownMonth: string | null = null;
   drilldownLoading = false;
@@ -108,11 +110,14 @@ export class SnapshotsComponent {
     levels: [
       { id: 'months', label: 'Mois' },
       { id: 'days', label: 'Jours' },
+      { id: 'hours', label: 'Heures' },
     ],
     activeLevel: 'months',
   };
   private readonly drilldownCache = new Map<string, DrilldownRow[]>();
   private drilldownRequestId = 0;
+  selectedDrilldownDay: string | null = null;
+  drilldownIsLocallyScoped = false;
 
   constructor() {
     this.drilldownCache.set('months', this.rows);
@@ -126,20 +131,33 @@ export class SnapshotsComponent {
   openCopyModal(target: 'chart' | 'table'): void {
     this.activeCopyTarget = target;
     this.copyTitle = target === 'chart' ? this.chartConfig.title || 'Graphique' : this.tableConfig.title || 'Tableau';
+    this.copyError = '';
   }
 
   closeCopyModal(): void {
     this.activeCopyTarget = null;
     this.copyTitle = '';
+    this.copyError = '';
+  }
+
+  get copyTitleAvailable(): boolean {
+    return this.storage.isLabelAvailable(this.copyTitle);
   }
 
   confirmCopy(): void {
     const title = this.copyTitle.trim();
-    if (!title || !this.activeCopyTarget) return;
-    if (this.activeCopyTarget === 'chart') {
-      this.demoChart?.copyVisualSnapshot(title);
-    } else {
-      this.demoTable?.copyVisualSnapshot(title);
+    if (!title || !this.activeCopyTarget || !this.copyTitleAvailable) return;
+    try {
+      if (this.activeCopyTarget === 'chart') {
+        this.demoChart?.copyVisualSnapshot(title);
+      } else {
+        this.demoTable?.copyVisualSnapshot(title);
+      }
+    } catch (error) {
+      this.copyError = error instanceof DuplicateVisualSnapshotLabelError
+        ? 'Ce nom est déjà utilisé.'
+        : 'La copie n’a pas pu être enregistrée.';
+      return;
     }
     this.refreshSnapshots();
     this.closeCopyModal();
@@ -152,36 +170,76 @@ export class SnapshotsComponent {
   }
 
   onDrilldownClick(event: ChartClickEvent): void {
-    const month = typeof event.name === 'string' ? event.name : null;
-    if (!month || this.drilldownConfig.activeLevel !== 'months') return;
-    void this.loadDrilldown(month);
+    const value = typeof event.name === 'string' ? event.name : null;
+    if (event.dataIndex === undefined || !value) return;
+    if (this.drilldownConfig.activeLevel === 'months') {
+      void this.loadMonthDetails(value);
+    } else if (this.drilldownConfig.activeLevel === 'days' && this.selectedDrilldownMonth) {
+      void this.loadHourDetails(value);
+    }
   }
 
   onDrilldownNavigate(levelId: string): void {
-    if (levelId !== 'months') return;
     this.drilldownRequestId++;
-    this.selectedDrilldownMonth = null;
     this.drilldownLoading = false;
     this.drilldownError = '';
-    this.drilldownRows = this.drilldownCache.get('months') || this.rows;
-    this.drilldownConfig = { ...this.drilldownConfig, activeLevel: 'months' };
+    if (levelId === 'months') {
+      this.selectedDrilldownMonth = null;
+      this.selectedDrilldownDay = null;
+      this.drilldownRows = this.drilldownCache.get('months') || this.rows;
+    } else if (levelId === 'days' && this.selectedDrilldownMonth) {
+      this.selectedDrilldownDay = null;
+      this.drilldownRows = this.drilldownCache.get(this.monthCacheKey(this.selectedDrilldownMonth)) || this.drilldownRows;
+    } else {
+      return;
+    }
+    this.drilldownConfig = { ...this.drilldownConfig, activeLevel: levelId };
   }
 
-  private async loadDrilldown(month: string): Promise<void> {
+  onDrilldownStateChange(state: ChartDrilldownState): void {
+    this.drilldownIsLocallyScoped = state.active;
+  }
+
+  private async loadMonthDetails(month: string): Promise<void> {
     const requestId = ++this.drilldownRequestId;
     this.selectedDrilldownMonth = month;
+    this.selectedDrilldownDay = null;
     this.drilldownLoading = true;
     this.drilldownError = '';
 
     try {
-      const rows = this.drilldownCache.get(month) || await this.fetchMonthDetails(month);
+      const cacheKey = this.monthCacheKey(month);
+      const rows = this.drilldownCache.get(cacheKey) || await this.fetchMonthDetails(month);
       if (requestId !== this.drilldownRequestId) return;
-      this.drilldownCache.set(month, rows);
+      this.drilldownCache.set(cacheKey, rows);
       this.drilldownRows = rows;
       this.drilldownConfig = { ...this.drilldownConfig, activeLevel: 'days' };
     } catch {
       if (requestId !== this.drilldownRequestId) return;
       this.drilldownError = `Impossible de charger le détail de ${month}.`;
+    } finally {
+      if (requestId === this.drilldownRequestId) this.drilldownLoading = false;
+    }
+  }
+
+  private async loadHourDetails(day: string): Promise<void> {
+    const month = this.selectedDrilldownMonth;
+    if (!month) return;
+    const requestId = ++this.drilldownRequestId;
+    this.selectedDrilldownDay = day;
+    this.drilldownLoading = true;
+    this.drilldownError = '';
+
+    try {
+      const cacheKey = this.hourCacheKey(month, day);
+      const rows = this.drilldownCache.get(cacheKey) || await this.fetchHourDetails(month, day);
+      if (requestId !== this.drilldownRequestId) return;
+      this.drilldownCache.set(cacheKey, rows);
+      this.drilldownRows = rows;
+      this.drilldownConfig = { ...this.drilldownConfig, activeLevel: 'hours' };
+    } catch {
+      if (requestId !== this.drilldownRequestId) return;
+      this.drilldownError = `Impossible de charger le détail horaire du ${day}.`;
     } finally {
       if (requestId === this.drilldownRequestId) this.drilldownLoading = false;
     }
@@ -193,12 +251,29 @@ export class SnapshotsComponent {
     const source = this.rows[Math.max(monthIndex, 0)];
     return new Promise(resolve => {
       window.setTimeout(() => resolve(Array.from({ length: 28 }, (_, index) => ({
-        month: `${String(index + 1).padStart(2, '0')} ${month.slice(0, 3).toLowerCase()}`,
+        month: `${String(index + 1).padStart(2, '0')} ${month.toLowerCase()}`,
         sales: Math.round(source.sales * (0.65 + ((index * 17) % 31) / 100)),
         orders: Math.max(1, Math.round(source.orders * (0.7 + ((index * 11) % 21) / 100))),
       }))), 2000);
     });
   }
+
+  private fetchHourDetails(month: string, day: string): Promise<DrilldownRow[]> {
+    const monthIndex = this.rows.findIndex(row => row.month === month);
+    const source = this.rows[Math.max(monthIndex, 0)];
+    const dayIndex = Number.parseInt(day, 10) || 1;
+    return new Promise(resolve => {
+      window.setTimeout(() => resolve(Array.from({ length: 24 }, (_, hour) => ({
+        month: `${String(hour).padStart(2, '0')}:00`,
+        sales: Math.max(1, Math.round(source.sales / 24 * (0.7 + ((hour + dayIndex) % 7) / 10))),
+        orders: Math.max(1, Math.round(source.orders / 24 * (0.8 + ((hour + dayIndex) % 5) / 10))),
+      }))), 900);
+    });
+  }
+
+  private monthCacheKey(month: string): string { return `days:${month}`; }
+
+  private hourCacheKey(month: string, day: string): string { return `hours:${month}:${day}`; }
 
   snapshotsOfType(type: 'chart' | 'table'): VisualSnapshot[] {
     return this.snapshots.filter(snapshot => snapshot.type === type);
@@ -228,24 +303,11 @@ export class SnapshotsComponent {
   }
 
   snapshotTableConfig(snapshot: VisualSnapshot): TableProvider<any> {
-    const config = snapshot.config as { title?: string; columns?: any[]; search?: TableProvider<any>['search']; pagination?: TableProvider<any>['pagination'] };
-    const state = snapshot.state as { search?: string; visibleColumns?: string[]; columnOrder?: string[] };
-    const columns = (config.columns || []).map(column => ({
-      key: column.key,
-      header: column.header || column.key,
-      sortable: column.sortable !== false,
-      optional: column.optional,
-    }));
-    const orderedKeys = state.columnOrder || state.visibleColumns;
-    const orderedColumns = orderedKeys?.length
-      ? orderedKeys.map(key => columns.find(column => column.key === key)).filter(Boolean)
-      : columns;
-    return {
-      title: config.title,
-      search: config.search ? { ...config.search, initialQuery: state.search } : undefined,
-      pagination: config.pagination,
-      columns: orderedColumns as any[],
-    };
+    const cached = this.tableConfigCache.get(snapshot.id);
+    if (cached) return cached;
+    const config = tableProviderFromSnapshot(snapshot);
+    this.tableConfigCache.set(snapshot.id, config);
+    return config;
   }
 
 }

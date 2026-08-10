@@ -5,7 +5,6 @@
       <h1>Snapshots visuels</h1>
       <p class="intro">Copie un graphique ou un tableau, puis réutilise-le dans un emplacement de dashboard.</p>
     </div>
-    <button type="button" class="refresh-button" (click)="refreshSnapshots()">Actualiser les copies</button>
   </header>
 
   <section class="demo-stack">
@@ -32,10 +31,12 @@
           <div class="copy-modal-card">
             <p class="copy-modal-kicker">Copie du graphique</p>
             <h3 id="chart-copy-title">Nommer ce snapshot</h3>
-            <input [(ngModel)]="copyTitle" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <input [(ngModel)]="copyTitle" (ngModelChange)="copyError = ''" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <p class="copy-error" *ngIf="copyTitle && !copyTitleAvailable">Ce nom est déjà utilisé.</p>
+            <p class="copy-error" *ngIf="copyError">{{ copyError }}</p>
             <div class="copy-modal-actions">
               <button type="button" class="copy-cancel" (click)="closeCopyModal()">Annuler</button>
-              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim()" (click)="confirmCopy()">Copier</button>
+              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim() || !copyTitleAvailable" (click)="confirmCopy()">Copier</button>
             </div>
           </div>
         </div>
@@ -55,10 +56,12 @@
           <div class="copy-modal-card">
             <p class="copy-modal-kicker">Copie du tableau</p>
             <h3 id="table-copy-title">Nommer ce snapshot</h3>
-            <input [(ngModel)]="copyTitle" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <input [(ngModel)]="copyTitle" (ngModelChange)="copyError = ''" (keydown.enter)="confirmCopy()" (keydown.escape)="closeCopyModal()" autofocus aria-label="Titre du snapshot" />
+            <p class="copy-error" *ngIf="copyTitle && !copyTitleAvailable">Ce nom est déjà utilisé.</p>
+            <p class="copy-error" *ngIf="copyError">{{ copyError }}</p>
             <div class="copy-modal-actions">
               <button type="button" class="copy-cancel" (click)="closeCopyModal()">Annuler</button>
-              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim()" (click)="confirmCopy()">Copier</button>
+              <button type="button" class="copy-confirm" [disabled]="!copyTitle.trim() || !copyTitleAvailable" (click)="confirmCopy()">Copier</button>
             </div>
           </div>
         </div>
@@ -129,12 +132,18 @@
     <div class="section-heading">
       <div>
         <p class="section-kicker">04 · Drill-down</p>
-        <h2>Du mois au détail journalier</h2>
-        <p class="section-note" *ngIf="!selectedDrilldownMonth">Clique sur un point mensuel pour déclencher le chargement des données détaillées.</p>
-        <p class="section-note" *ngIf="selectedDrilldownMonth">Détail de {{ selectedDrilldownMonth }} chargé depuis une source asynchrone. Un retour sur « Mois » utilise les données déjà en mémoire.</p>
+        <h2>Du mois au détail horaire</h2>
+        <p class="section-note" *ngIf="!selectedDrilldownMonth">Clique sur un point mensuel pour charger le détail par jour.</p>
+        <p class="section-note" *ngIf="selectedDrilldownMonth && !selectedDrilldownDay">Détail journalier de {{ selectedDrilldownMonth }} chargé. Clique sur le 20 janvier pour afficher les 24 heures de cette journée.</p>
+        <p class="section-note" *ngIf="selectedDrilldownMonth && selectedDrilldownDay">Détail horaire du {{ selectedDrilldownDay }} {{ selectedDrilldownMonth }} chargé. Les trois niveaux restent accessibles dans le breadcrumb.</p>
       </div>
     </div>
     <div class="drilldown-status drilldown-error" *ngIf="drilldownError" role="alert">{{ drilldownError }}</div>
+    <div class="drilldown-scope-warning" *ngIf="drilldownIsLocallyScoped" aria-live="polite">
+      <strong>Vue détaillée active</strong>
+      <span>Ce graphique affiche un niveau plus fin que le filtre global simulé « semaine du 20 au 26 janvier ».</span>
+      <button type="button" (click)="onDrilldownNavigate('months')">Revenir à la vue globale</button>
+    </div>
     <div class="chart-frame">
       <chart
         type="line"
@@ -143,6 +152,7 @@
         [isLoading]="drilldownLoading"
         [drilldown]="drilldownConfig"
         (drilldownNavigate)="onDrilldownNavigate($event)"
+        (drilldownStateChange)="onDrilldownStateChange($event)"
         (chartClick)="onDrilldownClick($event)">
       </chart>
     </div>

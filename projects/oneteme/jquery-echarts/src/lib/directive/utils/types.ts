@@ -24,6 +24,12 @@ export interface ChartDrilldownConfig {
   activeLevel: string;
 }
 
+export interface ChartDrilldownState {
+  active: boolean;
+  activeLevel: string;
+  rootLevel: string | null;
+}
+
 /** Alias exposé pour les options ECharts natives */
 export type { ECharts, EChartsOption } from 'echarts';
 

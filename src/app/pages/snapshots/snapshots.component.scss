@@ -65,20 +65,11 @@ h3 {
   color: #5d7177;
 }
 
-.refresh-button,
 .add-button,
 .remove-slot {
   border: 0;
   cursor: pointer;
   font: inherit;
-}
-
-.refresh-button {
-  padding: 10px 15px;
-  border: 1px solid #c6d7da;
-  border-radius: 5px;
-  background: #fff;
-  color: #1b6ca8;
 }
 
 .demo-stack,
@@ -125,6 +116,36 @@ h3 {
   color: #8b3329;
 }
 
+.drilldown-scope-warning {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid #e2b36f;
+  border-left: 4px solid #d97732;
+  background: #fff8ed;
+  color: #765027;
+  font-size: .9rem;
+}
+
+.drilldown-scope-warning strong { color: #a6531d; }
+.drilldown-scope-warning span { flex: 1 1 420px; }
+.drilldown-scope-warning button {
+  padding: 6px 9px;
+  border: 1px solid #c77a38;
+  background: #fff;
+  color: #a6531d;
+  cursor: pointer;
+  font: inherit;
+  font-size: .82rem;
+}
+
+.drilldown-scope-warning button:hover { background: #fff1dc; }
+
+.drilldown-section .drilldown-active { border: 2px solid #d97732; }
+
 .table-frame {
   height: 430px;
   margin-top: 20px;
@@ -133,14 +154,18 @@ h3 {
 .copy-modal {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: 1000;
   display: grid;
   place-items: center;
   padding: 24px;
   background: rgba(18, 63, 74, 0.2);
+  isolation: isolate;
 }
 
 .copy-modal-card {
+  position: relative;
+  z-index: 1;
+  display: block;
   width: min(100%, 360px);
   padding: 22px;
   border: 1px solid #c6d7da;
@@ -170,6 +195,12 @@ h3 {
   border-radius: 3px;
   color: #18323a;
   font: inherit;
+}
+
+.copy-error {
+  margin: 7px 0 0;
+  color: #a63f32;
+  font-size: 0.82rem;
 }
 
 .copy-modal-actions {
@@ -312,10 +343,6 @@ h3 {
   .section-heading {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .refresh-button {
-    align-self: stretch;
   }
 
   .visual-section,
