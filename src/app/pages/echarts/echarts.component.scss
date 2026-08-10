@@ -181,11 +181,11 @@
             ::ng-deep {
               .comment { color: #6a9955; }
               .keyword { color: #569cd6; font-weight: bold; }
-              .string  { color: #ce9178; }
-              .number  { color: #b5cea8; }
-              .tag     { color: #4ec9b0; }
-              .attr    { color: #9cdcfe; }
-              .fn      { color: #dcdcaa; }
+              .string { color: #ce9178; }
+              .number { color: #b5cea8; }
+              .tag { color: #4ec9b0; }
+              .attr { color: #9cdcfe; }
+              .fn { color: #dcdcaa; }
             }
           }
         }
@@ -210,7 +210,7 @@
   min-height: 420px;
 }
 
-// ─── Pages de détail ─────────────────────────────────────────────────────
+// Pages de détail
 .detail-nav {
   display: flex;
   align-items: center;
