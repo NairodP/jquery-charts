@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { BasicTestComponent } from './pages/basic-test/basic-test.component';
@@ -31,31 +31,31 @@ const routes: Routes = [
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
 
-  // ─── jquery-table — shell avec tabs ──────────────────────────────────
+  // jquery-table — shell avec tabs
   {
     path: 'table',
     component: TableShellComponent,
     children: [
-      { path: '',              component: TableExempleComponent },
-      { path: 'comparatif',    component: TableComparatifComponent },
-      { path: 'slice-chart',   component: SliceChartComponent },
+      { path: '', component: TableExempleComponent },
+      { path: 'comparatif', component: TableComparatifComponent },
+      { path: 'slice-chart', component: SliceChartComponent },
       { path: 'documentation', component: TableTestDocumentationComponent },
-      { path: 'presentation',  component: TablePresentationComponent },
+      { path: 'presentation', component: TablePresentationComponent },
     ],
   },
 
-  // ─── jquery-charts — shell avec switcher de bibliothèque ─────────────
+  // jquery-charts — shell avec switcher de bibliothèque
   {
     path: 'charts',
     component: ChartsShellComponent,
     children: [
-      { path: '',                  redirectTo: 'echarts', pathMatch: 'full' },
-      { path: 'echarts',           component: EChartsComponent           },
-      { path: 'echarts/:type',     component: EChartsDetailComponent     },
-      { path: 'highcharts',        component: HighchartsGalleryComponent  },
-      { path: 'highcharts/:type',  component: HighchartsDetailComponent   },
-      { path: 'apexcharts',        component: ApexChartsPageComponent     },
-      { path: 'apexcharts/:type',  component: ApexChartsDetailComponent   },
+      { path: '', redirectTo: 'echarts', pathMatch: 'full' },
+      { path: 'echarts', component: EChartsComponent },
+      { path: 'echarts/:type', component: EChartsDetailComponent },
+      { path: 'highcharts', component: HighchartsGalleryComponent },
+      { path: 'highcharts/:type', component: HighchartsDetailComponent },
+      { path: 'apexcharts', component: ApexChartsPageComponent },
+      { path: 'apexcharts/:type', component: ApexChartsDetailComponent },
     ],
   },
 
