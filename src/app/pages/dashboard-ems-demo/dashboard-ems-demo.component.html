@@ -7,6 +7,7 @@
       <p class="dashboard-demo__intro">Simulation de la persistance JSON, du rendu dynamique, de l'Organizer et du glisser-deposer des cartes.</p>
     </div>
     <div class="dashboard-demo__toolbar" aria-label="Actions du dashboard">
+      <button type="button" class="dashboard-demo__button dashboard-demo__button--secondary" (click)="simulateDataArrival()" [disabled]="isDataArrivalSimulationRunning">Simuler l'arrivee des donnees</button>
       <button type="button" class="dashboard-demo__button dashboard-demo__button--secondary" (click)="resetDashboard()">Reinitialiser</button>
       <button type="button" class="dashboard-demo__button dashboard-demo__button--primary" (click)="toggleEditMode()">{{ editMode ? 'Terminer l\'edition' : 'Mode edition' }}</button>
     </div>
@@ -25,7 +26,7 @@
         </div>
       </header>
       <div class="dashboard-demo__chart-region">
-        <app-dashboard-demo-chart [type]="chart.type" [config]="chart.config" [data]="chart.data"></app-dashboard-demo-chart>
+        <app-dashboard-demo-chart [type]="chart.type" [config]="chart.config" [data]="chart.data" [isLoading]="isDataArrivalSimulationRunning && chart.id === 'usage'"></app-dashboard-demo-chart>
       </div>
     </article>
   </section>

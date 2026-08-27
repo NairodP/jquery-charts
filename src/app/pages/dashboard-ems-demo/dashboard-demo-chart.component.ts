@@ -13,6 +13,7 @@ export class DashboardDemoChartComponent implements AfterViewInit, OnChanges, On
   @Input({required: true}) type!: ChartType;
   @Input({required: true}) config!: ChartProvider<any, any>;
   @Input({required: true}) data: Record<string, unknown>[] = [];
+  @Input() isLoading = false;
 
   @ViewChild('chartHost', {read: ViewContainerRef, static: true}) private chartHost!: ViewContainerRef;
 
@@ -24,7 +25,7 @@ export class DashboardDemoChartComponent implements AfterViewInit, OnChanges, On
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.chartRef && (changes['type'] || changes['config'] || changes['data'])) {
+    if (this.chartRef && (changes['type'] || changes['config'] || changes['data'] || changes['isLoading'])) {
       this.updateInputs();
     }
   }
@@ -41,6 +42,7 @@ export class DashboardDemoChartComponent implements AfterViewInit, OnChanges, On
     this.chartRef.setInput('type', this.type);
     this.chartRef.setInput('config', this.config);
     this.chartRef.setInput('data', this.data);
+    this.chartRef.setInput('isLoading', this.isLoading);
     this.chartRef.setInput('renderer', 'canvas');
     this.chartRef.changeDetectorRef.detectChanges();
   }

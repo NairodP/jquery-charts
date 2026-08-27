@@ -1,6 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {OrganizerButtonComponent, OrganizerButtonEvent, OrganizerConfig, OrganizerState} from '@oneteme/jquery-organizer';
 import {ChartProvider, ChartType} from '@oneteme/jquery-core';
@@ -22,8 +22,9 @@ interface DashboardDemoChart {
   templateUrl: './dashboard-ems-demo.component.html',
   styleUrls: ['./dashboard-ems-demo.component.scss']
 })
-export class DashboardEmsDemoComponent implements OnInit {
+export class DashboardEmsDemoComponent implements OnInit, OnDestroy {
   private readonly storageKey = 'jquery-charts:demo:ems-dashboard';
+  private dataArrivalSimulationTimeout?: ReturnType<typeof setTimeout>;
 
   readonly organizerConfig: OrganizerConfig = {
     fields: [
@@ -40,10 +41,17 @@ export class DashboardEmsDemoComponent implements OnInit {
   organizerState: OrganizerState = {visibleFields: ['usage', 'sites']};
   charts: DashboardDemoChart[] = [];
   editMode = false;
+  isDataArrivalSimulationRunning = false;
   lastInteraction = 'Initialisation du dashboard';
 
   ngOnInit(): void {
     this.restoreDashboard();
+  }
+
+  ngOnDestroy(): void {
+    if (this.dataArrivalSimulationTimeout) {
+      clearTimeout(this.dataArrivalSimulationTimeout);
+    }
   }
 
   toggleEditMode(): void {
@@ -88,6 +96,29 @@ export class DashboardEmsDemoComponent implements OnInit {
     this.charts = this.createInitialCharts();
     this.saveDashboard();
     this.lastInteraction = 'Demo reinitialisee.';
+  }
+
+  simulateDataArrival(): void {
+    const chart = this.charts.find(({id}) => id === 'usage');
+    if (!chart || this.isDataArrivalSimulationRunning) {
+      return;
+    }
+
+    const data = chart.data.map((dataPoint) => ({...dataPoint}));
+    this.charts = this.charts.map((currentChart) =>
+      currentChart.id === chart.id ? {...currentChart, data: []} : currentChart
+    );
+    this.isDataArrivalSimulationRunning = true;
+    this.lastInteraction = 'Simulation : chargement des donnees de « Consommation mensuelle ».';
+
+    this.dataArrivalSimulationTimeout = setTimeout(() => {
+      this.charts = this.charts.map((currentChart) =>
+        currentChart.id === chart.id ? {...currentChart, data} : currentChart
+      );
+      this.isDataArrivalSimulationRunning = false;
+      this.dataArrivalSimulationTimeout = undefined;
+      this.lastInteraction = 'Simulation : donnees recues. Le chargement est termine.';
+    }, 900);
   }
 
   trackChart(_index: number, chart: DashboardDemoChart): string {

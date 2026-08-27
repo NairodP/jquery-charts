@@ -254,7 +254,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       if (isInitialRender || isTypeChange) {
         this._chartInstance.setOption(option, { notMerge: true, lazyUpdate: false });
       } else {
-        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis'], lazyUpdate: false });
+        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis', 'graphic'], lazyUpdate: false });
       }
     } catch (e) {
       console.error('[jquery-echarts] Erreur lors de la construction ou du rendu :', e);

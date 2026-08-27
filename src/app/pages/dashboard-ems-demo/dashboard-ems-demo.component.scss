@@ -82,6 +82,7 @@ h1 {
 .dashboard-demo__add { background: #176b72; color: #fff; }
 .dashboard-demo__button--secondary:hover,
 .dashboard-demo__icon-button:hover { background: #e8f1f0; }
+.dashboard-demo__button:disabled { cursor: wait; opacity: .65; }
 
 .dashboard-demo__status {
   margin-bottom: 1.25rem;
