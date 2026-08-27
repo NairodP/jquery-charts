@@ -33,6 +33,46 @@ export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): 
   };
 }
 
+function getTooltipValue(param: any): unknown {
+  if (Array.isArray(param?.value)) {
+    return param.value[1];
+  }
+  if (param?.value && typeof param.value === 'object' && 'value' in param.value) {
+    return Array.isArray(param.value.value) ? param.value.value[1] : param.value.value;
+  }
+  return param?.value;
+}
+
+export function formatTooltipValue(value: unknown): string {
+  const numericValue = typeof value === 'number' || typeof value === 'string'
+    ? Number(value)
+    : Number.NaN;
+
+  if (!Number.isFinite(numericValue)) {
+    if (value == null) return '–';
+    return typeof value === 'object' ? JSON.stringify(value) ?? '–' : String(value);
+  }
+
+  if (numericValue === 0) return '0';
+  const magnitude = Math.floor(Math.log10(Math.abs(numericValue)));
+  const decimals = Math.max(0, Math.min(-magnitude + 2, 6));
+  return numericValue.toLocaleString('fr-FR', { maximumFractionDigits: decimals });
+}
+
+/** Formatte un tooltip axe en conservant l'unité propre à chaque série. */
+export function buildAxisTooltipFormatter(resolveUnit: (seriesIndex: number) => string | undefined): (params: any) => string {
+  return (params: any) => {
+    const items = Array.isArray(params) ? params : [params];
+    const title = items[0]?.axisValueLabel ?? items[0]?.name ?? '';
+    const lines = items.map((param: any) => {
+      const unit = resolveUnit(param.seriesIndex);
+      const suffix = unit ? ` ${unit}` : '';
+      return `${param.marker ?? ''}${param.seriesName}: ${formatTooltipValue(getTooltipValue(param))}${suffix}`;
+    });
+    return [title, ...lines].join('<br/>');
+  };
+}
+
 /**
  * Construit l'option de base commune à tous les types de graphiques.
  * Les options spécifiques au type sont fusionnées par-dessus.

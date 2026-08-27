@@ -47,4 +47,22 @@
     </div>
     <button type="button" class="dashboard-demo__button dashboard-demo__button--primary" (click)="openTooltipDialog()">Ouvrir le graphique en modale</button>
   </section>
+
+  <section class="dashboard-demo__tooltip-comparison" aria-labelledby="tooltip-comparison-title">
+    <div class="dashboard-demo__tooltip-comparison-header">
+      <p class="dashboard-demo__eyebrow">Comparaison</p>
+      <h2 id="tooltip-comparison-title">Tooltips classique et mixed</h2>
+      <p>Survolez les deux graphiques pour comparer le rendu commun et les unités par série du graphique mixed.</p>
+    </div>
+    <div class="dashboard-demo__tooltip-comparison-grid">
+      <article>
+        <h3>Classique</h3>
+        <div class="dashboard-demo__tooltip-chart"><chart type="column" [config]="standardTooltipConfig" [data]="tooltipComparisonData" renderer="canvas"></chart></div>
+      </article>
+      <article>
+        <h3>Mixed, deux axes</h3>
+        <div class="dashboard-demo__tooltip-chart"><chart type="mixed" [config]="mixedTooltipConfig" [data]="tooltipComparisonData" renderer="canvas"></chart></div>
+      </article>
+    </div>
+  </section>
 </main>

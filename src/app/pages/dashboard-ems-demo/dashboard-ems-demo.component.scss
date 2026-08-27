@@ -195,11 +195,34 @@ h1 {
 .dashboard-demo__tooltip-check h2 { margin-bottom: .25rem; font-size: 1.1rem; }
 .dashboard-demo__tooltip-check p:last-child { color: #526b73; font-size: .9rem; }
 
+.dashboard-demo__tooltip-comparison { margin-top: 1.5rem; }
+.dashboard-demo__tooltip-comparison-header { margin-bottom: .85rem; }
+.dashboard-demo__tooltip-comparison-header .dashboard-demo__eyebrow { margin-bottom: .25rem; }
+.dashboard-demo__tooltip-comparison-header h2 { margin-bottom: .25rem; font-size: 1.1rem; }
+.dashboard-demo__tooltip-comparison-header p:last-child { color: #526b73; font-size: .9rem; }
+
+.dashboard-demo__tooltip-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-demo__tooltip-comparison-grid article {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #cbd9da;
+  background: #fff;
+}
+
+.dashboard-demo__tooltip-comparison-grid h3 { margin-bottom: .5rem; color: #18323a; font-size: .95rem; }
+.dashboard-demo__tooltip-chart { height: 280px; }
+
 @media (max-width: 760px) {
   .dashboard-demo__header { align-items: stretch; flex-direction: column; }
   .dashboard-demo__toolbar { flex-wrap: wrap; }
   .dashboard-demo__grid,
-  .dashboard-demo__checks { grid-template-columns: 1fr; }
+  .dashboard-demo__checks,
+  .dashboard-demo__tooltip-comparison-grid { grid-template-columns: 1fr; }
   .dashboard-demo__tile,
   .dashboard-demo__tile--wide { grid-column: auto; aspect-ratio: 16 / 11; }
   .dashboard-demo__tooltip-check { align-items: stretch; flex-direction: column; }
