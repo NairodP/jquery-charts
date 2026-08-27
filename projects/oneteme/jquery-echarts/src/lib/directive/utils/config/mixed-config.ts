@@ -1,41 +1,10 @@
 import { buildChart, ChartProvider, ChartType, CommonChart, CommonSerie, XaxisType, YaxisType, Coordinate2D } from '@oneteme/jquery-core';
 import { EChartsOption } from '../types';
-import { getXAxisType } from '../chart-utils';
+import { buildAxisTooltipFormatter, getXAxisType } from '../chart-utils';
 import { EChartTypeConfigurator } from './chart-config-registry';
 
 const DEFAULT_Y_AXIS_SPLIT_NUMBER = 5;
 const MAX_Y_AXIS_COUNT = 2;
-
-function formatTooltipValue(value: unknown): string {
-  let numericValue = Number.NaN;
-
-  if (typeof value === 'number') {
-    numericValue = value;
-  } else if (typeof value === 'string') {
-    numericValue = Number(value);
-  }
-
-  if (!Number.isFinite(numericValue)) {
-    if (value == null) {
-      return '–';
-    }
-
-    if (typeof value === 'object') {
-      return JSON.stringify(value) ?? '–';
-    }
-
-    return String(value as string | number | boolean | bigint | symbol);
-  }
-
-  const abs = Math.abs(numericValue);
-  if (abs === 0) {
-    return '0';
-  }
-
-  const magnitude = Math.floor(Math.log10(abs));
-  const decimals = Math.max(0, Math.min(-magnitude + 2, 6));
-  return numericValue.toLocaleString('fr-FR', { maximumFractionDigits: decimals });
-}
 
 function extractUnitFromAxisTitle(title?: string): string | undefined {
   if (!title) {
@@ -339,17 +308,7 @@ function buildMixedOption(
     ...((seriesUnits.some(Boolean) && !(config.options as any)?.tooltip?.formatter)
       ? {
           tooltip: {
-            formatter: (params: any) => {
-              const items = Array.isArray(params) ? params : [params];
-              const title = items[0]?.axisValueLabel ?? items[0]?.name ?? '';
-              const lines = items.map((param: any) => {
-                const unit = seriesUnits[param.seriesIndex];
-                const value = extractTooltipValue(param);
-                const suffix = unit ? ` ${unit}` : '';
-                return `${param.marker ?? ''}${param.seriesName}: ${formatTooltipValue(value)}${suffix}`;
-              });
-              return [title, ...lines].join('<br/>');
-            },
+            formatter: buildAxisTooltipFormatter((seriesIndex) => seriesUnits[seriesIndex]),
           },
         }
       : {}),

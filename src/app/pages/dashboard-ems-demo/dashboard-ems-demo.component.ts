@@ -1,10 +1,13 @@
 import {CommonModule} from '@angular/common';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {RouterLink} from '@angular/router';
 import {OrganizerButtonComponent, OrganizerButtonEvent, OrganizerConfig, OrganizerState} from '@oneteme/jquery-organizer';
 import {ChartProvider, ChartType} from '@oneteme/jquery-core';
+import {ChartComponent} from '@oneteme/jquery-echarts';
 import {DashboardDemoChartComponent} from './dashboard-demo-chart.component';
+import {DashboardChartTooltipDialogComponent} from './dashboard-chart-tooltip-dialog.component';
 
 interface DashboardDemoChart {
   id: string;
@@ -18,11 +21,12 @@ interface DashboardDemoChart {
 @Component({
   selector: 'app-dashboard-ems-demo',
   standalone: true,
-  imports: [CommonModule, DragDropModule, RouterLink, OrganizerButtonComponent, DashboardDemoChartComponent],
+  imports: [CommonModule, DragDropModule, MatDialogModule, RouterLink, OrganizerButtonComponent, ChartComponent, DashboardDemoChartComponent],
   templateUrl: './dashboard-ems-demo.component.html',
   styleUrls: ['./dashboard-ems-demo.component.scss']
 })
 export class DashboardEmsDemoComponent implements OnInit, OnDestroy {
+  private readonly dialog = inject(MatDialog);
   private readonly storageKey = 'jquery-charts:demo:ems-dashboard';
   private dataArrivalSimulationTimeout?: ReturnType<typeof setTimeout>;
 
@@ -43,6 +47,28 @@ export class DashboardEmsDemoComponent implements OnInit, OnDestroy {
   editMode = false;
   isDataArrivalSimulationRunning = false;
   lastInteraction = 'Initialisation du dashboard';
+
+  readonly tooltipComparisonData = [
+    {period: 'Jan.', usage: 112, temperature: 8},
+    {period: 'Fev.', usage: 136, temperature: 11},
+    {period: 'Mars', usage: 128, temperature: 14},
+    {period: 'Avr.', usage: 161, temperature: 18}
+  ];
+
+  readonly standardTooltipConfig: ChartProvider<string, number> = {
+    xtitle: 'Periode',
+    ytitle: 'Consommation (MWh)',
+    series: [{name: 'Consommation', type: 'column', color: '#176b72', data: {xField: 'period', yField: 'usage'}}]
+  };
+
+  readonly mixedTooltipConfig: ChartProvider<string, number> = {
+    xtitle: 'Periode',
+    ytitle: ['Consommation (MWh)', 'Temperature (°C)'],
+    series: [
+      {name: 'Consommation', type: 'column', color: '#176b72', unit: 'MWh', yAxisIndex: 0, data: {xField: 'period', yField: 'usage'}},
+      {name: 'Temperature', type: 'line', color: '#bc5b35', unit: '°C', yAxisIndex: 1, data: {xField: 'period', yField: 'temperature'}}
+    ]
+  };
 
   ngOnInit(): void {
     this.restoreDashboard();
@@ -119,6 +145,14 @@ export class DashboardEmsDemoComponent implements OnInit, OnDestroy {
       this.dataArrivalSimulationTimeout = undefined;
       this.lastInteraction = 'Simulation : donnees recues. Le chargement est termine.';
     }, 900);
+  }
+
+  openTooltipDialog(): void {
+    this.dialog.open(DashboardChartTooltipDialogComponent, {
+      width: '760px',
+      maxWidth: '92vw',
+      autoFocus: false
+    });
   }
 
   trackChart(_index: number, chart: DashboardDemoChart): string {
