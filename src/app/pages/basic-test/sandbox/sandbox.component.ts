@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ChartProvider, ChartType, field } from '@oneteme/jquery-core';
-import { ApexChartTestComponent } from '../apexcharts-chart-test/apexcharts-chart-test.component';
-import { HighchartsTestComponent } from '../highcharts-test/highcharts-test.component';
+import { ChartComponent as EChartsPreviewComponent } from '@oneteme/jquery-echarts';
+import { ApexChartPreviewComponent } from '../apexcharts-chart-test/apexcharts-chart-test.component';
+import { HighchartsChartPreviewComponent } from '../highcharts-test/highcharts-test.component';
 
 @Component({
-  selector: 'app-sandbox',
+  selector: 'app-chart-data-sandbox',
   templateUrl: './sandbox.component.html',
   styleUrls: ['./sandbox.component.scss'],
   standalone: true,
@@ -16,16 +17,17 @@ import { HighchartsTestComponent } from '../highcharts-test/highcharts-test.comp
     CommonModule,
     RouterModule,
     FormsModule,
-    ApexChartTestComponent,
-    HighchartsTestComponent,
+    EChartsPreviewComponent,
+    ApexChartPreviewComponent,
+    HighchartsChartPreviewComponent,
   ],
 })
-export class SandboxComponent implements OnInit {
+export class ChartDataSandboxComponent implements OnInit {
   chartType: ChartType = 'pie';
   chartConfig: ChartProvider<string, number>;
   chartData: any[] = [];
   isLoadingData = false;
-  chartLibrary: 'apexcharts' | 'highcharts' = 'apexcharts';
+  chartLibrary: 'echarts' | 'apexcharts' | 'highcharts' = 'echarts';
 
   // Editeur JSON
   dataInput: string = '';
@@ -66,26 +68,6 @@ export class SandboxComponent implements OnInit {
     stacked: false,
     series: [
       { name: 'team', data: { x: 'month', y: 'value' } },
-    ],
-    showToolbar: true,
-  };
-
-  // Configurations réelles avec field()
-  private readonly exampleSimpleConfig: ChartProvider<string, number> = {
-    title: 'Mon graphique',
-    subtitle: 'Sous-titre personnalisé',
-    series: [{ data: { x: field('team'), y: field('value') } }],
-    showToolbar: true,
-  };
-
-  private readonly exampleComplexConfig: ChartProvider<string, number> = {
-    title: 'Performance par équipe',
-    subtitle: 'Données mensuelles',
-    xtitle: 'Mois',
-    ytitle: 'Valeur',
-    stacked: false,
-    series: [
-      { name: field('team'), data: { x: field('month'), y: field('value') } },
     ],
     showToolbar: true,
   };
@@ -188,11 +170,17 @@ export class SandboxComponent implements OnInit {
   }
 
   toggleChartLibrary(): void {
-    this.chartLibrary =
-      this.chartLibrary === 'apexcharts' ? 'highcharts' : 'apexcharts';
+    const libraries: Array<'echarts' | 'apexcharts' | 'highcharts'> = [
+      'echarts',
+      'apexcharts',
+      'highcharts',
+    ];
+    const currentIndex = libraries.indexOf(this.chartLibrary);
+    this.chartLibrary = libraries[(currentIndex + 1) % libraries.length];
   }
 
   getCurrentLibraryName(): string {
+    if (this.chartLibrary === 'echarts') return 'ECharts';
     return this.chartLibrary === 'apexcharts' ? 'ApexCharts' : 'Highcharts';
   }
 

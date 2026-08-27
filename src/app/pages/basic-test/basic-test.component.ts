@@ -4,12 +4,13 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ChartProvider, ChartType, field } from '@oneteme/jquery-core';
-import { ApexChartTestComponent } from './apexcharts-chart-test/apexcharts-chart-test.component';
-import { HighchartsTestComponent } from './highcharts-test/highcharts-test.component';
+import { ChartComponent as EChartsPreviewComponent } from '@oneteme/jquery-echarts';
+import { ApexChartPreviewComponent } from './apexcharts-chart-test/apexcharts-chart-test.component';
+import { HighchartsChartPreviewComponent } from './highcharts-test/highcharts-test.component';
 import { mapChartConfig, mapChartData } from './highcharts-test/map-test-data';
 
 @Component({
-  selector: 'app-basic-test',
+  selector: 'app-chart-workbench',
   templateUrl: './basic-test.component.html',
   styleUrls: ['./basic-test.component.scss'],
   standalone: true,
@@ -17,11 +18,12 @@ import { mapChartConfig, mapChartData } from './highcharts-test/map-test-data';
     CommonModule,
     RouterModule,
     FormsModule,
-    ApexChartTestComponent,
-    HighchartsTestComponent,
+    EChartsPreviewComponent,
+    ApexChartPreviewComponent,
+    HighchartsChartPreviewComponent,
   ],
 })
-export class BasicTestComponent implements OnInit {
+export class ChartWorkbenchComponent implements OnInit {
   // Configuration du graphique
   chartType: ChartType = 'pie';
   chartConfig: ChartProvider<string, number>;
@@ -30,7 +32,7 @@ export class BasicTestComponent implements OnInit {
   isPanelVisible = false;
   useSimpleData = true;
 
-  chartLibrary: 'apexcharts' | 'highcharts' = 'highcharts';
+  chartLibrary: 'echarts' | 'apexcharts' | 'highcharts' = 'echarts';
   dataDelay = 0;
 
   // Types de graphiques possibles pour tester la compatibilité des transformations
@@ -156,11 +158,17 @@ export class BasicTestComponent implements OnInit {
   }
 
   toggleChartLibrary(): void {
-    this.chartLibrary =
-      this.chartLibrary === 'apexcharts' ? 'highcharts' : 'apexcharts';
+    const libraries: Array<'echarts' | 'apexcharts' | 'highcharts'> = [
+      'echarts',
+      'apexcharts',
+      'highcharts',
+    ];
+    const currentIndex = libraries.indexOf(this.chartLibrary);
+    this.chartLibrary = libraries[(currentIndex + 1) % libraries.length];
   }
 
   getCurrentLibraryName(): string {
+    if (this.chartLibrary === 'echarts') return 'ECharts';
     return this.chartLibrary === 'apexcharts' ? 'ApexCharts' : 'Highcharts';
   }
 }

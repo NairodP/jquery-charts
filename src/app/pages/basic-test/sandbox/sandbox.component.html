@@ -11,10 +11,10 @@
     <div class="library-toggle">
       <button
         class="back-btn"
-        routerLink="/basic-test"
-        title="Retour à la page basic-test"
+        routerLink="/atelier-graphiques"
+        title="Retour à l'atelier graphiques"
       >
-        ← Retour à Basic Test
+        ← Retour à l'atelier graphiques
       </button>
 
       <div class="separator"></div>
@@ -22,10 +22,10 @@
       <button
         class="library-btn"
         (click)="toggleChartLibrary()"
-        title="Basculer entre ApexCharts et Highcharts"
+        title="Basculer entre ECharts, ApexCharts et Highcharts"
       >
         Utiliser
-        {{ chartLibrary === "apexcharts" ? "Highcharts" : "ApexCharts" }}
+        {{ chartLibrary === "echarts" ? "ApexCharts" : chartLibrary === "apexcharts" ? "Highcharts" : "ECharts" }}
       </button>
     </div>
   </div>
@@ -33,6 +33,14 @@
   <!-- Affichage du graphique -->
   <div class="charts-container">
     <div class="chart-wrapper">
+      <chart
+        *ngIf="chartLibrary === 'echarts'"
+        [type]="chartType"
+        [config]="chartConfig"
+        [data]="chartData"
+        [isLoading]="isLoadingData"
+      ></chart>
+
       <app-apexcharts-chart-test
         *ngIf="chartLibrary === 'apexcharts'"
         [chartType]="chartType"

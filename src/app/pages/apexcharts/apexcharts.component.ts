@@ -79,56 +79,5 @@ export class ApexChartsPageComponent {
     const example = (this.examples as any)[exampleKey];
     if (!example) return '';
     return highlightChartCode(buildChartCode(type, example));
-
-    const formatValue = (val: any, indent = 0): string => {
-      if (val === null) return 'null';
-      if (val === undefined) return 'undefined';
-      if (typeof val === 'function') {
-        const str = val.toString();
-        const match = str.match(/field\(['"](\w+)['"]\)/);
-        if (match) return `field('${match[1]}')`;
-        const matchRange = str.match(/rangeFields\(['"](\w+)['"],\s*['"](\w+)['"]\)/);
-        if (matchRange) return `rangeFields('${matchRange[1]}', '${matchRange[2]}')`;
-        return str;
-      }
-      if (Array.isArray(val)) {
-        if (val.length === 0) return '[]';
-        const pad = ' '.repeat(indent + 2);
-        const items = val.map(v => `${pad}${formatValue(v, indent + 2)}`).join(',\n');
-        return `[\n${items}\n${' '.repeat(indent)}]`;
-      }
-      if (typeof val === 'object') {
-        const entries = Object.entries(val);
-        if (entries.length === 0) return '{}';
-        const pad = ' '.repeat(indent + 2);
-        const props = entries.map(([k, v]) => `${pad}${k}: ${formatValue(v, indent + 2)}`).join(',\n');
-        return `{\n${props}\n${' '.repeat(indent)}}`;
-      }
-      if (typeof val === 'string') return `'${val}'`;
-      return String(val);
-    };
-
-    let code = `// Données\nconst data = ${formatValue(example.data)};\n\n`;
-    code    += `// Configuration\nconst config = ${formatValue(example.config)};\n\n`;
-    code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
-
-    return this._highlightCode(code);
-  }
-
-  private _highlightCode(code: string): string {
-    const escaped = code
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    return escaped
-      .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
-      .replace(/\b(const|let|var|function|return)\b/g, '<span class="keyword">$1</span>')
-      .replace(/('[^']*')/g, '<span class="string">$1</span>')
-      .replace(/\b(\d+(\.\d+)?)\b/g, '<span class="number">$1</span>')
-      .replace(/&lt;chart/g, '<span class="tag">&lt;chart</span>')
-      .replace(/&lt;\/chart&gt;/g, '<span class="tag">&lt;/chart&gt;</span>')
-      .replace(/(type|config|data)=/g, '<span class="attr">$1</span>=')
-      .replace(/\b(field|rangeFields|values|joinFields)\b/g, '<span class="fn">$1</span>');
   }
 }

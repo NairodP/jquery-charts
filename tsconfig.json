@@ -18,9 +18,6 @@
       "@oneteme/jquery-table": [
         "dist/oneteme/jquery-table"
       ],
-      "@oneteme/jquery-echarts": [
-        "dist/oneteme/jquery-echarts"
-      ],
       "@oneteme/jquery-organizer": [
         "dist/oneteme/jquery-organizer"
       ]

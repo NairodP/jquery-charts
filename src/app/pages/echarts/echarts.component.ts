@@ -42,7 +42,6 @@ export class EChartsComponent implements OnInit {
   ];
   drilldownLoading = false;
   private readonly drilldownCache = new Map<string, any[]>();
-  private selectedMonth: string | null = null;
   private drilldownRequest = 0;
 
   readonly drilldownCode = `import { ChartClickEvent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
@@ -113,7 +112,6 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
     if (event.dataIndex === undefined || this.drilldownNavigation.activeLevel !== 'months') return;
     const month = typeof event.name === 'string' ? event.name : null;
     if (!month) return;
-    this.selectedMonth = month;
     this.drilldownLoading = true;
     const requestId = ++this.drilldownRequest;
     const cached = this.drilldownCache.get(month);
@@ -135,7 +133,6 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
       { period: 'Janvier', sales: 120, orders: 18 }, { period: 'Février', sales: 168, orders: 24 },
       { period: 'Mars', sales: 142, orders: 21 }, { period: 'Avril', sales: 214, orders: 31 },
     ];
-    this.selectedMonth = null;
     this.drilldownNavigation = { ...this.drilldownNavigation, activeLevel: 'months' };
   }
 
@@ -204,56 +201,6 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
     if (!example) return '';
     if (example.code) return this._highlightCode(example.code);
     return highlightChartCode(buildChartCode(type, example));
-
-    const resolveField = (provider: unknown): string | null => {
-      if (typeof provider !== 'function' || !example.data?.length) return null;
-      const fields = Object.keys(example.data[0]);
-      const row = new Proxy({}, { get: (_, property) => typeof property === 'string' ? property : undefined });
-      try {
-        const value = provider(row, 0);
-        return typeof value === 'string' && fields.includes(value) ? value : null;
-      } catch {
-        return null;
-      }
-    };
-
-    const formatValue = (val: any, indent = 0): string => {
-      if (val === null) return 'null';
-      if (val === undefined) return 'undefined';
-      if (typeof val === 'function') {
-        const str = val.toString();
-        // Simplifie les DataProviders pour la lisibilité
-        const match = str.match(/field\(['"](\w+)['"]\)/);
-        if (match) return `field('${match[1]}')`;
-        return str;
-      }
-      if (Array.isArray(val)) {
-        if (val.length === 0) return '[]';
-        const pad = ' '.repeat(indent + 2);
-        const items = val.map(v => `${pad}${formatValue(v, indent + 2)}`).join(',\n');
-        return `[\n${items}\n${' '.repeat(indent)}]`;
-      }
-      if (typeof val === 'object') {
-        const entries = Object.entries(val);
-        if (entries.length === 0) return '{}';
-        const pad = ' '.repeat(indent + 2);
-        const xField = resolveField(val.x);
-        const yField = resolveField(val.y);
-        if (xField && yField) {
-          return `{ xField: '${xField}', yField: '${yField}' }`;
-        }
-        const props = entries.map(([k, v]) => `${pad}${k}: ${formatValue(v, indent + 2)}`).join(',\n');
-        return `{\n${props}\n${' '.repeat(indent)}}`;
-      }
-      if (typeof val === 'string') return `'${val}'`;
-      return String(val);
-    };
-
-    let code = `// Données\nconst data = ${formatValue(example.data)};\n\n`;
-    code    += `// Configuration serialisable\nconst config = ${formatValue(example.config)};\n\n`;
-    code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
-
-    return this._highlightCode(code);
   }
 
   _highlightCode(code: string): string {

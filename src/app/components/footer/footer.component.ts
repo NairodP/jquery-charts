@@ -13,13 +13,13 @@ import { Component } from '@angular/core';
 
           <div class="separator"></div>
           <a
-            routerLink="/basic-test"
+            routerLink="/atelier-graphiques"
             class="test-link"
-            title="Accéder à la page de test"
+            title="Accéder à l'atelier graphiques"
           >
             <img
               src="assets/icons/test.svg"
-              alt="Test"
+              alt="Atelier graphiques"
               class="test-icon"
             />
           </a>

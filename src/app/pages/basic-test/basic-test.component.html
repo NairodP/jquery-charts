@@ -1,22 +1,20 @@
-<div class="basic-test-container">
-  <h1>Page de Test des Graphiques</h1>
+<div class="chart-workbench-container">
+  <h1>Atelier graphiques</h1>
 
   <div class="description">
     <p>
-      Cette page permet de tester l'intégration de la bibliothèque jQuery-Charts
-      avec jquery-core + jquery-apexcharts ou jquery-highcharts et de reproduire
-      certains effets de bord relevés. Vous pouvez utiliser le panneau de
-      contrôle en bas pour sélectionner le graphique à afficher.
+      Cet espace permet de valider les intégrations de graphiques et d'accéder
+      aux démonstrations techniques de la bibliothèque.
     </p>
 
     <div class="library-toggle">
       <button
         class="library-btn"
         (click)="toggleChartLibrary()"
-        title="Basculer entre ApexCharts et Highcharts"
+        title="Basculer entre ECharts, ApexCharts et Highcharts"
       >
         Utiliser
-        {{ chartLibrary === "apexcharts" ? "Highcharts" : "ApexCharts" }}
+        {{ chartLibrary === "echarts" ? "ApexCharts" : chartLibrary === "apexcharts" ? "Highcharts" : "ECharts" }}
       </button>
 
       <div class="separator"></div>
@@ -38,21 +36,19 @@
       >
         <span class="label">Complex</span>
       </button>
-
-      <div class="separator"></div>
-
-      <button
-        class="sandbox-btn"
-        routerLink="/basic-test/sandbox"
-        title="Tester avec vos propres données"
-      >
-        Tester avec un jeu de données perso
-      </button>
     </div>
   </div>
 
   <div class="charts-container">
     <div class="chart-wrapper">
+      <chart
+        *ngIf="chartLibrary === 'echarts'"
+        [type]="chartType"
+        [config]="chartConfig"
+        [data]="chartData"
+        [isLoading]="isLoadingData"
+      ></chart>
+
       <app-apexcharts-chart-test
         *ngIf="chartLibrary === 'apexcharts'"
         [chartType]="chartType"
@@ -87,6 +83,43 @@
       </p>
     </div>
   </div>
+
+  <section class="workbench-tools" aria-labelledby="workbench-tools-title">
+    <h2 id="workbench-tools-title">Démonstrations complémentaires</h2>
+    <div class="workbench-tools-actions">
+      <button
+        class="sandbox-btn"
+        routerLink="/atelier-graphiques/sandbox"
+        title="Tester avec vos propres données"
+      >
+        Tester avec un jeu de données perso
+      </button>
+
+      <button
+        class="tool-link"
+        routerLink="/snapshots"
+        title="Ouvrir la démonstration de snapshots visuels"
+      >
+        Snapshots visuels
+      </button>
+
+      <button
+        class="tool-link"
+        routerLink="/demo/dashboard-ems"
+        title="Ouvrir la démonstration du dashboard EMS"
+      >
+        Dashboard EMS
+      </button>
+
+      <button
+        class="tool-link"
+        routerLink="/table/presentation"
+        title="Ouvrir la présentation avancée de jquery-table"
+      >
+        Présentation tableau
+      </button>
+    </div>
+  </section>
 
   <!-- Contrôles simples (sticky) -->
   <div class="control-panel-simple" [class.hidden]="!isPanelVisible">

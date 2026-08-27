@@ -10,7 +10,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { ChartTypesService } from './core/services/chart-types.service';
 import { FooterComponent } from './components/footer/footer.component';
 import { BackToDocButtonComponent } from './components/back-to-doc-button/back-to-doc-button.component';
-import { BasicTestComponent } from './pages/basic-test/basic-test.component';
+import { ChartWorkbenchComponent } from './pages/basic-test/basic-test.component';
 import { TableExempleComponent } from './pages/table/table.component';
 import { TableShellComponent } from './pages/table/table-shell.component';
 import { ChartsShellComponent } from './pages/charts/charts-shell.component';
@@ -40,7 +40,7 @@ import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-
     HttpClientModule,
     AppRoutingModule,
     BackToDocButtonComponent,
-    BasicTestComponent,
+    ChartWorkbenchComponent,
     TableExempleComponent,
     TableShellComponent,
     ChartsShellComponent,

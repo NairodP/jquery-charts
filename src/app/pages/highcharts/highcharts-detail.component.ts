@@ -113,8 +113,4 @@ export class HighchartsDetailComponent implements OnInit, OnDestroy {
     if (!example) return '';
     return highlightChartCode(buildChartCode(type, example));
   }
-
-  private _highlight(code: string): string {
-    return highlightChartCode(code);
-  }
 }
