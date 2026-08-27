@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartComponent as ApexChartComponent } from '@oneteme/jquery-apexcharts';
 import { ChartProvider, ChartType } from '@oneteme/jquery-core';
@@ -9,12 +9,8 @@ import { ChartProvider, ChartType } from '@oneteme/jquery-core';
   standalone: true,
   imports: [ CommonModule, ApexChartComponent ],
 })
-export class ApexChartTestComponent implements OnChanges {
+export class ApexChartPreviewComponent {
   @Input() chartType: ChartType = 'line';
   @Input() chartConfig: ChartProvider<string, number>;
   @Input() chartData: any[] = [];
-  @ViewChild('chart') chart: ApexChartComponent<string, number>;
-
-  ngOnChanges(changes: SimpleChanges): void { }
-  reloadChart(): void { if (this.chart) { } }
-};
+}

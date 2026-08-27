@@ -1,5 +1,5 @@
 import { Directive, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, signal, SimpleChanges } from '@angular/core';
-import { buildChart, ChartProvider, ChartView, naturalFieldComparator, XaxisType } from '@oneteme/jquery-core';
+import { buildChart, ChartProvider, ChartView, DataProvider, field, naturalFieldComparator, XaxisType } from '@oneteme/jquery-core';
 import ApexCharts from 'apexcharts';
 import { asapScheduler, observeOn } from 'rxjs';
 import { ChartCustomEvent, getType, initCommonChartOptions, updateCommonOptions, destroyChart, setupScrollPrevention, transformSeriesVisibility, fixToolbarSvgIds, setupToolbarObserver } from './utils';
@@ -194,13 +194,14 @@ export class BarChartDirective<X extends XaxisType>
 
   private updateData() {
     let sortedData = [...this.data];
+    const primaryYProvider = this.getPrimaryYProvider();
     if (this.type == 'funnel') {
       sortedData = sortedData.sort(
-        naturalFieldComparator('asc', this._chartConfig.series[0].data.y)
+        naturalFieldComparator('asc', primaryYProvider)
       );
     } else if (this.type == 'pyramid') {
       sortedData = sortedData.sort(
-        naturalFieldComparator('desc', this._chartConfig.series[0].data.y)
+        naturalFieldComparator('desc', primaryYProvider)
       );
     }
 
@@ -228,5 +229,10 @@ export class BarChartDirective<X extends XaxisType>
     }
 
     this._options.xaxis.categories = commonChart.categories || [];
+  }
+
+  private getPrimaryYProvider(): DataProvider<number> {
+    const coordinate = this._chartConfig.series[0].data;
+    return 'yField' in coordinate ? field<number>(coordinate.yField) : coordinate.y;
   }
 }

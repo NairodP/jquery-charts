@@ -50,15 +50,17 @@ export function buildSingleSerieChart<X extends XaxisType, Y extends YaxisType>(
   provider: ChartProvider<X, Y>,
   defaultValue?: Y
 ): CommonChart<X, Y | Coordinate2D> {
-  let copy = provider;
-  if (objects?.length > 1 && (provider.series?.length > 1 || typeof provider.series[0].name === 'function')) {
+  const resolvedProvider = resolveChartProvider(provider);
+  const resolvedSeries = resolvedProvider.series ?? [];
+  let copy = resolvedProvider;
+  if (objects?.length > 1 && (resolvedSeries.length > 1 || typeof resolvedSeries[0]?.name === 'function')) {
     copy = {
-      ...provider,
+      ...resolvedProvider,
       pivot: false,
-      series: provider.series.map((s) => ({
+      series: resolvedSeries.map((s) => ({
         data: {
           // pivot & merge => single serie
-          x: (provider.pivot // TODO change that cast
+          x: (resolvedProvider.pivot // TODO change that cast
             ? combineProviders(joiner(), resolveDataProvider(s.name), s.data.x)
             : combineProviders(
                 joiner(),
@@ -83,16 +85,18 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
   provider: ChartProvider<X, Y>,
   defaultValue?: Y
 ): CommonChart<X, Y | Coordinate2D> {
-  const mappers = provider.pivot
-    ? provider.series.map((m) => ({
+  const resolvedProvider = resolveChartProvider(provider);
+  const resolvedSeries = resolvedProvider.series ?? [];
+  const mappers = resolvedProvider.pivot
+    ? resolvedSeries.map((m) => ({
         name: resolveDataProvider(m.data.x),
         data: { x: resolveDataProvider(m.name, ''), y: m.data.y },
       }))
-    : provider.series;
+    : resolvedSeries;
 
-  const chart = newChart(provider);
+  const chart: CommonChart<X, Y> = newChart(resolvedProvider as ChartProvider<X, Y>);
 
-  if (!provider.continue) {
+  if (!resolvedProvider.continue) {
     chart.categories = distinct(
       objects,
       mappers.map((m) => m.data.x)
@@ -102,7 +106,7 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
     }
   }
 
-  const series = {};
+  const chartSeries: Record<string, any> = {};
   mappers.forEach((m) => {
     const np = resolveDataProvider(m.name);
     const sp = resolveDataProvider(m.stack);
@@ -114,10 +118,10 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
 
     objects.forEach((o, i) => {
       const name = np(o, i) || ''; // can't use undefined as a map key
-      if (!series[name]) {
+      if (!chartSeries[name]) {
         // init serie
-        series[name] = {
-          data: provider.continue
+        chartSeries[name] = {
+          data: resolvedProvider.continue
             ? []
             : new Array(chart.categories.length).fill(defaultValue),
         };
@@ -128,38 +132,38 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
         const yAxisIndex = yap(o, i);
 
         if (name) {
-          series[name].name = name;
+          chartSeries[name].name = name;
         }
         if (stack) {
-          series[name].stack = stack;
+          chartSeries[name].stack = stack;
         }
         if (color) {
-          series[name].color = color;
+          chartSeries[name].color = color;
         }
         if (type) {
-          series[name].type = type;
+          chartSeries[name].type = type;
         }
         if (visible !== undefined) {
-          series[name].visible = visible;
+          chartSeries[name].visible = visible;
         }
         if (unit) {
-          series[name].unit = unit;
+          chartSeries[name].unit = unit;
         }
         if (yAxisIndex !== undefined) {
-          series[name].yAxisIndex = yAxisIndex;
+          chartSeries[name].yAxisIndex = yAxisIndex;
         }
         const yAxisConfig = (m as any).yAxisConfig;
         if (yAxisConfig) {
-          series[name].yAxisConfig = yAxisConfig;
+          chartSeries[name].yAxisConfig = yAxisConfig;
         }
         const noDataStyle = (m as any).noDataStyle;
         if (noDataStyle) {
-          series[name].noDataStyle = noDataStyle;
+          chartSeries[name].noDataStyle = noDataStyle;
         }
       }
 
-      if (provider.continue) {
-        series[name].data.push({
+      if (resolvedProvider.continue) {
+        chartSeries[name].data.push({
           x: m.data.x(o, i),
           y: requireNonUndefined(m.data.y(o, i), defaultValue),
           _o: o,
@@ -169,7 +173,7 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
         const idx = chart.categories.indexOf(key);
         if (idx > -1) {
           // if !exist
-          series[name].data[idx] = requireNonUndefined(
+          chartSeries[name].data[idx] = requireNonUndefined(
             m.data.y(o, i),
             defaultValue
           );
@@ -180,14 +184,59 @@ export function buildChart<X extends XaxisType, Y extends YaxisType>(
     });
   });
 
-  chart.series = Object.values(series);
+  chart.series = Object.values(chartSeries);
 
-  if (provider.continue && provider.xorder) {
+  if (resolvedProvider.continue && resolvedProvider.xorder) {
     chart.series.forEach((s) =>
-      s.data.sort(naturalFieldComparator(provider.xorder, field('x')))
+      s.data.sort(naturalFieldComparator(resolvedProvider.xorder, field('x')))
     );
   }
   return chart;
+}
+
+function resolveChartProvider<X extends XaxisType, Y extends YaxisType>(
+  provider: ChartProvider<X, Y>
+): ResolvedChartProvider<X, Y> {
+  return {
+    ...provider,
+    series: provider.series?.map(series => ({
+      ...series,
+      data: resolveCoordinateProvider(series.data)
+    }))
+  } as ResolvedChartProvider<X, Y>;
+}
+
+function resolveCoordinateProvider<X extends XaxisType, Y extends YaxisType>(
+  coordinate: CoordinateProvider<X, Y>
+): FunctionCoordinateProvider<X, Y> {
+  if (isFieldCoordinateProvider(coordinate)) {
+    return {
+      x: field<X>(coordinate.xField),
+      y: field<Y>(coordinate.yField)
+    };
+  }
+
+  const functionCoordinate = coordinate as FunctionCoordinateProvider<X, Y>;
+  if (functionCoordinate && typeof functionCoordinate.x === 'function' && typeof functionCoordinate.y === 'function') {
+    return functionCoordinate;
+  }
+
+  throw new Error('Configuration de coordonnees invalide : utilisez { x, y } avec des fonctions ou { xField, yField } avec des cles non vides.');
+}
+
+function isFieldCoordinateProvider<X extends XaxisType, Y extends YaxisType>(
+  coordinate: CoordinateProvider<X, Y>
+): coordinate is FieldCoordinateProvider {
+  if (!coordinate || typeof coordinate !== 'object' || !('xField' in coordinate || 'yField' in coordinate)) {
+    return false;
+  }
+
+  const fieldCoordinate = coordinate as Partial<FieldCoordinateProvider>;
+  if (typeof fieldCoordinate.xField !== 'string' || !fieldCoordinate.xField.trim() || typeof fieldCoordinate.yField !== 'string' || !fieldCoordinate.yField.trim()) {
+    throw new Error('Configuration de coordonnees invalide : xField et yField doivent etre des chaines non vides.');
+  }
+
+  return true;
 }
 
 function newChart<X extends XaxisType, Y extends YaxisType>(
@@ -293,9 +342,21 @@ export declare type XaxisType = number | string | Date;
 
 export declare type YaxisType = number | number[]; // 2D
 
-export declare type CoordinateProvider<X, Y> = {
+export declare type FunctionCoordinateProvider<X, Y> = {
   x: DataProvider<X>;
   y: DataProvider<Y>;
+};
+
+/** Coordonnees serialisables : adaptees au stockage JSON et aux configurations transmises par API. */
+export declare type FieldCoordinateProvider = {
+  xField: string;
+  yField: string;
+};
+
+export declare type CoordinateProvider<X, Y> = FunctionCoordinateProvider<X, Y> | FieldCoordinateProvider;
+
+type ResolvedChartProvider<X extends XaxisType, Y extends YaxisType> = Omit<ChartProvider<X, Y>, 'series'> & {
+  series?: Array<Omit<SerieProvider<X, Y>, 'data'> & {data: FunctionCoordinateProvider<X, Y>}>;
 };
 
 export declare type DataProvider<T> = (o: any, idx: number) => T;

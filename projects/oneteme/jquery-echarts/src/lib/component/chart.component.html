@@ -30,6 +30,7 @@
   [groupSync]="groupSync"
   [renderedOption]="renderedOption"
   (customEvent)="customEvent.emit($event)"
-  (chartClick)="chartClick.emit($event)">
+  (renderError)="renderError.emit($event)"
+  (chartClick)="handleChartClick($event)">
   </div>
 </div>

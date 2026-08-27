@@ -1,9 +1,9 @@
 import { AfterViewInit, Directive, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
-import { ChartProvider, ChartType, ChartView, mergeDeep, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { ChartProvider, ChartType, ChartView, cloneSerializable, mergeDeep, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { asapScheduler } from 'rxjs';
 
 import { echarts } from './utils/echarts-init';
-import { EChartsOption, ChartClickEvent, ChartCustomEvent, DEFAULT_LOADING_OPTION } from './utils/types';
+import { EChartsOption, ChartClickEvent, ChartCustomEvent, ChartRenderError, DEFAULT_LOADING_OPTION } from './utils/types';
 import { applyCommonConfig, buildBaseOption, buildNoDataGraphic, buildTooltipOption } from './utils/chart-utils';
 import { resolveConfigurator } from './utils/config/chart-config-registry';
 
@@ -26,6 +26,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _chartInstance: ReturnType<typeof echarts.init> | null = null;
   private _resizeObserver: ResizeObserver | null = null;
   private _initialized = false;
+  private _isDestroyed = false;
   private _isSyncing = false;
 
   private _config: ChartProvider<X, Y>;
@@ -45,11 +46,15 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     this._applyLoadingState();
   }
   @Input() debug = false;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() theme: string | null = null;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() renderer: 'svg' | 'canvas' = 'svg';
   @Input() loadingLabel = 'Chargement des données...';
   @Input() noDataLabel = 'Aucune donnée';
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() group: string | null = null;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() groupSync: GroupSyncMode | null = null;
 
   private get _group(): string | null {
@@ -62,10 +67,12 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
   @Output() chartClick = new EventEmitter<ChartClickEvent>();
+  @Output() renderError = new EventEmitter<ChartRenderError>();
 
   ngAfterViewInit(): void {
     this.ngZone.runOutsideAngular(() => {
       asapScheduler.schedule(() => {
+        if (this._isDestroyed) return;
         const dom = this.el.nativeElement as HTMLElement;
         if (dom.clientWidth > 0 && dom.clientHeight > 0) {
           // Dimensions disponibles immédiatement : init normale
@@ -87,11 +94,14 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     if (this.debug) console.log('[jquery-echarts] ngOnChanges', changes);
 
     this.ngZone.runOutsideAngular(() => {
-      asapScheduler.schedule(() => this._render(changes));
+      asapScheduler.schedule(() => {
+        if (!this._isDestroyed) this._render(changes);
+      });
     });
   }
 
   ngOnDestroy(): void {
+    this._isDestroyed = true;
     if (this._group) {
       const set = ChartDirective._groupRegistry.get(this._group);
       if (set) {
@@ -110,7 +120,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   // Init
 
   private _initChart(): void {
-    if (this._chartInstance) return;
+    if (this._isDestroyed || this._chartInstance) return;
 
     const dom = this.el.nativeElement as HTMLElement;
     this._chartInstance = echarts.init(dom, this.theme ?? undefined, {
@@ -199,12 +209,15 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   }
 
   private _setupResizeObserver(dom: HTMLElement): void {
+    this._resizeObserver?.disconnect();
     this._resizeObserver = new ResizeObserver(() => {
       this.ngZone.runOutsideAngular(() => {
+        if (this._isDestroyed) return;
         if (this._chartInstance) {
           this._chartInstance.resize();
         } else {
           // Init différée : le container a maintenant des dimensions
+          if (dom.clientWidth <= 0 || dom.clientHeight <= 0) return;
           this._initChart();
           this._render();
         }
@@ -241,10 +254,11 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       if (isInitialRender || isTypeChange) {
         this._chartInstance.setOption(option, { notMerge: true, lazyUpdate: false });
       } else {
-        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis'], lazyUpdate: false });
+        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis', 'graphic'], lazyUpdate: false });
       }
     } catch (e) {
       console.error('[jquery-echarts] Erreur lors de la construction ou du rendu :', e);
+      this.ngZone.run(() => this.renderError.emit({ error: e }));
     }
   }
 
@@ -325,10 +339,4 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       return null;
     }
   }
-}
-
-function cloneSerializable<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value, (_key, nested) =>
-    typeof nested === 'function' ? undefined : nested,
-  )) as T;
 }

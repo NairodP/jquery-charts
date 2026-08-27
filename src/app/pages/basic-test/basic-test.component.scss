@@ -1,4 +1,4 @@
-.basic-test-container {
+.chart-workbench-container {
   padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -113,31 +113,6 @@
         }
       }
 
-      .sandbox-btn {
-        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 16px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 13px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
-        }
-
-        &:active {
-          transform: translateY(0) scale(0.98);
-        }
-      }
     }
   }
 
@@ -192,6 +167,56 @@
           color: #212529;
           font-weight: 600;
         }
+      }
+    }
+  }
+
+  .workbench-tools {
+    border-top: 1px solid #e1e5e8;
+    margin: 30px 0;
+    padding-top: 20px;
+
+    h2 {
+      color: #333;
+      font-size: 18px;
+      margin: 0 0 14px;
+    }
+
+    .workbench-tools-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sandbox-btn,
+    .tool-link {
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .sandbox-btn {
+      background: #1b6ca8;
+      border: 1px solid #1b6ca8;
+      color: #ffffff;
+
+      &:hover {
+        background: #155785;
+        border-color: #155785;
+      }
+    }
+
+    .tool-link {
+      background: #ffffff;
+      border: 1px solid #3498db;
+      color: #1b6ca8;
+
+      &:hover {
+        background: #3498db;
+        color: #ffffff;
       }
     }
   }

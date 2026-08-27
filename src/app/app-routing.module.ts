@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
-import { BasicTestComponent } from './pages/basic-test/basic-test.component';
-import { SandboxComponent } from './pages/basic-test/sandbox/sandbox.component';
+import { ChartWorkbenchComponent } from './pages/basic-test/basic-test.component';
+import { ChartDataSandboxComponent } from './pages/basic-test/sandbox/sandbox.component';
 import { TableShellComponent } from './pages/table/table-shell.component';
 import { TableExempleComponent } from './pages/table/table.component';
 import { TableTestDocumentationComponent } from './pages/table/documentation/table-documentation.component';
@@ -20,16 +20,20 @@ import { TablePresentationComponent } from './pages/table/table-presentation.com
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
+import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
 
-  { path: 'basic-test', component: BasicTestComponent },
-  { path: 'basic-test/sandbox', component: SandboxComponent },
+  { path: 'basic-test/sandbox', redirectTo: 'atelier-graphiques/sandbox', pathMatch: 'full' },
+  { path: 'basic-test', redirectTo: 'atelier-graphiques', pathMatch: 'full' },
+  { path: 'atelier-graphiques', component: ChartWorkbenchComponent },
+  { path: 'atelier-graphiques/sandbox', component: ChartDataSandboxComponent },
   { path: 'snapshots', component: SnapshotsComponent },
   { path: 'api/echarts', component: EChartsApiComponent },
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
+  { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
 
   // jquery-table — shell avec tabs
   {

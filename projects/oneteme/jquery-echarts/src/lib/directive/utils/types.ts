@@ -17,6 +17,7 @@ export interface ChartClickEvent {
 export interface ChartDrilldownLevel {
   id: string;
   label: string;
+  groupBy?: string;
 }
 
 export interface ChartDrilldownConfig {
@@ -28,6 +29,19 @@ export interface ChartDrilldownState {
   active: boolean;
   activeLevel: string;
   rootLevel: string | null;
+}
+
+export interface ChartDrilldownRequest {
+  fromLevel: string;
+  toLevel: string;
+  groupBy?: string;
+  value: unknown;
+  path: Record<string, unknown>;
+}
+
+/** Erreur produite lors de la construction de l'option ou de son application a ECharts. */
+export interface ChartRenderError {
+  error: unknown;
 }
 
 /** Alias exposé pour les options ECharts natives */

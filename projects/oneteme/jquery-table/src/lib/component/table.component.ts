@@ -25,7 +25,7 @@ import {
   LAZY_LOADING_VALUE, LAZY_ERROR_VALUE,
 } from './table.constants';
 import { OrganizerButtonWrapperComponent } from './organizer-button/organizer-button.component';
-import { FullscreenManager, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage } from '@oneteme/jquery-core';
+import { cloneSerializable, containsFunction, FullscreenManager, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage } from '@oneteme/jquery-core';
 
 /** Cache interne du groupement — invalidé dès que les données, la clé ou les paramètres de tri changent. */
 interface GroupByCache<T> {
@@ -238,7 +238,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   /** Dynamic slice keys à restaurer après ngAfterViewInit (slicePanelRef pas encore dispo). */
   private _pendingDynamicSliceKeys: string[] | null = null;
   /** Filtres de slice à restaurer après ngAfterViewInit (slicePanelRef pas encore dispo). */
-  private _pendingSliceFilters: Record<number, string[]> | null = null;
+  private _pendingSliceFilters: Record<string, string[]> | null = null;
 
   private resolvedConfig: TableProvider<T> = { columns: [] };
   private _columnMap: Map<string, TableColumnProvider<T>> = new Map();
@@ -653,12 +653,14 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   }
 
   private _recomputeShowSlicePanel(): void {
-    const hasCfg = this._sliceConfigs.length > 0 || this._organizer.sliceBy.activeDynamicFields.length > 0;
+    const hasPendingDynamicSlices = (this._pendingDynamicSliceKeys?.length ?? 0) > 0;
+    const hasCfg = this._sliceConfigs.length > 0
+      || this._organizer.sliceBy.activeDynamicFields.length > 0
+      || hasPendingDynamicSlices;
     const wasVisible = this._showSlicePanel;
     this._showSlicePanel = hasCfg && this._resolvedData.length > 0;
-    // Les données viennent d'arriver : appliquer les dynamic slices ET les filtres en attente.
-    // Les dynamic slices doivent être ajoutées AVANT restoreFilters car les indices de
-    // sliceFilters dépendent de l'ordre final de _cachedSlices.
+    // Les données viennent d'arriver : appliquer les dynamic slices et les filtres en attente.
+    // Les slices dynamiques sont ajoutées avant les filtres pour rendre leurs clés disponibles.
     if (!wasVisible && this._showSlicePanel && (this._pendingSliceFilters || this._pendingDynamicSliceKeys)) {
       const filters = this._pendingSliceFilters;
       const dynamicKeys = this._pendingDynamicSliceKeys;
@@ -1133,16 +1135,43 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         this._organizer.setActiveFields(ordered);
       }
     }
-    // Dynamic slices — différé : slicePanelRef pas encore disponible au moment de ngOnChanges
-    if (saved.dynamicSliceKeys?.length) {
-      this._pendingDynamicSliceKeys = saved.dynamicSliceKeys;
-    }
     // Filtres actifs du slice panel
     // Filtres actifs du slice panel — toujours stockés en pending :
     // appliqués par _applyPendingDynamicSliceKeys (si dynamic slices) ou
     // par _recomputeShowSlicePanel (quand les données arrivent et rendent le panel visible)
     if (saved.sliceFilters && Object.keys(saved.sliceFilters).length) {
       this._pendingSliceFilters = saved.sliceFilters;
+    }
+
+    const activeFilterColumnKeys = Object.entries(saved.sliceFilters ?? {})
+      .filter(([key, values]) => key.startsWith('column:') && values.length > 0)
+      .map(([key]) => key.slice('column:'.length));
+    const staticSliceKeys = new Set(
+      (this.resolvedConfig.slices ?? [])
+        .map(slice => slice.columnKey)
+        .filter((key): key is string => !!key)
+    );
+    const dynamicSliceKeys = new Set(this._organizer.sliceBy.allDynamicFields.map(field => field.key));
+
+    // Un filtre persistant doit toujours retrouver sa slice : une préférence
+    // ancienne ou incomplète ne peut pas laisser un filtre sans panneau visible.
+    activeFilterColumnKeys
+      .filter(key => staticSliceKeys.has(key))
+      .forEach(key => this._staticSliceHiddenKeys.delete(key));
+    this._organizer.updateHiddenStaticKeys(this._staticSliceHiddenKeys);
+
+    // Une clé de filtre sur une colonne non statique désigne une slice dynamique.
+    // Elle complète dynamicSliceKeys pour les configurations sauvegardées avant
+    // que ce champ ne soit persistant.
+    const persistedDynamicKeys = [
+      ...(saved.dynamicSliceKeys ?? []),
+      ...activeFilterColumnKeys,
+    ];
+    const uniqueDynamicKeys = [...new Set(persistedDynamicKeys)].filter(
+      key => !staticSliceKeys.has(key) && dynamicSliceKeys.has(key)
+    );
+    if (uniqueDynamicKeys.length) {
+      this._pendingDynamicSliceKeys = uniqueDynamicKeys;
     }
   }
 
@@ -1180,13 +1209,13 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     return {
       type: 'table',
       label,
-      config: jsonClone({
+      config: cloneSerializable({
         title: this.title,
         columns: this.resolvedConfig.columns?.map(column => serializableColumn(column)),
         search: this.resolvedConfig.search,
         pagination: this.resolvedConfig.pagination,
       }),
-      state: jsonClone({
+      state: cloneSerializable({
         search: this.searchQuery,
         groupBy: this.activeGroupByKey,
         columnOrder: this.activeFields.map(column => column.key),
@@ -1194,7 +1223,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         pageIndex: this.paginator?.pageIndex ?? 0,
         pageSize: this.paginator?.pageSize ?? this.pageSize,
       }),
-      data: jsonClone(this._allFilteredRows),
+      data: cloneSerializable(this._allFilteredRows),
       warnings,
     };
   }
@@ -1242,7 +1271,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       restored,
       skipped,
       warnings: snapshot.warnings ?? [],
-      data: jsonClone(snapshot.data),
+      data: cloneSerializable(snapshot.data),
     };
   }
 
@@ -1888,18 +1917,4 @@ function serializableColumn<T>(column: TableColumnProvider<T>): Record<string, u
     sliceable: column.sliceable,
     lazy: !!column.lazy,
   };
-}
-
-function jsonClone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value, (_key, nested) =>
-    typeof nested === 'function' ? undefined : nested,
-  )) as T;
-}
-
-function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
-  if (typeof value === 'function') return true;
-  if (!value || typeof value !== 'object') return false;
-  if (seen.has(value)) return false;
-  seen.add(value);
-  return Object.values(value).some(nested => containsFunction(nested, seen));
 }

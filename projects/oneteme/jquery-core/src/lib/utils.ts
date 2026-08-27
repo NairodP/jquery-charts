@@ -29,3 +29,19 @@ export function mergeDeep(target: any, ...sources: any[]): any {
 
   return mergeDeep(target, ...sources);
 }
+
+/** Retourne une copie JSON, sans fonctions ni callbacks non transportables. */
+export function cloneSerializable<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value, (_key, nested) =>
+    typeof nested === 'function' ? undefined : nested,
+  )) as T;
+}
+
+/** Indique si une valeur contient une fonction, y compris dans un graphe cyclique. */
+export function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'function') return true;
+  if (!value || typeof value !== 'object') return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some(nested => containsFunction(nested, seen));
+}

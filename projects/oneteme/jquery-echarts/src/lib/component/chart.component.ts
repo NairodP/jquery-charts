@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, HostBinding, HostListener, inject, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { ChartProvider, ChartType, FullscreenManager, OrganizerConfig, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { ChartProvider, ChartType, cloneSerializable, containsFunction, FullscreenManager, OrganizerConfig, OrganizerState, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { ChartDirective, GroupSyncMode } from '../directive/chart.directive';
-import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, ChartDrilldownState, EChartsOption } from '../directive/utils/types';
+import { ChartClickEvent, ChartCustomEvent, ChartDrilldownConfig, ChartDrilldownRequest, ChartDrilldownState, ChartRenderError, EChartsOption } from '../directive/utils/types';
 import { ChartViewFacade } from './view/chart-view.facade';
 
 @Component({
@@ -15,7 +15,7 @@ import { ChartViewFacade } from './view/chart-view.facade';
     :host.visual-fullscreen { width: 100vw; height: 100vh; background: #fff; }
     .chart-frame { position: relative; width: 100%; height: 100%; }
     .chart-drilldown { display: flex; flex-direction: column; }
-    .chart-drilldown-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 28px; padding: 4px 8px 0; }
+    .chart-drilldown-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 14px; padding: 0 8px 2px; }
     .chart-drilldown-link { padding: 0; border: 0; background: transparent; color: #1b6ca8; cursor: pointer; font: inherit; font-size: 12px; }
     .chart-drilldown-link[aria-current='page'] { color: #18323a; cursor: default; font-weight: 700; }
     .chart-drilldown-separator { color: #8aa0a5; font-size: 12px; }
@@ -41,23 +41,29 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   @HostBinding('class.visual-fullscreen') _isFullscreen = false;
   @HostBinding('class.drilldown-active') get hasActiveDrilldown(): boolean { return this.drilldownIsActive; }
 
-  @Input({ required: true }) readonly type: ChartType;
-  @Input({ required: true }) readonly config: ChartProvider<X, Y>;
-  @Input({ required: true }) readonly data: any[];
+  @Input({ required: true }) type: ChartType;
+  @Input({ required: true }) config: ChartProvider<X, Y>;
+  @Input({ required: true }) data: any[];
 
   @Input() isLoading: boolean;
   @Input() debug: boolean;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() theme: string | null = null;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() renderer: 'svg' | 'canvas' = 'svg';
   @Input() loadingLabel = 'Chargement des données...';
   @Input() noDataLabel = 'Aucune donnée';
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() group: string | null = null;
+  /** Lu uniquement lors de la creation de l'instance ECharts. Recréez le composant pour le modifier. */
   @Input() groupSync: GroupSyncMode | null = null;
   @Input() renderedOption?: EChartsOption | null;
   @Input() drilldown?: ChartDrilldownConfig;
 
   /** Active la gestion de la visibilité des séries via le panneau Organizer. */
   @Input() organizer?: OrganizerConfig;
+  /** Etat Organizer controle par le parent, applique a la visibilite des series. */
+  @Input() organizerState?: OrganizerState;
   @Input() copyFeedback: VisualCopyFeedbackConfig = {};
 
   _effectiveConfig!: ChartProvider<X, Y>;
@@ -70,12 +76,15 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
 
   @Output() customEvent = new EventEmitter<ChartCustomEvent>();
   @Output() chartClick = new EventEmitter<ChartClickEvent>();
+  @Output() renderError = new EventEmitter<ChartRenderError>();
+  @Output() drilldownRequest = new EventEmitter<ChartDrilldownRequest>();
   @Output() drilldownNavigate = new EventEmitter<string>();
   @Output() drilldownStateChange = new EventEmitter<ChartDrilldownState>();
   @Output() visualCopied = new EventEmitter<VisualSnapshot>();
 
   copyFeedbackMessage = '';
   private _copyFeedbackTimer?: number;
+  private drilldownPath: Record<string, unknown> = {};
 
   @ViewChild(ChartDirective) private _directive: ChartDirective<X, Y>;
 
@@ -100,7 +109,36 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
 
   navigateDrilldown(levelId: string): void {
     if (levelId === this.drilldown?.activeLevel) return;
+    const targetIndex = this.drilldown?.levels.findIndex(level => level.id === levelId) ?? -1;
+    if (targetIndex >= 0) {
+      this.drilldownPath = Object.fromEntries(
+        Object.entries(this.drilldownPath).filter(([level]) =>
+          this.drilldown?.levels.findIndex(candidate => candidate.id === level) < targetIndex
+        )
+      );
+    }
     this.drilldownNavigate.emit(levelId);
+  }
+
+  handleChartClick(event: ChartClickEvent): void {
+    this.chartClick.emit(event);
+    const levels = this.drilldown?.levels ?? [];
+    const activeIndex = levels.findIndex(level => level.id === this.drilldown?.activeLevel);
+    const nextLevel = levels[activeIndex + 1];
+    const activeLevel = levels[activeIndex];
+    if (!activeLevel || !nextLevel || event.name === undefined) {
+      return;
+    }
+
+    const path = {...this.drilldownPath, [activeLevel.id]: event.name};
+    this.drilldownPath = path;
+    this.drilldownRequest.emit({
+      fromLevel: activeLevel.id,
+      toLevel: nextLevel.id,
+      groupBy: nextLevel.groupBy,
+      value: event.name,
+      path
+    });
   }
 
   exportImage(fileName?: string, type?: 'png' | 'jpeg' | 'svg', pixelRatio?: number): void {
@@ -135,17 +173,17 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     return {
       type: 'chart',
       label,
-      config: jsonClone({
+      config: cloneSerializable({
         type: this.type,
         provider: this._effectiveConfig,
         theme: this.theme,
         renderer: this.renderer,
         renderedOption: this._directive?.getRenderedOption(),
       }),
-      state: jsonClone({
+      state: cloneSerializable({
         selectedFieldIds: this._organizerFacade.state.selectedFieldIds,
       }),
-      data: jsonClone(this.data ?? []),
+      data: cloneSerializable(this.data ?? []),
       warnings,
     };
   }
@@ -170,14 +208,14 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     const skipped = selectedFieldIds?.filter(id => !availableIds.has(id)) ?? [];
     if (selectedFieldIds) {
       this._organizerFacade.state.selectedFieldIds = compatibleIds;
-      this._effectiveConfig = this._organizerFacade.getEffectiveProvider();
+      this._effectiveConfig = this._organizerFacade.getEffectiveProvider(this.organizerState !== undefined);
     }
     return {
       applied: true,
       restored: selectedFieldIds ? ['seriesVisibility'] : [],
       skipped,
       warnings: snapshot.warnings ?? [],
-      data: jsonClone(snapshot.data),
+      data: cloneSerializable(snapshot.data),
     };
   }
 
@@ -185,11 +223,18 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     if (changes['drilldown']) {
       this.drilldownStateChange.emit(this.drilldownState);
     }
-    if (changes['config'] || changes['organizer']) {
+    if (changes['config'] || changes['organizer'] || changes['organizerState']) {
       if (this.config) {
-        this._organizerFacade.update(this.organizer ?? {}, this.config);
+        if (changes['config'] || changes['organizer']) {
+          this._organizerFacade.update(this.organizer ?? {}, this.config);
+        }
+        if (this.organizerState) {
+          this._organizerFacade.setState(this.organizerState);
+        }
       }
-      this._effectiveConfig = this.config ? this._organizerFacade.getEffectiveProvider() : this.config;
+      this._effectiveConfig = this.config
+        ? this._organizerFacade.getEffectiveProvider(this.organizerState !== undefined)
+        : this.config;
     }
   }
 
@@ -204,18 +249,4 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
     this._copyFeedbackTimer = window.setTimeout(() => this.copyFeedbackMessage = '', this.copyFeedback.durationMs ?? 2200);
   }
-}
-
-function jsonClone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value, (_key, nested) =>
-    typeof nested === 'function' ? undefined : nested,
-  )) as T;
-}
-
-function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
-  if (typeof value === 'function') return true;
-  if (!value || typeof value !== 'object') return false;
-  if (seen.has(value)) return false;
-  seen.add(value);
-  return Object.values(value).some(nested => containsFunction(nested, seen));
 }
