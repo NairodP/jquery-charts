@@ -139,8 +139,8 @@ export interface SavedTableConfig {
   hiddenSliceKeys?: string[];
   /** Clés des colonnes utilisées comme slices dynamiques. */
   dynamicSliceKeys?: string[];
-  /** Filtres actifs du slice panel : map sliceIndex → tableau de clés actives. */
-  sliceFilters?: Record<number, string[]>;
+  /** Filtres actifs du slice panel, indexés par clé de colonne stable. */
+  sliceFilters?: Record<string, string[]>;
 }
 export interface TableProvider<T = any> {
   columns?: TableColumnProvider<T>[];

@@ -238,7 +238,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   /** Dynamic slice keys à restaurer après ngAfterViewInit (slicePanelRef pas encore dispo). */
   private _pendingDynamicSliceKeys: string[] | null = null;
   /** Filtres de slice à restaurer après ngAfterViewInit (slicePanelRef pas encore dispo). */
-  private _pendingSliceFilters: Record<number, string[]> | null = null;
+  private _pendingSliceFilters: Record<string, string[]> | null = null;
 
   private resolvedConfig: TableProvider<T> = { columns: [] };
   private _columnMap: Map<string, TableColumnProvider<T>> = new Map();
@@ -653,12 +653,14 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   }
 
   private _recomputeShowSlicePanel(): void {
-    const hasCfg = this._sliceConfigs.length > 0 || this._organizer.sliceBy.activeDynamicFields.length > 0;
+    const hasPendingDynamicSlices = (this._pendingDynamicSliceKeys?.length ?? 0) > 0;
+    const hasCfg = this._sliceConfigs.length > 0
+      || this._organizer.sliceBy.activeDynamicFields.length > 0
+      || hasPendingDynamicSlices;
     const wasVisible = this._showSlicePanel;
     this._showSlicePanel = hasCfg && this._resolvedData.length > 0;
-    // Les données viennent d'arriver : appliquer les dynamic slices ET les filtres en attente.
-    // Les dynamic slices doivent être ajoutées AVANT restoreFilters car les indices de
-    // sliceFilters dépendent de l'ordre final de _cachedSlices.
+    // Les données viennent d'arriver : appliquer les dynamic slices et les filtres en attente.
+    // Les slices dynamiques sont ajoutées avant les filtres pour rendre leurs clés disponibles.
     if (!wasVisible && this._showSlicePanel && (this._pendingSliceFilters || this._pendingDynamicSliceKeys)) {
       const filters = this._pendingSliceFilters;
       const dynamicKeys = this._pendingDynamicSliceKeys;
@@ -1133,16 +1135,43 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         this._organizer.setActiveFields(ordered);
       }
     }
-    // Dynamic slices — différé : slicePanelRef pas encore disponible au moment de ngOnChanges
-    if (saved.dynamicSliceKeys?.length) {
-      this._pendingDynamicSliceKeys = saved.dynamicSliceKeys;
-    }
     // Filtres actifs du slice panel
     // Filtres actifs du slice panel — toujours stockés en pending :
     // appliqués par _applyPendingDynamicSliceKeys (si dynamic slices) ou
     // par _recomputeShowSlicePanel (quand les données arrivent et rendent le panel visible)
     if (saved.sliceFilters && Object.keys(saved.sliceFilters).length) {
       this._pendingSliceFilters = saved.sliceFilters;
+    }
+
+    const activeFilterColumnKeys = Object.entries(saved.sliceFilters ?? {})
+      .filter(([key, values]) => key.startsWith('column:') && values.length > 0)
+      .map(([key]) => key.slice('column:'.length));
+    const staticSliceKeys = new Set(
+      (this.resolvedConfig.slices ?? [])
+        .map(slice => slice.columnKey)
+        .filter((key): key is string => !!key)
+    );
+    const dynamicSliceKeys = new Set(this._organizer.sliceBy.allDynamicFields.map(field => field.key));
+
+    // Un filtre persistant doit toujours retrouver sa slice : une préférence
+    // ancienne ou incomplète ne peut pas laisser un filtre sans panneau visible.
+    activeFilterColumnKeys
+      .filter(key => staticSliceKeys.has(key))
+      .forEach(key => this._staticSliceHiddenKeys.delete(key));
+    this._organizer.updateHiddenStaticKeys(this._staticSliceHiddenKeys);
+
+    // Une clé de filtre sur une colonne non statique désigne une slice dynamique.
+    // Elle complète dynamicSliceKeys pour les configurations sauvegardées avant
+    // que ce champ ne soit persistant.
+    const persistedDynamicKeys = [
+      ...(saved.dynamicSliceKeys ?? []),
+      ...activeFilterColumnKeys,
+    ];
+    const uniqueDynamicKeys = [...new Set(persistedDynamicKeys)].filter(
+      key => !staticSliceKeys.has(key) && dynamicSliceKeys.has(key)
+    );
+    if (uniqueDynamicKeys.length) {
+      this._pendingDynamicSliceKeys = uniqueDynamicKeys;
     }
   }
 

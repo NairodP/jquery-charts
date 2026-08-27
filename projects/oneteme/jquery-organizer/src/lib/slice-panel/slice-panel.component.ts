@@ -14,6 +14,8 @@ const I18N = {
   filterEmptyState: 'Aucune donnée',
 };
 
+export type SlicePanelFilters = Record<string, string[]>;
+
 @Component({
   standalone: true,
   selector: 'slice-panel',
@@ -243,24 +245,28 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
     this._cdr.markForCheck();
   }
 
-  getActiveFilters(): Record<number, string[]> {
-    const result: Record<number, string[]> = {};
-    this._cachedSlices.forEach((_, idx) => {
+  getActiveFilters(): SlicePanelFilters {
+    const result: SlicePanelFilters = {};
+    this._cachedSlices.forEach((slice, idx) => {
       const keys = this.activeKeysBySlice.get(idx);
-      result[idx] = keys ? [...keys] : [];
+      result[this._getPersistentSliceKey(slice, idx)] = keys ? [...keys] : [];
     });
     return result;
   }
 
-  restoreFilters(filters: Record<number, string[]>): void {
-    this.activeKeysBySlice = new Map(
-      Object.entries(filters).map(([idx, keys]) => [Number(idx), new Set(keys)])
-    );
+  restoreFilters(filters: SlicePanelFilters): void {
+    this.activeKeysBySlice = new Map();
+    this._cachedSlices.forEach((slice, index) => {
+      // Les préférences historiques utilisaient l'index numérique comme clé.
+      const keys = filters[this._getPersistentSliceKey(slice, index)] ?? filters[String(index)];
+      if (keys?.length) this.activeKeysBySlice.set(index, new Set(keys));
+    });
     this._emitFilter();
     this._cdr.markForCheck();
   }
 
   addDynamicSlice(column: SliceColumnDef<T>): void {
+    if (this._dynamicSlices.some(slice => slice.key === column.key)) return;
     const distinctValues = this._computeDistinctValues(column.key);
     const newSlice: SliceConfig<T> = {
       title: column.header,
@@ -326,6 +332,10 @@ export class SlicePanelComponent<T = any> implements OnChanges, OnInit {
   private _getDynamicSliceColumnKey(sliceIndex: number): string | null {
     const dynamicIndex = sliceIndex - this.staticSliceCount;
     return this._dynamicSlices[dynamicIndex]?.key ?? null;
+  }
+
+  private _getPersistentSliceKey(slice: SliceConfig<T>, index: number): string {
+    return slice.columnKey ? `column:${slice.columnKey}` : `index:${index}`;
   }
 
   private _getSliceIdentity(slice: SliceConfig<T>, fallbackIndex: number): string {
