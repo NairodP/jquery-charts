@@ -131,6 +131,9 @@ export function applyCommonConfig(
 
   const { series: seriesPatch, ...restOptions } = (config.options ?? {}) as any;
   const result = mergeDeep({}, option, patch, restOptions) as any;
+  if (result.tooltip) {
+    result.tooltip.appendToBody = false;
+  }
 
   if (seriesPatch && Array.isArray(seriesPatch) && Array.isArray(result.series)) {
     result.series = result.series.map((s: any, i: number) => {
