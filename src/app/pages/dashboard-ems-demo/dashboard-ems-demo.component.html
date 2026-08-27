@@ -38,4 +38,13 @@
     <div><strong>Rendu dynamique</strong><span>Chaque carte cree `ChartComponent` avec `ViewContainerRef`.</span></div>
     <div><strong>Stabilite</strong><span>Organizer, edition et drag and drop ne remplacent pas `chart.config`.</span></div>
   </section>
+
+  <section class="dashboard-demo__tooltip-check" aria-labelledby="tooltip-check-title">
+    <div>
+      <p class="dashboard-demo__eyebrow">Controle Material</p>
+      <h2 id="tooltip-check-title">Tooltip dans une modale</h2>
+      <p>Ouvrez la modale et survolez les colonnes pour verifier que le tooltip reste visible au-dessus du graphique.</p>
+    </div>
+    <button type="button" class="dashboard-demo__button dashboard-demo__button--primary" (click)="openTooltipDialog()">Ouvrir le graphique en modale</button>
+  </section>
 </main>

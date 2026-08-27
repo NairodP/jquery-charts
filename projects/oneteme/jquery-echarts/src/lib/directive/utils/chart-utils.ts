@@ -4,28 +4,20 @@ import { EChartsOption } from './types';
 export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): any {
   return {
     trigger,
-    appendToBody: true,
     position: (point: number[], _params: any, dom: HTMLElement) => {
-      const rect = el?.getBoundingClientRect();
-      if (!rect) return undefined;
-      const vw = document.documentElement.clientWidth;
-      const vh = document.documentElement.clientHeight;
-      // Container hors viewport → tooltip masqué (tooltips synchronisés via echarts.connect())
-      if (rect.bottom < 0 || rect.top > vh || rect.right < 0 || rect.left > vw) {
-        return [-9999, -9999];
-      }
       const tw = dom?.offsetWidth ?? 0;
       const th = dom?.offsetHeight ?? 0;
       const gap = 10;
-      const sx = window.scrollX;
-      const sy = window.scrollY;
-      let vx = rect.left + point[0] + gap;
-      let vy = rect.top  + point[1] + gap;
-      if (vx + tw > vw) vx = rect.left + point[0] - tw - gap;
-      if (vy + th > vh) vy = rect.top  + point[1] - th - gap;
-      vx = Math.max(gap, Math.min(vw - tw - gap, vx));
-      vy = Math.max(gap, Math.min(vh - th - gap, vy));
-      return [vx - rect.left - sx, vy - rect.top - sy];
+      const width = el?.clientWidth ?? 0;
+      const height = el?.clientHeight ?? 0;
+      let x = point[0] + gap;
+      let y = point[1] + gap;
+      if (x + tw > width) x = point[0] - tw - gap;
+      if (y + th > height) y = point[1] - th - gap;
+      return [
+        Math.max(gap, Math.min(width - tw - gap, x)),
+        Math.max(gap, Math.min(height - th - gap, y)),
+      ];
     },
     backgroundColor: '#1a1f2e',
     borderColor: 'rgba(255,255,255,0.08)',
@@ -37,8 +29,7 @@ export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): 
       fontSize: 13,
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     },
-    // position:fixed retire le tooltip du flux du document → impossible de créer une scrollbar
-    extraCssText: 'box-shadow: 0 8px 24px rgba(0,0,0,0.4); position: fixed !important;',
+    extraCssText: 'box-shadow: 0 8px 24px rgba(0,0,0,0.4); position: absolute !important;',
   };
 }
 
