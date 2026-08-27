@@ -3,6 +3,7 @@ import { Component, HostListener } from '@angular/core';
 import { ChartComponent } from '@oneteme/jquery-highcharts';
 import { HIGHCHARTS_EXAMPLES } from 'src/app/data/chart/highcharts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 
 interface HighchartsSection {
   id: string;
@@ -80,6 +81,7 @@ export class HighchartsGalleryComponent {
   getHighlightedCode(type: ChartType, exampleKey: string): string {
     const example = (this.examples as any)[exampleKey];
     if (!example) return '';
+    return highlightChartCode(buildChartCode(type, example));
 
     const formatValue = (val: any, indent = 0): string => {
       if (val === null) return 'null';

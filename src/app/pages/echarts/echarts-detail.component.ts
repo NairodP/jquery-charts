@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChartComponent } from '@oneteme/jquery-echarts';
 import { ECHARTS_EXAMPLES } from 'src/app/data/chart/echarts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 import { Subscription } from 'rxjs';
 
 interface EChartsSection { id: string; label: string; type: ChartType; exampleKey: string; }
@@ -105,6 +106,19 @@ export class EChartsDetailComponent implements OnInit, OnDestroy {
   private _buildCode(type: ChartType, exampleKey: string): string {
     const example = (ECHARTS_EXAMPLES as any)[exampleKey];
     if (!example) return '';
+    return highlightChartCode(buildChartCode(type, example));
+
+    const resolveField = (provider: unknown): string | null => {
+      if (typeof provider !== 'function' || !example.data?.length) return null;
+      const fields = Object.keys(example.data[0]);
+      const row = new Proxy({}, { get: (_, property) => typeof property === 'string' ? property : undefined });
+      try {
+        const value = provider(row, 0);
+        return typeof value === 'string' && fields.includes(value) ? value : null;
+      } catch {
+        return null;
+      }
+    };
     const fv = (val: any, indent = 0): string => {
       if (val === null) return 'null';
       if (val === undefined) return 'undefined';
@@ -123,12 +137,17 @@ export class EChartsDetailComponent implements OnInit, OnDestroy {
         const entries = Object.entries(val);
         if (!entries.length) return '{}';
         const pad = ' '.repeat(indent + 2);
+        const xField = resolveField(val.x);
+        const yField = resolveField(val.y);
+        if (xField && yField) {
+          return `{ xField: '${xField}', yField: '${yField}' }`;
+        }
         return `{\n${entries.map(([k, v]) => `${pad}${k}: ${fv(v, indent + 2)}`).join(',\n')}\n${' '.repeat(indent)}}`;
       }
       return typeof val === 'string' ? `'${val}'` : String(val);
     };
     let code = `// Données\nconst data = ${fv(example.data)};\n\n`;
-    code    += `// Configuration\nconst config = ${fv(example.config)};\n\n`;
+    code    += `// Configuration serialisable\nconst config = ${fv(example.config)};\n\n`;
     code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
     return this._highlight(code);
   }

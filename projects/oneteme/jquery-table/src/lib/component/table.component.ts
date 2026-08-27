@@ -25,7 +25,7 @@ import {
   LAZY_LOADING_VALUE, LAZY_ERROR_VALUE,
 } from './table.constants';
 import { OrganizerButtonWrapperComponent } from './organizer-button/organizer-button.component';
-import { FullscreenManager, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage } from '@oneteme/jquery-core';
+import { cloneSerializable, containsFunction, FullscreenManager, VisualCopyFeedbackConfig, VisualSnapshot, VisualSnapshotApplyResult, VisualSnapshotDraft, VisualSnapshotStorage } from '@oneteme/jquery-core';
 
 /** Cache interne du groupement — invalidé dès que les données, la clé ou les paramètres de tri changent. */
 interface GroupByCache<T> {
@@ -1180,13 +1180,13 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     return {
       type: 'table',
       label,
-      config: jsonClone({
+      config: cloneSerializable({
         title: this.title,
         columns: this.resolvedConfig.columns?.map(column => serializableColumn(column)),
         search: this.resolvedConfig.search,
         pagination: this.resolvedConfig.pagination,
       }),
-      state: jsonClone({
+      state: cloneSerializable({
         search: this.searchQuery,
         groupBy: this.activeGroupByKey,
         columnOrder: this.activeFields.map(column => column.key),
@@ -1194,7 +1194,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         pageIndex: this.paginator?.pageIndex ?? 0,
         pageSize: this.paginator?.pageSize ?? this.pageSize,
       }),
-      data: jsonClone(this._allFilteredRows),
+      data: cloneSerializable(this._allFilteredRows),
       warnings,
     };
   }
@@ -1242,7 +1242,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       restored,
       skipped,
       warnings: snapshot.warnings ?? [],
-      data: jsonClone(snapshot.data),
+      data: cloneSerializable(snapshot.data),
     };
   }
 
@@ -1888,18 +1888,4 @@ function serializableColumn<T>(column: TableColumnProvider<T>): Record<string, u
     sliceable: column.sliceable,
     lazy: !!column.lazy,
   };
-}
-
-function jsonClone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value, (_key, nested) =>
-    typeof nested === 'function' ? undefined : nested,
-  )) as T;
-}
-
-function containsFunction(value: unknown, seen = new WeakSet<object>()): boolean {
-  if (typeof value === 'function') return true;
-  if (!value || typeof value !== 'object') return false;
-  if (seen.has(value)) return false;
-  seen.add(value);
-  return Object.values(value).some(nested => containsFunction(nested, seen));
 }

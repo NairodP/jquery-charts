@@ -26,7 +26,7 @@ npm install @oneteme/jquery-echarts
 | `@angular/core`         | `>= 16.1.0`    |
 | `@angular/common`       | `>= 16.1.0`    |
 | `echarts`               | `^6.0.0`       |
-| `@oneteme/jquery-core`  | `^0.0.34`      |
+| `@oneteme/jquery-core`  | `^0.0.36`      |
 
 ## Usage
 
@@ -50,7 +50,8 @@ export class AppModule {}
   [type]="'bar'"
   [config]="chartConfig"
   [data]="chartData"
-  [isLoading]="isLoading">
+  [isLoading]="isLoading"
+  (renderError)="handleChartError($event)">
 </chart>
 ```
 
@@ -69,7 +70,13 @@ chartData = [
   { month: 'Feb', revenue: 5800 },
   { month: 'Mar', revenue: 3900 }
 ];
+
+handleChartError(event: ChartRenderError): void {
+  console.error('Le graphique ne peut pas etre rendu', event.error);
+}
 ```
+
+Pour les configurations persistees, les coordonnees peuvent aussi etre definies sans fonction : `data: { xField: 'month', yField: 'revenue' }`.
 
 ### Inputs
 
@@ -80,12 +87,13 @@ chartData = [
 | `data`         | `any[]`                     | ✅       | —                               | Raw data array                                   |
 | `isLoading`    | `boolean`                   |          | `false`                         | Shows a loading overlay                          |
 | `organizer`    | `OrganizerConfig`           |          | —                               | Enables series visibility toggling               |
-| `theme`        | `string`                    |          | `null`                          | ECharts theme name                               |
-| `renderer`     | `'svg' \| 'canvas'`         |          | `'svg'`                         | ECharts rendering mode                           |
+| `organizerState` | `OrganizerState`           |          | —                               | Controlled series visibility state from `jquery-core` |
+| `theme`        | `string`                    |          | `null`                          | ECharts theme name; set at instance creation     |
+| `renderer`     | `'svg' \| 'canvas'`         |          | `'svg'`                         | Rendering mode; set at instance creation         |
 | `loadingLabel` | `string`                    |          | `'Chargement des données...'`   | Label shown during loading                       |
 | `noDataLabel`  | `string`                    |          | `'Aucune donnée'`               | Label shown when data is empty                   |
-| `group`        | `string \| null`            |          | `null`                          | Group ID for chart synchronization               |
-| `groupSync`    | `GroupSyncMode \| null`     |          | `null`                          | Synchronization mode within the group            |
+| `group`        | `string \| null`            |          | `null`                          | Group ID; set at instance creation               |
+| `groupSync`    | `GroupSyncMode \| null`     |          | `null`                          | Synchronization mode; set at instance creation   |
 | `debug`        | `boolean`                   |          | `false`                         | Logs ECharts option to the console               |
 
 ### Outputs
@@ -94,6 +102,9 @@ chartData = [
 |---------------|-----------------------------|------------------------------------------|
 | `customEvent` | `EventEmitter<ChartCustomEvent>` | Emitted on toolbar actions (`previous`, `next`, `pivot`) |
 | `chartClick`   | `EventEmitter<any>`             | Emitted when a chart datum is clicked             |
+| `renderError`  | `EventEmitter<ChartRenderError>` | Emitted when configuration construction or ECharts rendering fails |
+
+`theme`, `renderer`, `group` and `groupSync` are applied when the ECharts instance is created. Recreate the component to change them.
 
 ### Chart synchronization
 
@@ -127,6 +138,8 @@ organizerConfig: OrganizerConfig = {
   enableFieldDragDrop: true
 };
 ```
+
+`organizerState` is optional and uses the `OrganizerState` contract from `@oneteme/jquery-core` (`selectedFieldIds`, `groupByKey`, `dynamicSliceKeys`). It controls the visibility of available chart series. This contract is intentionally separate from the state emitted by `@oneteme/jquery-organizer`, whose UI state can cover additional actions such as field selection and slices.
 
 ### Mixed charts and double Y axes
 

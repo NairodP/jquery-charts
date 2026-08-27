@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChartComponent } from '@oneteme/jquery-highcharts';
 import { HIGHCHARTS_EXAMPLES } from 'src/app/data/chart/highcharts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 import { Subscription } from 'rxjs';
 
 interface HcSection { id: string; label: string; type: ChartType; exampleKey: string; }
@@ -110,44 +111,10 @@ export class HighchartsDetailComponent implements OnInit, OnDestroy {
   private _buildCode(type: ChartType, exampleKey: string): string {
     const example = (HIGHCHARTS_EXAMPLES as any)[exampleKey];
     if (!example) return '';
-    const fv = (val: any, indent = 0): string => {
-      if (val === null) return 'null';
-      if (val === undefined) return 'undefined';
-      if (typeof val === 'function') {
-        const str = val.toString();
-        const m  = str.match(/field\(['"](\w+)['"]\)/);           if (m)  return `field('${m[1]}')`;
-        const mr = str.match(/rangeFields\(['"](\w+)['"],\s*['"](\w+)['"]\)/); if (mr) return `rangeFields('${mr[1]}', '${mr[2]}')`;
-        return str;
-      }
-      if (Array.isArray(val)) {
-        if (!val.length) return '[]';
-        const pad = ' '.repeat(indent + 2);
-        return `[\n${val.map(v => `${pad}${fv(v, indent + 2)}`).join(',\n')}\n${' '.repeat(indent)}]`;
-      }
-      if (typeof val === 'object') {
-        const entries = Object.entries(val);
-        if (!entries.length) return '{}';
-        const pad = ' '.repeat(indent + 2);
-        return `{\n${entries.map(([k, v]) => `${pad}${k}: ${fv(v, indent + 2)}`).join(',\n')}\n${' '.repeat(indent)}}`;
-      }
-      return typeof val === 'string' ? `'${val}'` : String(val);
-    };
-    let code = `// Données\nconst data = ${fv(example.data)};\n\n`;
-    code    += `// Configuration\nconst config = ${fv(example.config)};\n\n`;
-    code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
-    return this._highlight(code);
+    return highlightChartCode(buildChartCode(type, example));
   }
 
   private _highlight(code: string): string {
-    const e = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return e
-      .replace(/(\/\/.*)/g,                              '<span class="comment">$1</span>')
-      .replace(/\b(const|let|var|function|return)\b/g,   '<span class="keyword">$1</span>')
-      .replace(/('[^']*')/g,                             '<span class="string">$1</span>')
-      .replace(/\b(\d+(\.\d+)?)\b/g,                    '<span class="number">$1</span>')
-      .replace(/&lt;chart/g,                             '<span class="tag">&lt;chart</span>')
-      .replace(/&lt;\/chart&gt;/g,                       '<span class="tag">&lt;/chart&gt;</span>')
-      .replace(/(type|config|data)=/g,                   '<span class="attr">$1</span>=')
-      .replace(/\b(field|rangeFields|values|joinFields)\b/g, '<span class="fn">$1</span>');
+    return highlightChartCode(code);
   }
 }

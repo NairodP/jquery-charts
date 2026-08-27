@@ -13,6 +13,25 @@
     <a class="api-link" routerLink="/api/echarts">Consulter la référence API du wrapper →</a>
   </header>
 
+  <section class="feature-summary" aria-label="Nouvelles possibilités ECharts">
+    <div class="feature-summary__item">
+      <strong>Configuration persistable</strong>
+      <span>Utilisez <code>xField</code> et <code>yField</code> dans une configuration JSON, sans sérialiser de fonction.</span>
+    </div>
+    <div class="feature-summary__item">
+      <strong>Erreurs de rendu</strong>
+      <span>L’événement <code>renderError</code> permet à l’application d’afficher ou journaliser une erreur de configuration.</span>
+    </div>
+    <div class="feature-summary__item">
+      <strong>Visibilité contrôlée</strong>
+      <span><code>organizerState</code> applique la visibilité des séries sans recharger les données.</span>
+    </div>
+    <div class="feature-summary__item">
+      <strong>Instance ECharts</strong>
+      <span><code>theme</code>, <code>renderer</code>, <code>group</code> et <code>groupSync</code> sont définis à l’initialisation.</span>
+    </div>
+  </section>
+
   <div class="charts-grid">
     <div
       *ngFor="let section of sections"

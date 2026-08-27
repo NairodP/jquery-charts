@@ -24,6 +24,7 @@ import { ApexChartsDetailComponent } from './pages/apexcharts/apexcharts-detail.
 import { QuickSearchComponent } from './components/quick-search/quick-search.component';
 import { TablePresentationComponent } from './pages/table/table-presentation.component';
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
+import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
     QuickSearchComponent,
     TablePresentationComponent,
     SnapshotsComponent,
+    DashboardEmsDemoComponent,
   ],
   providers: [ChartTypesService],
   bootstrap: [AppComponent],

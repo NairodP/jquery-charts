@@ -52,6 +52,39 @@
     }
   }
 
+  .feature-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px;
+    margin: 0 0 2rem;
+    border: 1px solid #d8e4e4;
+    background: #d8e4e4;
+    border-radius: 8px;
+    overflow: hidden;
+
+    &__item {
+      display: grid;
+      gap: 0.35rem;
+      padding: 1rem 1.1rem;
+      background: #f8fbfb;
+      color: #47626a;
+      font-size: 0.84rem;
+      line-height: 1.45;
+
+      strong {
+        color: #176b72;
+        font-size: 0.88rem;
+      }
+
+      code {
+        padding: 0.08rem 0.22rem;
+        border-radius: 3px;
+        background: #e8f1f1;
+        color: #24525a;
+      }
+    }
+  }
+
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));

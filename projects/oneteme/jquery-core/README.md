@@ -1,4 +1,24 @@
-# JqueryCore
+# @oneteme/jquery-core
+
+Modeles et transformations de donnees partages par les bibliotheques de graphiques `@oneteme`.
+
+## Coordonnees de series
+
+Une serie accepte soit des fournisseurs TypeScript, soit des cles serialisables. Utilisez les fournisseurs lorsque la projection est calculee dans le code :
+
+```typescript
+import { field } from '@oneteme/jquery-core';
+
+data: { x: field('month'), y: field('revenue') }
+```
+
+Utilisez `xField` et `yField` pour les configurations stockees en JSON ou recues d'une API :
+
+```typescript
+data: { xField: 'month', yField: 'revenue' }
+```
+
+Les deux cles doivent etre des chaines non vides. Les fonctions ne doivent pas etre serializees avec `JSON.stringify`.
 
 This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.0.
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChartComponent as ApexChartComponent } from '@oneteme/jquery-apexcharts';
 import { APEXCHARTS_EXAMPLES } from 'src/app/data/chart/apexcharts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 
 interface ApexSection {
   id: string;
@@ -77,6 +78,7 @@ export class ApexChartsPageComponent {
   getHighlightedCode(type: ChartType, exampleKey: string): string {
     const example = (this.examples as any)[exampleKey];
     if (!example) return '';
+    return highlightChartCode(buildChartCode(type, example));
 
     const formatValue = (val: any, indent = 0): string => {
       if (val === null) return 'null';

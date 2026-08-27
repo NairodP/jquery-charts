@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ChartClickEvent, ChartComponent, ChartDrilldownConfig } from '@oneteme/jquery-echarts';
 import { ECHARTS_EXAMPLES } from 'src/app/data/chart/echarts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 
 interface EChartsSection {
   id: string;
@@ -202,6 +203,19 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
     const example = this.examples[exampleKey];
     if (!example) return '';
     if (example.code) return this._highlightCode(example.code);
+    return highlightChartCode(buildChartCode(type, example));
+
+    const resolveField = (provider: unknown): string | null => {
+      if (typeof provider !== 'function' || !example.data?.length) return null;
+      const fields = Object.keys(example.data[0]);
+      const row = new Proxy({}, { get: (_, property) => typeof property === 'string' ? property : undefined });
+      try {
+        const value = provider(row, 0);
+        return typeof value === 'string' && fields.includes(value) ? value : null;
+      } catch {
+        return null;
+      }
+    };
 
     const formatValue = (val: any, indent = 0): string => {
       if (val === null) return 'null';
@@ -223,6 +237,11 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
         const entries = Object.entries(val);
         if (entries.length === 0) return '{}';
         const pad = ' '.repeat(indent + 2);
+        const xField = resolveField(val.x);
+        const yField = resolveField(val.y);
+        if (xField && yField) {
+          return `{ xField: '${xField}', yField: '${yField}' }`;
+        }
         const props = entries.map(([k, v]) => `${pad}${k}: ${formatValue(v, indent + 2)}`).join(',\n');
         return `{\n${props}\n${' '.repeat(indent)}}`;
       }
@@ -231,7 +250,7 @@ private fetchMonthDetails(month: string): Promise<Row[]> {
     };
 
     let code = `// Données\nconst data = ${formatValue(example.data)};\n\n`;
-    code    += `// Configuration\nconst config = ${formatValue(example.config)};\n\n`;
+    code    += `// Configuration serialisable\nconst config = ${formatValue(example.config)};\n\n`;
     code    += `// Template HTML\n<chart\n  type="${type}"\n  [config]="config"\n  [data]="data"\n></chart>`;
 
     return this._highlightCode(code);

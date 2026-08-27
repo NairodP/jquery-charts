@@ -18,6 +18,7 @@ import {
   RADIAL_BAR_CHART_DATA,
 } from '../../data/chart/_index';
 import { ChartTypesService } from 'src/app/core/services/chart-types.service';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 
 @Component({
   selector: 'app-charts',
@@ -184,6 +185,8 @@ export class ChartsComponent implements OnInit {
     } else if (Object.values(RADIAL_BAR_CHART_DATA).includes(example)) {
       chartType = 'radialBar';
     }
+
+    return highlightChartCode(buildChartCode(chartType, example));
 
     const processDataFunctions = (obj: any) => {
       if (!obj) return obj;

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChartComponent as ApexChartComponent } from '@oneteme/jquery-apexcharts';
 import { APEXCHARTS_EXAMPLES } from 'src/app/data/chart/apexcharts-examples.data';
 import { ChartType } from '@oneteme/jquery-core';
+import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 import { Subscription } from 'rxjs';
 
 interface ApexSection { id: string; label: string; type: ChartType; exampleKey: string; }
@@ -105,6 +106,8 @@ export class ApexChartsDetailComponent implements OnInit, OnDestroy {
   private _buildCode(type: ChartType, exampleKey: string): string {
     const example = (APEXCHARTS_EXAMPLES as any)[exampleKey];
     if (!example) return '';
+    return highlightChartCode(buildChartCode(type, example));
+
     const fv = (val: any, indent = 0): string => {
       if (val === null) return 'null';
       if (val === undefined) return 'undefined';

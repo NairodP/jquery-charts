@@ -20,6 +20,7 @@ import { TablePresentationComponent } from './pages/table/table-presentation.com
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
+import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -30,6 +31,7 @@ const routes: Routes = [
   { path: 'api/echarts', component: EChartsApiComponent },
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
+  { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
 
   // jquery-table — shell avec tabs
   {
