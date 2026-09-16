@@ -104,7 +104,7 @@ Pour les configurations persistees, les coordonnees peuvent aussi etre definies 
 | `chartClick`   | `EventEmitter<any>`             | Emitted when a chart datum is clicked             |
 | `renderError`  | `EventEmitter<ChartRenderError>` | Emitted when configuration construction or ECharts rendering fails |
 
-`theme`, `renderer`, `group` and `groupSync` are applied when the ECharts instance is created. Recreate the component to change them.
+`theme`, `renderer`, `group` and `groupSync` are applied when the ECharts instance is created. Recreate the component to change them. Group events are exchanged through the shared `jquery-core` synchronization contract, so an ECharts chart can synchronize with a Highcharts chart using the same group ID.
 
 ### Chart synchronization
 
@@ -116,10 +116,12 @@ Charts sharing the same `group` ID can be synchronized:
 ```
 
 **`groupSync` values:**
-- `'all'` — Full sync via `echarts.connect()` (zoom + tooltip + legend)
+- `'all'` — Zoom and tooltip synchronization
 - `'datazoom'` — Zoom only
 - `'tooltip'` — Tooltip only
 - `['datazoom', 'tooltip']` — Combined manual sync
+
+When `datazoom` is enabled, the wrapper provides an ECharts inside/slider dataZoom control for cartesian charts. Series legends remain local to each chart instance.
 
 ### View panel (series visibility)
 

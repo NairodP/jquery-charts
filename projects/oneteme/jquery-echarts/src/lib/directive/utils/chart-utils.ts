@@ -1,5 +1,7 @@
-import { ChartProvider, mergeDeep, UnitConfig } from '@oneteme/jquery-core';
+import { ChartProvider, formatChartValue, mergeDeep, selectBestScale, UnitConfig } from '@oneteme/jquery-core';
 import { EChartsOption } from './types';
+
+export { selectBestScale };
 
 export function buildTooltipOption(trigger: 'axis' | 'item', el?: HTMLElement): any {
   return {
@@ -50,7 +52,19 @@ export function formatTooltipValue(value: unknown): string {
 
   if (!Number.isFinite(numericValue)) {
     if (value == null) return '–';
-    return typeof value === 'object' ? JSON.stringify(value) ?? '–' : String(value);
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value) ?? '–';
+      } catch {
+        return '–';
+      }
+    }
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+      return value.toString();
+    }
+    if (typeof value === 'symbol') return value.toString();
+    return typeof value === 'function' ? value.name || 'Function' : '–';
   }
 
   if (numericValue === 0) return '0';
@@ -75,14 +89,14 @@ export function buildAxisTooltipFormatter(resolveUnit: (seriesIndex: number) => 
 
 /**
  * Construit l'option de base commune à tous les types de graphiques.
- * Les options spécifiques au type sont fusionnées par-dessus.
  */
 export function buildBaseOption(config: ChartProvider<any, any>): EChartsOption {
   const hasTitle = !!(config.title || config.subtitle);
   const hasSubtitle = !!config.subtitle;
-  // Réserver suffisamment d'espace en haut pour le titre ECharts :
-  // ~60px pour un titre seul, ~80px si sous-titre présent, 10px sinon.
-  const gridTop = hasTitle ? (hasSubtitle ? 80 : 60) : 10;
+  let gridTop = 10;
+  if (hasTitle) {
+    gridTop = hasSubtitle ? 80 : 60;
+  }
   return {
     animation: true,
     // N'inclure le composant title que s'il y a effectivement un contenu,
@@ -135,6 +149,8 @@ export function applyCommonConfig(
     result.tooltip.appendToBody = false;
   }
 
+  applyControlledLegendSelection(result);
+
   if (seriesPatch && Array.isArray(seriesPatch) && Array.isArray(result.series)) {
     result.series = result.series.map((s: any, i: number) => {
       const patch = seriesPatch[i] ?? {};
@@ -165,30 +181,36 @@ export function applyCommonConfig(
       displayUnit = scaleInfo.unit;
     }
 
-    if (!result.yAxis) result.yAxis = {};
-    if (!result.yAxis.axisLabel) result.yAxis.axisLabel = {};
-
-    if (scaleInfo?.formatter) {
-      result.yAxis.axisLabel.formatter = (v: number) => scaleInfo!.formatter!(v * scaleInfo!.scale, displayUnit);
-    } else {
-      result.yAxis.axisLabel.formatter = (v: number) => {
-        const scaled = scaleInfo ? v * scaleInfo.scale : v;
-        return _smartFormatY(scaled);
-      };
-    }
+    const precision = typeof yUnitConfig === 'string' ? undefined : yUnitConfig.precision;
+    const formatAxisValue = (value: number): string => {
+      const scaled = scaleInfo ? value * scaleInfo.scale : value;
+      return scaleInfo?.formatter
+        ? scaleInfo.formatter(scaled, displayUnit)
+        : formatChartValue(scaled, precision);
+    };
+    const applyAxisLabel = (axis: any): any => {
+      const nextAxis = axis ? { ...axis } : {};
+      nextAxis.axisLabel = axis?.axisLabel
+        ? { ...axis.axisLabel, formatter: formatAxisValue }
+        : { formatter: formatAxisValue };
+      return nextAxis;
+    };
+    result.yAxis = Array.isArray(result.yAxis)
+      ? result.yAxis.map(applyAxisLabel)
+      : applyAxisLabel(result.yAxis);
 
     const devTooltip = (config.options as any)?.tooltip;
     if (!devTooltip?.formatter && !devTooltip?.valueFormatter) {
       if (!result.tooltip) result.tooltip = {};
       result.tooltip.valueFormatter = (v: number | string) => {
         if (v == null) return '–';
-        const num = typeof v === 'number' ? v : parseFloat(String(v));
-        if (isNaN(num)) return String(v);
+        const num = typeof v === 'number' ? v : Number.parseFloat(String(v));
+        if (Number.isNaN(num)) return String(v);
         const scaled = scaleInfo ? num * scaleInfo.scale : num;
         if (scaleInfo?.formatter) {
           return scaleInfo.formatter(scaled, displayUnit);
         }
-        return `${_smartFormatY(scaled)}\u00a0${displayUnit}`;
+        return `${formatChartValue(scaled, precision)}\u00a0${displayUnit}`;
       };
     }
   }
@@ -217,41 +239,22 @@ function _extractYValues(series: any[]): number[] {
   return values;
 }
 
-export function selectBestScale(
-  unitConfig: UnitConfig,
-  dataValues: number[]
-): { scale: number; unit: string; formatter?: (v: number, unit: string) => string } {
-  if (!Array.isArray(unitConfig.scales) || unitConfig.scales.length === 0) {
-    return { scale: 1, unit: unitConfig.baseUnit };
-  }
-
-  const sortedScales = [...unitConfig.scales].sort((a, b) => (a.threshold ?? Infinity) - (b.threshold ?? Infinity));
-
-  const maxValue = Math.max(...dataValues.filter(v => isFinite(v) && v !== 0), 0);
-  for (const scale of sortedScales) {
-    const threshold = scale.threshold ?? Infinity;
-    if (maxValue <= threshold) {
-      return {
-        scale: scale.scale,
-        unit: scale.unit,
-        formatter: unitConfig.formatter,
-      };
+function applyControlledLegendSelection(option: any): void {
+  const controlledSelection = (option.series ?? []).reduce((selection: Record<string, boolean>, series: any) => {
+    if (typeof series?.name === 'string' && typeof series.visible === 'boolean') {
+      selection[series.name] = series.visible;
     }
-  }
-  const lastScale = sortedScales[sortedScales.length - 1];
-  return {
-    scale: lastScale.scale,
-    unit: lastScale.unit,
-    formatter: unitConfig.formatter,
-  };
-}
+    return selection;
+  }, {});
+  if (Object.keys(controlledSelection).length === 0) return;
 
-function _smartFormatY(v: number): string {
-  if (!isFinite(v) || v === 0) return '0';
-  const abs = Math.abs(v);
-  const magnitude = Math.floor(Math.log10(abs));
-  const decimals = Math.max(0, Math.min(-magnitude + 2, 6));
-  return v.toLocaleString('fr-FR', { maximumFractionDigits: decimals });
+  if (option.legend) {
+    option.legend.selected = option.legend.selected
+      ? { ...option.legend.selected, ...controlledSelection }
+      : controlledSelection;
+  } else {
+    option.legend = { selected: controlledSelection };
+  }
 }
 
 export function buildNoDataGraphic(message = 'Aucune donnée'): any {

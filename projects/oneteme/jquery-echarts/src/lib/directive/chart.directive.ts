@@ -1,14 +1,11 @@
 import { AfterViewInit, Directive, ElementRef, EventEmitter, inject, Input, NgZone, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
-import { ChartProvider, ChartType, ChartView, cloneSerializable, mergeDeep, XaxisType, YaxisType } from '@oneteme/jquery-core';
+import { ChartExportImageType, ChartGroupSyncEvent, ChartProvider, ChartType, ChartView, cloneSerializable, mergeDeep, publishChartGroupSync, registerChartGroupSync, XaxisType, YaxisType } from '@oneteme/jquery-core';
 import { asapScheduler } from 'rxjs';
 
 import { echarts } from './utils/echarts-init';
-import { EChartsOption, ChartClickEvent, ChartCustomEvent, ChartRenderError, DEFAULT_LOADING_OPTION } from './utils/types';
+import { EChartsOption, ChartClickEvent, ChartCustomEvent, ChartRenderError, DEFAULT_LOADING_OPTION, GroupSyncAction, GroupSyncMode } from './utils/types';
 import { applyCommonConfig, buildBaseOption, buildNoDataGraphic, buildTooltipOption } from './utils/chart-utils';
 import { resolveConfigurator } from './utils/config/chart-config-registry';
-
-export type GroupSyncAction = 'datazoom' | 'tooltip';
-export type GroupSyncMode = 'all' | GroupSyncAction | GroupSyncAction[];
 
 @Directive({
   standalone: true,
@@ -28,6 +25,9 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _initialized = false;
   private _isDestroyed = false;
   private _isSyncing = false;
+  private _showingNoData = false;
+  private readonly _groupSyncSource = Symbol('jquery-echarts');
+  private _groupSyncUnregister: (() => void) | null = null;
 
   private _config: ChartProvider<X, Y>;
   private _type: ChartType;
@@ -111,6 +111,8 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     }
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+    this._groupSyncUnregister?.();
+    this._groupSyncUnregister = null;
     if (this._chartInstance) {
       this._chartInstance.dispose();
       this._chartInstance = null;
@@ -133,53 +135,135 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
 
     if (this._group) {
       const sync = this._resolveSync();
-      if (sync === 'all') {
-        // Synchronisation complète : zoom + tooltip + légende (comportement echarts natif)
-        (this._chartInstance as any).group = this._group;
-        echarts.connect(this._group);
-      } else {
-        // Synchronisation manuelle ciblée : la légende reste indépendante par graphique
-        let set = ChartDirective._groupRegistry.get(this._group);
-        if (!set) { set = new Set(); ChartDirective._groupRegistry.set(this._group, set); }
-        set.add(this);
+      let set = ChartDirective._groupRegistry.get(this._group);
+      if (!set) { set = new Set(); ChartDirective._groupRegistry.set(this._group, set); }
+      set.add(this);
 
-        if (sync.includes('datazoom')) {
-          this._chartInstance.on('datazoom', (p: any) => this._syncDataZoom(p));
-        }
-        if (sync.includes('tooltip')) {
-          // Synchronisation via valeur axe X → conversion pixel/valeur pour aligner les tooltips
-          // même si les graphiques ont des marges différentes (labels Y-axis de largeur variable)
-          this._chartInstance.getZr().on('mousemove', (e: any) => {
-            if (this._isSyncing) return;
-            const peers = ChartDirective._groupRegistry.get(this._group!);
-            if (!peers) return;
-            // Convertir le pixel X source en valeur sur l'axe X (timestamp, index, etc.)
-            const xValue = (this._chartInstance as any).convertFromPixel({ xAxisIndex: 0 }, e.offsetX);
-            if (xValue === null || xValue === undefined) return;
-            peers?.forEach(peer => {
-              if (peer !== this && peer._chartInstance) {
-                // Convertir la valeur axe X en pixel sur le graphique pair (tient compte de ses propres marges)
-                const peerPixelX = (peer._chartInstance as any).convertToPixel({ xAxisIndex: 0 }, xValue);
-                if (peerPixelX === null || peerPixelX === undefined) return;
-                peer._isSyncing = true;
-                peer._chartInstance.dispatchAction({ type: 'showTip', x: peerPixelX, y: e.offsetY });
-                peer._isSyncing = false;
-              }
-            });
+      if (sync === 'all' || sync.includes('datazoom')) {
+        this._chartInstance.on('datazoom', (p: any) => {
+          this._syncDataZoom(p);
+          this._publishDataZoom(p);
+        });
+      }
+      if (sync === 'all' || sync.includes('tooltip')) {
+        // Synchronisation via valeur axe X → conversion pixel/valeur pour aligner les tooltips
+        // même si les graphiques ont des marges différentes (labels Y-axis de largeur variable)
+        this._chartInstance.getZr().on('mousemove', (e: any) => {
+          if (this._isSyncing) return;
+          const peers = ChartDirective._groupRegistry.get(this._group!);
+          if (!peers) return;
+          // Convertir le pixel X source en valeur sur l'axe X (timestamp, index, etc.)
+          const xValue = (this._chartInstance as any).convertFromPixel({ xAxisIndex: 0 }, e.offsetX);
+          if (xValue === null || xValue === undefined) return;
+          this._publishTooltip(xValue);
+          peers?.forEach(peer => {
+            if (peer !== this && peer._chartInstance) {
+              // Convertir la valeur axe X en pixel sur le graphique pair (tient compte de ses propres marges)
+              const peerPixelX = (peer._chartInstance as any).convertToPixel({ xAxisIndex: 0 }, xValue);
+              if (peerPixelX === null || peerPixelX === undefined) return;
+              peer._isSyncing = true;
+              peer._chartInstance.dispatchAction({ type: 'showTip', x: peerPixelX, y: e.offsetY });
+              peer._isSyncing = false;
+            }
           });
-          this._chartInstance.getZr().on('mouseout', () => {
-            const peers = ChartDirective._groupRegistry.get(this._group!);
-            peers?.forEach(peer => {
-              if (peer !== this && peer._chartInstance) {
-                peer._chartInstance.dispatchAction({ type: 'hideTip' });
-              }
-            });
+        });
+        this._chartInstance.getZr().on('mouseout', () => {
+          const peers = ChartDirective._groupRegistry.get(this._group!);
+          peers?.forEach(peer => {
+            if (peer !== this && peer._chartInstance) {
+              peer._chartInstance.dispatchAction({ type: 'hideTip' });
+            }
           });
-        }
+          this._publishTooltip(null);
+        });
       }
     }
 
     this._setupResizeObserver(dom);
+    this._registerSharedGroupSync();
+  }
+
+  private _registerSharedGroupSync(): void {
+    this._groupSyncUnregister?.();
+    this._groupSyncUnregister = null;
+    if (!this._group) return;
+
+    this._groupSyncUnregister = registerChartGroupSync(
+      this._group,
+      this._groupSyncSource,
+      (event) => this._applySharedGroupSync(event),
+    );
+  }
+
+  private _publishTooltip(xValue: unknown): void {
+    if (!this._group || !this._syncs('tooltip') || this._isSyncing) return;
+    publishChartGroupSync({
+      group: this._group,
+      action: 'tooltip',
+      source: this._groupSyncSource,
+      payload: { xValue },
+    });
+  }
+
+  private _publishDataZoom(params: any): void {
+    if (!this._group || !this._syncs('datazoom') || this._isSyncing) return;
+    const source = params?.batch?.[0] ?? params ?? {};
+    publishChartGroupSync({
+      group: this._group,
+      action: 'datazoom',
+      source: this._groupSyncSource,
+      payload: {
+        min: source.min,
+        max: source.max,
+        start: source.start,
+        end: source.end,
+        startValue: source.startValue,
+        endValue: source.endValue,
+      },
+    });
+  }
+
+  private _applySharedGroupSync(event: ChartGroupSyncEvent): void {
+    if (!this._chartInstance || !this._syncs(event.action)) return;
+
+    this._isSyncing = true;
+    try {
+      if (event.action === 'tooltip') {
+        this._applySharedTooltip(event.payload.xValue);
+      } else {
+        this._applySharedDataZoom(event.payload);
+      }
+    } finally {
+      this._isSyncing = false;
+    }
+  }
+
+  private _applySharedTooltip(xValue: unknown): void {
+    if (xValue === null || xValue === undefined) {
+      this._chartInstance?.dispatchAction({ type: 'hideTip' });
+      return;
+    }
+
+    const pixel = (this._chartInstance as any).convertToPixel({ xAxisIndex: 0 }, xValue);
+    const x = Array.isArray(pixel) ? pixel[0] : pixel;
+    if (typeof x === 'number' && Number.isFinite(x)) {
+      this._chartInstance?.dispatchAction({
+        type: 'showTip',
+        x,
+        y: Math.max(1, this.el.nativeElement.clientHeight / 2),
+      });
+    }
+  }
+
+  private _applySharedDataZoom(payload: ChartGroupSyncEvent['payload']): void {
+    const action: any = { type: 'dataZoom', dataZoomIndex: 0 };
+    if (payload.startValue !== undefined) action.startValue = payload.startValue;
+    if (payload.endValue !== undefined) action.endValue = payload.endValue;
+    if (payload.start !== undefined) action.start = payload.start;
+    if (payload.end !== undefined) action.end = payload.end;
+    if (payload.min !== undefined && action.startValue === undefined) action.startValue = payload.min;
+    if (payload.max !== undefined && action.endValue === undefined) action.endValue = payload.max;
+    this._chartInstance?.dispatchAction(action);
   }
 
   private _resolveSync(): 'all' | GroupSyncAction[] {
@@ -193,7 +277,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     if (this._isSyncing || !this._group) return;
     const peers = ChartDirective._groupRegistry.get(this._group);
     if (!peers) return;
-    const source = params.batch?.[0] ?? params;
+    const source = params?.batch?.[0] ?? params ?? {};
     const action: any = { type: 'dataZoom', dataZoomIndex: 0 };
     if (source.startValue !== undefined) action.startValue = source.startValue;
     if (source.endValue   !== undefined) action.endValue   = source.endValue;
@@ -254,8 +338,9 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       if (isInitialRender || isTypeChange) {
         this._chartInstance.setOption(option, { notMerge: true, lazyUpdate: false });
       } else {
-        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis', 'graphic'], lazyUpdate: false });
+        this._chartInstance.setOption(option, { notMerge: false, replaceMerge: ['series', 'xAxis', 'yAxis', 'legend', 'graphic'], lazyUpdate: false });
       }
+      this._showingNoData = false;
     } catch (e) {
       console.error('[jquery-echarts] Erreur lors de la construction ou du rendu :', e);
       this.ngZone.run(() => this.renderError.emit({ error: e }));
@@ -275,7 +360,18 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       mergeDeep({}, base, typeSpecific, tooltipOverride),
       this._config
     );
+    if (this._group && this._syncs('datazoom') && !(merged as any).dataZoom && (merged as any).xAxis) {
+      (merged as any).dataZoom = [
+        { type: 'inside', xAxisIndex: 0 },
+        { type: 'slider', xAxisIndex: 0, bottom: 24, height: 14 },
+      ];
+    }
     return merged;
+  }
+
+  private _syncs(action: 'datazoom' | 'tooltip'): boolean {
+    const sync = this._resolveSync();
+    return sync === 'all' || sync.includes(action);
   }
 
   // Loading / No-data
@@ -283,6 +379,13 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private _applyLoadingState(): void {
     if (!this._chartInstance) return;
     if (this._isLoading) {
+      if (this._showingNoData) {
+        this._chartInstance.setOption(
+          { graphic: [] },
+          { replaceMerge: ['graphic'], lazyUpdate: false },
+        );
+        this._showingNoData = false;
+      }
       this._chartInstance.showLoading('default', { ...DEFAULT_LOADING_OPTION, text: this.loadingLabel });
     } else {
       this._chartInstance.hideLoading();
@@ -296,11 +399,12 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       { graphic: buildNoDataGraphic(this.noDataLabel), series: [] },
       { notMerge: true }
     );
+    this._showingNoData = true;
   }
 
   // Export
 
-  exportImage(fileName = 'chart', type?: 'png' | 'jpeg' | 'svg', pixelRatio = 2): void {
+  exportImage(fileName = 'chart', type?: ChartExportImageType, pixelRatio = 2): void {
     if (!this._chartInstance) return;
     // Avec le renderer SVG, getDataURL ne peut pas produire un PNG valide.
     // On choisit automatiquement le bon format selon le renderer actif.
