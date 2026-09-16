@@ -155,6 +155,38 @@ const categories = intervalCategories(intervals, row => row.duration);
 
 `intervalsByCount` crée des classes de largeur égale. `intervalsFromData` calcule des classes depuis les données avec les stratégies `quartile`, `quantile`, `equal-width`, `mean-stddev` ou `jenks`. `computeDataStats` retourne les statistiques utilisées pour ces stratégies : min, max, moyenne, médiane, quartiles, écart-type et percentiles.
 
+## Utilitaires de donnees de graphiques
+
+Les utilitaires de donnees sont purs et ne dependent pas du navigateur. Les dates utilisent `Intl.DateTimeFormat` avec une locale et un fuseau configurables ; le fuseau par defaut est `UTC` pour eviter une dependance implicite a l'environnement.
+
+```typescript
+import {
+  convertChartDataValues,
+  createUnitConverter,
+  defineLinearUnit,
+  formatChartDataDates,
+  formatChartDataValues,
+} from '@oneteme/jquery-core';
+
+const units = createUnitConverter([
+  defineLinearUnit('m', { factor: 1 }),
+  defineLinearUnit('km', { factor: 1000 }),
+]);
+
+const displayData = formatChartDataDates(rows, ['date'], {
+  locale: 'fr-FR',
+  timeZone: 'Europe/Paris',
+  format: { day: '2-digit', month: '2-digit', year: 'numeric' },
+});
+const formattedValues = formatChartDataValues(rows, ['value'], {
+  locale: 'fr-FR',
+  precision: 2,
+});
+const convertedValues = convertChartDataValues(rows, ['value'], units, 'm', 'km');
+```
+
+`normalizeChartDate`, `formatChartDate` et `formatChartNumber` traitent les valeurs nulles en les conservant. Les dates, nombres invalides et valeurs non finies lèvent une erreur par défaut ; les options `invalidDate: 'null'` et `invalidNumber: 'null'` permettent un comportement explicite. `convertChartDataValues` exige des unites enregistrees et des nombres finis : une unite inconnue ne declenche aucun fallback silencieux. Les transformations retournent un nouveau tableau et de nouvelles lignes superficielles.
+
 ## Organizer
 
 Les contrats Organizer sont indépendants des composants visuels. Ils servent à décrire les champs disponibles et à appliquer la visibilité de séries de manière immuable.
@@ -175,6 +207,10 @@ const visibleConfig = applyOrganizerStateToSeries(config, state);
 ```
 
 `OrganizerState` contient `selectedFieldIds`, `groupByKey` et `dynamicSliceKeys`. `organizerFieldDefsFromChartSeries`, `groupableOrganizerFields` et `sliceableOrganizerFields` permettent de construire et filtrer les champs d'une interface Organizer.
+
+## Capacités communes des graphiques
+
+Les wrappers ECharts et Highcharts partagent les contrats `ChartClickEvent`, `ChartRenderError`, `ChartDrilldownConfig`, `ChartDrilldownRequest`, `ChartDrilldownState`, `GroupSyncMode` et `ChartExportImageType`. Les applications peuvent donc brancher les événements, le drilldown, la synchronisation de groupe (`datazoom`, `tooltip`) et les exports sans dépendre du moteur de rendu.
 
 ## Snapshots visuels
 
