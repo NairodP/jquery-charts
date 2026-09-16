@@ -25,6 +25,7 @@ import { QuickSearchComponent } from './components/quick-search/quick-search.com
 import { TablePresentationComponent } from './pages/table/table-presentation.component';
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
+import { CoreDataUtilitiesComponent } from './pages/core-data-utilities/core-data-utilities.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-
     TablePresentationComponent,
     SnapshotsComponent,
     DashboardEmsDemoComponent,
+    CoreDataUtilitiesComponent,
   ],
   providers: [ChartTypesService],
   bootstrap: [AppComponent],

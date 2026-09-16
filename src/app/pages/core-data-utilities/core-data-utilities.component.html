@@ -1,0 +1,460 @@
+<main class="core-data-page">
+  <header class="page-header">
+    <p class="eyebrow">jquery-charts / validation fonctionnelle</p>
+    <h1>Laboratoire Core &amp; Highcharts</h1>
+    <p>
+      Chaque carte ci-dessous est un exemple exécutable : l'explication décrit
+      le contrat testé, le graphique permet de le manipuler et les résultats
+      rendent visibles les valeurs produites.
+    </p>
+    <div class="legend">
+      <span><i class="legend-dot legend-dot--core"></i> Utilitaire pur jquery-core</span>
+      <span><i class="legend-dot legend-dot--chart"></i> Fonctionnalité jquery-highcharts</span>
+    </div>
+  </header>
+
+  <section class="section-intro" aria-labelledby="core-title">
+    <p class="section-kicker">01 · Données</p>
+    <h2 id="core-title">Utilitaires génériques jquery-core</h2>
+    <p>
+      Ces fonctions ne dépendent pas du DOM. Elles prennent des entrées
+      explicites, conservent les valeurs nulles et retournent de nouvelles
+      collections afin de pouvoir préparer les données avant n'importe quel
+      moteur de rendu.
+    </p>
+  </section>
+
+  <section class="controls panel" aria-labelledby="controls-title">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">Entrées interactives</p>
+        <h2 id="controls-title">Locale, fuseau et précision</h2>
+      </div>
+      <span class="status-pill status-pill--info">Actualisation immédiate</span>
+    </div>
+    <div class="control-grid">
+      <label>
+        Locale
+        <select [(ngModel)]="selectedLocale" (ngModelChange)="refresh()">
+          <option *ngFor="let locale of locales" [value]="locale">{{ locale }}</option>
+        </select>
+      </label>
+      <label>
+        Fuseau IANA
+        <select [(ngModel)]="selectedTimeZone" (ngModelChange)="refresh()">
+          <option *ngFor="let timeZone of timeZones" [value]="timeZone">{{ timeZone }}</option>
+        </select>
+      </label>
+      <label>
+        Précision numérique
+        <input
+          type="number"
+          min="0"
+          max="10"
+          step="1"
+          [(ngModel)]="precision"
+          (ngModelChange)="refresh()"
+        />
+      </label>
+    </div>
+    <p class="explanation">
+      Le même instant UTC est volontairement proche de minuit : changer le
+      fuseau doit faire apparaître le changement de jour, tandis que la locale
+      change l'ordre des nombres et des dates.
+    </p>
+  </section>
+
+  <section class="demo-grid" aria-label="Démonstrations jquery-core">
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">A</span>
+        <div>
+          <h3>Dates : normaliser puis formater</h3>
+          <p class="api-label">normalizeChartDate · formatChartDate · formatChartDataDates</p>
+        </div>
+      </div>
+      <p class="explanation">
+        La date représente toujours le même instant. Le fuseau est appliqué
+        uniquement à l'affichage ; une valeur <code>null</code> reste
+        <code>null</code>.
+      </p>
+      <div class="metric-row">
+        <div>
+          <span class="metric-label">Affichage</span>
+          <strong>{{ formattedInstant }}</strong>
+        </div>
+        <div>
+          <span class="metric-label">Instant normalisé</span>
+          <strong class="metric-value-small">{{ normalizedInstant }}</strong>
+        </div>
+      </div>
+      <pre>{{ formatJson(formattedDates) }}</pre>
+    </article>
+
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">B</span>
+        <div>
+          <h3>Nombres : locale et précision</h3>
+          <p class="api-label">formatChartNumber · formatChartDataValues</p>
+        </div>
+      </div>
+      <p class="explanation">
+        La précision limite les décimales sans changer la donnée source.
+        Essayez <code>0</code>, <code>2</code> ou <code>4</code> ci-dessus.
+      </p>
+      <div class="metric-row">
+        <div>
+          <span class="metric-label">Valeur formatée</span>
+          <strong>{{ formattedValues[0]?.value }}</strong>
+        </div>
+        <div>
+          <span class="metric-label">Valeur nulle</span>
+          <strong>{{ formattedValues[1]?.value }}</strong>
+        </div>
+      </div>
+      <pre>{{ formatJson(formattedValues) }}</pre>
+    </article>
+
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">C</span>
+        <div>
+          <h3>Unités : conversion déclarée</h3>
+          <p class="api-label">defineLinearUnit · createUnitConverter · convertChartDataValues</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Le convertisseur ne connaît que les unités enregistrées. Il refuse une
+        unité inconnue au lieu de supposer une conversion identité.
+      </p>
+      <div class="metric-row">
+        <div>
+          <span class="metric-label">2 500 m</span>
+          <strong>{{ convertedDistances[0]?.distanceM }} km</strong>
+        </div>
+        <div>
+          <span class="metric-label">Valeur nulle</span>
+          <strong>{{ convertedDistances[1]?.distanceM }}</strong>
+        </div>
+      </div>
+      <pre>{{ formatJson(convertedDistances) }}</pre>
+    </article>
+
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">D</span>
+        <div>
+          <h3>Échelles dynamiques</h3>
+          <p class="api-label">selectBestScale · formatUnitValue</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Le maximum des valeurs sélectionne la meilleure échelle. Ici les
+        secondes inférieures à une unité sont rendues en millisecondes.
+      </p>
+      <div class="scale-preview">
+        <strong>{{ selectedDurationUnit }}</strong>
+        <span *ngFor="let value of dynamicDurationDisplay">{{ value }}</span>
+      </div>
+      <pre>{{ formatJson({ source: durationValues, selectedScale: durationScale }) }}</pre>
+    </article>
+
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">E</span>
+        <div>
+          <h3>Politiques d'erreur explicites</h3>
+          <p class="api-label">invalidDate · invalidNumber</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Par défaut, une valeur invalide lève une erreur pour éviter un résultat
+        silencieusement faux. Le mode <code>'null'</code> est disponible quand
+        l'application veut l'assumer explicitement.
+      </p>
+      <div class="error-list">
+        <p><span class="status-dot status-dot--error"></span><strong>Date invalide :</strong> {{ invalidDateMessage }}</p>
+        <p><span class="status-dot status-dot--ok"></span><strong>Date invalide → null :</strong> {{ invalidDateNullMessage }}</p>
+        <p><span class="status-dot status-dot--error"></span><strong>Nombre invalide :</strong> {{ invalidNumberMessage }}</p>
+        <p><span class="status-dot status-dot--ok"></span><strong>Nombre invalide → null :</strong> {{ invalidNumberNullMessage }}</p>
+        <p><span class="status-dot status-dot--error"></span><strong>Unité inconnue :</strong> {{ unknownUnitMessage }}</p>
+      </div>
+    </article>
+
+    <article class="demo-card demo-card--core">
+      <div class="card-title">
+        <span class="step">F</span>
+        <div>
+          <h3>Immuabilité des transformations</h3>
+          <p class="api-label">formatChartDataDates · formatChartDataValues</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Les transformations produisent un nouveau tableau et de nouvelles
+        lignes superficielles. La source affichée ici est la preuve visuelle :
+        elle conserve son timestamp ISO et son nombre brut.
+      </p>
+      <div class="immutability-check" [class.immutability-check--ok]="sourceIsUnchanged">
+        <span>{{ sourceIsUnchanged ? '✓' : '!' }}</span>
+        <strong>{{ sourceIsUnchanged ? 'Source inchangée' : 'Source modifiée' }}</strong>
+      </div>
+      <pre>{{ formatJson(sourceData) }}</pre>
+    </article>
+  </section>
+
+  <section class="demo-card demo-card--core demo-card--wide">
+    <div class="card-title">
+      <span class="step">G</span>
+      <div>
+        <h3>Fixture Core rendue par les deux moteurs</h3>
+        <p class="api-label">Même ChartProvider · jquery-echarts · jquery-highcharts</p>
+      </div>
+    </div>
+    <p class="explanation">
+      Les six exemples précédents préparent les données sans navigateur. Cette
+      vue finale vérifie que la même fixture peut ensuite être confiée aux
+      deux wrappers, avec un rendu comparable.
+    </p>
+    <app-chart-comparison
+      type="column"
+      [config]="coreChartConfig"
+      [data]="coreChartData"
+    ></app-chart-comparison>
+  </section>
+
+  <section class="section-intro section-intro--charts" aria-labelledby="highcharts-title">
+    <p class="section-kicker">02 · Rendu</p>
+    <h2 id="highcharts-title">Nouvelles capacités jquery-highcharts</h2>
+    <p>
+      Les exemples suivants utilisent le composant public
+      <code>&lt;chart&gt;</code>. Les boutons appellent ses méthodes publiques ;
+      les événements capturés par la page sont affichés sous les graphiques.
+    </p>
+  </section>
+
+  <section class="demo-card demo-card--chart demo-card--wide">
+    <div class="card-title">
+      <span class="step step--chart">1</span>
+      <div>
+        <h3>Graphique mixte, axes multiples et unités par série</h3>
+        <p class="api-label">type="mixed" · yAxisIndex · yAxisConfig · SerieProvider.unit</p>
+      </div>
+    </div>
+    <p class="explanation">
+      Une série en colonnes affiche l'énergie sur l'axe gauche et une spline
+      affiche la température sur l'axe droit. Survolez le graphique : chaque
+      ligne du tooltip conserve son unité propre.
+    </p>
+    <div class="chart-frame chart-frame--large">
+      <div class="renderer-pair renderer-pair--large">
+        <div class="renderer-slot">
+          <h4>jquery-echarts</h4>
+          <app-echarts-preview class="renderer-chart"
+            type="mixed"
+            [config]="mixedConfig"
+            [data]="monthlyData"
+            groupSync="all"
+            (chartClick)="onChartClick($event)"
+            (renderError)="onRenderError($event)"
+          ></app-echarts-preview>
+        </div>
+        <div class="renderer-slot">
+          <h4>jquery-highcharts</h4>
+          <chart class="renderer-chart"
+            #capabilityChart
+            type="mixed"
+            [config]="mixedConfig"
+            [data]="monthlyData"
+            [enablePivot]="true"
+            [copyFeedback]="{ message: 'Snapshot créé' }"
+            (chartClick)="onChartClick($event)"
+            (renderError)="onRenderError($event)"
+            (visualCopied)="onSnapshotCreated($event)"
+          ></chart>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar-demo">
+      <button type="button" (click)="capabilityChart.exportData('mixed-demo', ';')">Exporter CSV (;)</button>
+      <button type="button" (click)="capabilityChart.exportImage('mixed-demo', 'png', 2)">Exporter PNG x2</button>
+      <button type="button" (click)="capabilityChart.toggleFullscreen()">Plein écran</button>
+      <button type="button" (click)="capabilityChart.copyVisualSnapshot('Démo mixed')">Créer un snapshot</button>
+    </div>
+    <div class="event-grid">
+      <p><strong>chartClick :</strong> {{ lastChartClick }}</p>
+      <p><strong>renderError :</strong> {{ lastRenderError || 'Aucune erreur de rendu' }}</p>
+    </div>
+    <pre *ngIf="lastSnapshot">{{ formatJson(lastSnapshot) }}</pre>
+  </section>
+
+  <section class="demo-grid demo-grid--charts">
+    <article class="demo-card demo-card--chart">
+      <div class="card-title">
+        <span class="step step--chart">2</span>
+        <div>
+          <h3>Thème Highcharts</h3>
+          <p class="api-label">[theme]</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Le thème est fusionné avec les options générées : couleurs, fond,
+        titres, axes et légende sont injectés sans réécrire le provider.
+      </p>
+      <app-chart-comparison
+        type="line"
+        [config]="themedConfig"
+        [data]="monthlyData"
+        echartsTheme="dark"
+        [highchartsTheme]="theme"
+      ></app-chart-comparison>
+    </article>
+
+    <article class="demo-card demo-card--chart">
+      <div class="card-title">
+        <span class="step step--chart">3</span>
+        <div>
+          <h3>Option de rendu autoritaire</h3>
+          <p class="api-label">[renderedOption]</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Cette option Highcharts est rendue telle quelle : elle montre le cas
+        où une application possède déjà une configuration moteur complète.
+      </p>
+      <app-chart-comparison
+        type="line"
+        [config]="renderedOptionConfig"
+        [data]="monthlyData"
+        [echartsRenderedOption]="echartsRenderedOption"
+        [highchartsRenderedOption]="renderedOption"
+      ></app-chart-comparison>
+    </article>
+  </section>
+
+  <section class="demo-grid demo-grid--charts">
+    <article class="demo-card demo-card--chart">
+      <div class="card-title">
+        <span class="step step--chart">4</span>
+        <div>
+          <h3>Chargement et données absentes</h3>
+          <p class="api-label">isLoading · loadingLabel · noDataLabel</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Les deux états sont distincts : le chargement affiche un message
+        d'attente, tandis qu'un tableau vide affiche le libellé no-data.
+      </p>
+      <div class="toolbar-demo">
+        <button type="button" [class.button--active]="isLoadingDemo" (click)="isLoadingDemo = !isLoadingDemo">
+          {{ isLoadingDemo ? 'Arrêter le chargement' : 'Simuler le chargement' }}
+        </button>
+        <button type="button" [class.button--active]="showNoDataDemo" (click)="showNoDataDemo = !showNoDataDemo">
+          {{ showNoDataDemo ? 'Restaurer les données' : 'Afficher no-data' }}
+        </button>
+      </div>
+      <app-chart-comparison
+        type="area"
+        [config]="themedConfig"
+        [data]="loadingDemoData"
+        [isLoading]="isLoadingDemo"
+        loadingLabel="Chargement de la démonstration..."
+        noDataLabel="Aucune donnée de démonstration"
+      ></app-chart-comparison>
+    </article>
+
+    <article class="demo-card demo-card--chart">
+      <div class="card-title">
+        <span class="step step--chart">5</span>
+        <div>
+          <h3>Organizer et visibilité immuable</h3>
+          <p class="api-label">organizer · organizerState</p>
+        </div>
+      </div>
+      <p class="explanation">
+        Les boutons simulent une sélection externe de séries. Le provider
+        original ne change pas ; seule la vue effective est recalculée.
+      </p>
+      <div class="toolbar-demo toolbar-demo--wrap">
+        <button
+          *ngFor="let seriesId of ['Consommation', 'Production', 'Prévision']"
+          type="button"
+          [class.button--active]="isOrganizerSeriesSelected(seriesId)"
+          (click)="toggleOrganizerSeries(seriesId)"
+        >{{ seriesId }}</button>
+      </div>
+      <app-chart-comparison
+        type="line"
+        [config]="organizerChartConfig"
+        [data]="monthlyData"
+        [organizer]="organizerConfig"
+        [organizerState]="organizerState"
+      ></app-chart-comparison>
+    </article>
+  </section>
+
+  <section class="demo-card demo-card--chart demo-card--wide">
+    <div class="card-title">
+      <span class="step step--chart">6</span>
+      <div>
+        <h3>Synchronisation de groupe</h3>
+        <p class="api-label">group · groupSync="all"</p>
+      </div>
+    </div>
+    <p class="explanation">
+      Les deux instances partagent le même groupe. Déplacez la souris sur un
+      graphique pour synchroniser le tooltip ; utilisez une sélection de zoom
+      horizontal pour synchroniser les extrêmes X.
+    </p>
+    <div class="chart-pair">
+      <app-chart-comparison
+        type="line"
+        [config]="mixedConfig"
+        [data]="monthlyData"
+        [group]="syncGroup"
+        groupSync="all"
+      ></app-chart-comparison>
+      <app-chart-comparison
+        type="area"
+        [config]="themedConfig"
+        [data]="monthlyData"
+        [group]="syncGroup"
+        groupSync="all"
+      ></app-chart-comparison>
+    </div>
+  </section>
+
+  <section class="demo-card demo-card--chart demo-card--wide">
+    <div class="card-title">
+      <span class="step step--chart">7</span>
+      <div>
+        <h3>Drilldown piloté par le parent</h3>
+        <p class="api-label">drilldown · drilldownRequest · drilldownNavigate</p>
+      </div>
+    </div>
+    <p class="explanation">{{ drilldownTitle }}</p>
+    <app-chart-comparison
+      type="column"
+      [config]="drilldownConfig.activeLevel === 'site' ? drilldownSiteChartConfig : drilldownChartConfig"
+      [data]="drilldownData"
+      [drilldown]="drilldownConfig"
+      (drilldownRequest)="onDrilldownRequest($event)"
+      (drilldownNavigate)="onDrilldownNavigate($event)"
+    ></app-chart-comparison>
+  </section>
+
+  <section class="source panel" aria-labelledby="source-title">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">Référence</p>
+        <h2 id="source-title">Données source Core</h2>
+      </div>
+      <span class="status-pill status-pill--success">Source non modifiée</span>
+    </div>
+    <p class="explanation">
+      Cette petite fixture alimente les exemples de transformation et rend
+      visibles les valeurs nulles conservées.
+    </p>
+    <pre>{{ formatJson(sourceData) }}</pre>
+  </section>
+</main>

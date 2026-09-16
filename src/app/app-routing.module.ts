@@ -11,6 +11,7 @@ import { SliceChartComponent } from './pages/table/slice-chart/slice-chart.compo
 import { ChartsShellComponent } from './pages/charts/charts-shell.component';
 import { EChartsComponent } from './pages/echarts/echarts.component';
 import { EChartsApiComponent } from './pages/echarts/api/echarts-api.component';
+import { HighchartsApiComponent } from './pages/highcharts/api/highcharts-api.component';
 import { EChartsDetailComponent } from './pages/echarts/echarts-detail.component';
 import { ApexChartsPageComponent } from './pages/apexcharts/apexcharts.component';
 import { ApexChartsDetailComponent } from './pages/apexcharts/apexcharts-detail.component';
@@ -21,6 +22,7 @@ import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
 import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
+import { CoreDataUtilitiesComponent } from './pages/core-data-utilities/core-data-utilities.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -31,9 +33,11 @@ const routes: Routes = [
   { path: 'atelier-graphiques/sandbox', component: ChartDataSandboxComponent },
   { path: 'snapshots', component: SnapshotsComponent },
   { path: 'api/echarts', component: EChartsApiComponent },
+  { path: 'api/highcharts', component: HighchartsApiComponent },
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
   { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
+  { path: 'core-data', component: CoreDataUtilitiesComponent },
 
   // jquery-table — shell avec tabs
   {
