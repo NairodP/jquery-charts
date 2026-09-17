@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { APEXCHARTS_SECTIONS, ECHARTS_DETAIL_SECTIONS, HIGHCHARTS_SECTIONS } from 'src/app/pages/charts/chart-example-sections';
 
 interface ChartTypeItem { id: string; label: string; }
 interface LibItem { key: string; label: string; route: string; types: ChartTypeItem[]; }
@@ -43,9 +44,11 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
         <span class="sidebar-section-label">API</span>
         <ul>
           <li [class.active]="isCoreApiRoute()" (click)="goToCoreApi()">jquery-core</li>
-          <li [class.active]="isApiRoute()" (click)="goToApi()">jquery-echarts</li>
-          <li [class.active]="isHighchartsApiRoute()" (click)="goToHighchartsApi()">jquery-highcharts</li>
           <li [class.active]="isOrganizerApiRoute()" (click)="goToOrganizerApi()">jquery-organizer</li>
+          <li [class.active]="isHighchartsApiRoute()" (click)="goToHighchartsApi()">jquery-highcharts</li>
+          <li [class.active]="isApiRoute()" (click)="goToApi()">jquery-echarts</li>
+          <li [class.active]="isApexchartsApiRoute()" (click)="goToApexchartsApi()">jquery-apexcharts</li>
+          <li [class.active]="isTableApiRoute()" (click)="goToTableApi()">jquery-table</li>
         </ul>
       </div>
 
@@ -63,71 +66,15 @@ export class SidebarComponent implements OnInit {
   readonly libs: LibItem[] = [
     {
       key: 'echarts', label: 'jquery-echarts', route: '/charts/echarts',
-      types: [
-        { id: 'bar',         label: 'Bar'          },
-        { id: 'column',      label: 'Column'       },
-        { id: 'line',        label: 'Line'         },
-        { id: 'spline',      label: 'Spline'       },
-        { id: 'area',        label: 'Area'         },
-        { id: 'pie',         label: 'Pie'          },
-        { id: 'donut',       label: 'Donut'        },
-        { id: 'scatter',     label: 'Scatter'      },
-        { id: 'bubble',      label: 'Bubble'       },
-        { id: 'heatmap',     label: 'Heatmap'      },
-        { id: 'treemap',     label: 'Treemap'      },
-        { id: 'funnel',      label: 'Funnel'       },
-        { id: 'pyramid',     label: 'Pyramid'      },
-        { id: 'radar',       label: 'Radar'        },
-        { id: 'rangeBar',    label: 'Range Bar'    },
-        { id: 'rangeColumn', label: 'Range Column' },
-      ]
+      types: ECHARTS_DETAIL_SECTIONS.map(({ id, label }) => ({ id, label }))
     },
     {
       key: 'highcharts', label: 'jquery-highcharts', route: '/charts/highcharts',
-      types: [
-        { id: 'line',            label: 'Line'             },
-        { id: 'spline',          label: 'Spline'           },
-        { id: 'areaspline',      label: 'Area Spline'      },
-        { id: 'area',            label: 'Area'             },
-        { id: 'bar',             label: 'Bar'              },
-        { id: 'column',          label: 'Column'           },
-        { id: 'scatter',         label: 'Scatter'          },
-        { id: 'pie',             label: 'Pie'              },
-        { id: 'donut',           label: 'Donut'            },
-        { id: 'funnel',          label: 'Funnel'           },
-        { id: 'pyramid',         label: 'Pyramid'          },
-        { id: 'polar',           label: 'Polar'            },
-        { id: 'radar',           label: 'Radar'            },
-        { id: 'radarArea',       label: 'Radar Area'       },
-        { id: 'radialBar',       label: 'Radial Bar'       },
-        { id: 'bubble',          label: 'Bubble'           },
-        { id: 'heatmap',         label: 'Heatmap'          },
-        { id: 'treemap',         label: 'Treemap'          },
-        { id: 'columnrange',     label: 'Column Range'     },
-        { id: 'arearange',       label: 'Area Range'       },
-        { id: 'areasplinerange', label: 'Area Spline Range'},
-      ]
+      types: HIGHCHARTS_SECTIONS.map(({ id, label }) => ({ id, label }))
     },
     {
       key: 'apexcharts', label: 'jquery-apexcharts', route: '/charts/apexcharts',
-      types: [
-        { id: 'pie',         label: 'Pie'          },
-        { id: 'donut',       label: 'Donut'        },
-        { id: 'polar',       label: 'Polar'        },
-        { id: 'radar',       label: 'Radar'        },
-        { id: 'radial',      label: 'Radial Bar'   },
-        { id: 'line',        label: 'Line'         },
-        { id: 'area',        label: 'Area'         },
-        { id: 'bar',         label: 'Bar'          },
-        { id: 'column',      label: 'Column'       },
-        { id: 'heatmap',     label: 'Heatmap'      },
-        { id: 'treemap',     label: 'Treemap'      },
-        { id: 'funnel',      label: 'Funnel'       },
-        { id: 'pyramid',     label: 'Pyramid'      },
-        { id: 'rangeBar',    label: 'Range Bar'    },
-        { id: 'rangeColumn', label: 'Range Column' },
-        { id: 'rangeArea',   label: 'Range Area'   },
-      ]
+      types: APEXCHARTS_SECTIONS.map(({ id, label }) => ({ id, label }))
     },
   ];
 
@@ -156,6 +103,10 @@ export class SidebarComponent implements OnInit {
   isApiRoute(): boolean { return this.router.url === '/api/echarts'; }
 
   isHighchartsApiRoute(): boolean { return this.router.url === '/api/highcharts'; }
+
+  isApexchartsApiRoute(): boolean { return this.router.url === '/api/apexcharts'; }
+
+  isTableApiRoute(): boolean { return this.router.url === '/api/table'; }
 
   isOrganizerRoute(): boolean { return this.router.url === '/organizer'; }
 
@@ -186,6 +137,16 @@ export class SidebarComponent implements OnInit {
 
   goToHighchartsApi() {
     this.router.navigate(['/api/highcharts']);
+    if (this.isMenuOpen) this.toggleMenu();
+  }
+
+  goToApexchartsApi() {
+    this.router.navigate(['/api/apexcharts']);
+    if (this.isMenuOpen) this.toggleMenu();
+  }
+
+  goToTableApi() {
+    this.router.navigate(['/api/table']);
     if (this.isMenuOpen) this.toggleMenu();
   }
 

@@ -1,0 +1,223 @@
+<div class="api-page">
+  <header class="api-hero">
+    <div>
+      <a class="back-link" routerLink="/charts/apexcharts">← Retour aux exemples ApexCharts</a>
+      <p class="eyebrow">jquery-apexcharts / référence du wrapper</p>
+      <h1>API du wrapper ApexCharts</h1>
+      <p class="intro">
+        Le composant <code>&lt;chart&gt;</code> traduit le modèle partagé de jquery-core vers ApexCharts.
+        Cette page documente les types réellement pris en charge, les options natives transmissibles et les limites
+        du contrat public actuel.
+      </p>
+    </div>
+    <a class="official-link" href="https://apexcharts.com/docs/options/" target="_blank" rel="noopener">
+      Documentation officielle ApexCharts ↗
+    </a>
+  </header>
+
+  <section class="reference-section" aria-labelledby="apex-api-reference-title">
+    <div class="section-heading">
+      <p class="section-kicker">01 · Référence</p>
+      <h2 id="apex-api-reference-title">Inputs, configuration et types</h2>
+      <p>Les tableaux distinguent le wrapper Angular, le modèle partagé jquery-core et les options ApexCharts natives.</p>
+    </div>
+
+    <article *ngFor="let section of sections" class="reference-block" [id]="section.id">
+      <div class="section-heading section-heading--small">
+        <p class="section-kicker">API</p>
+        <h3>{{ section.title }}</h3>
+        <p>{{ section.description }}</p>
+      </div>
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <colgroup>
+            <col class="api-column api-column--property">
+            <col class="api-column api-column--type">
+            <col class="api-column api-column--source">
+            <col class="api-column api-column--description">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Propriété</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of section.entries">
+              <td>
+                <code>{{ entry.name }}</code>
+                <small *ngIf="entry.types">{{ entry.types }}</small>
+              </td>
+              <td><code>{{ entry.type }}</code></td>
+              <td><span class="source-badge" [attr.data-source]="entry.source">{{ entry.source }}</span></td>
+              <td>{{ entry.description }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section-example">
+        <div class="section-example-heading">
+          <span>Exemple de la section</span>
+          <small>Snippet aligné sur les exports publics</small>
+        </div>
+        <pre><code>{{ section.example }}</code></pre>
+      </div>
+    </article>
+  </section>
+
+  <section class="capabilities-section" aria-labelledby="apex-capabilities-title">
+    <div class="section-heading">
+      <p class="section-kicker">02 · Démonstrations</p>
+      <h2 id="apex-capabilities-title">Le même contrat, plusieurs renderers internes</h2>
+      <p>
+        Chaque carte utilise le composant public <code>&lt;chart&gt;</code>. Les boutons changent uniquement le type
+        prévu par la famille de la directive ; la configuration de données reste celle attendue par le wrapper.
+      </p>
+    </div>
+
+    <article class="capability-card" id="families">
+      <header class="capability-heading">
+        <div>
+          <p class="capability-index">WRAPPER + CORE</p>
+          <h3>Familles de graphiques prises en charge</h3>
+          <p>
+            Les cinq directives internes adaptent les séries communes vers les formats line, bar, pie, treemap et range
+            d’ApexCharts. Un type ne peut être changé qu’à l’intérieur de sa famille de données.
+          </p>
+        </div>
+        <span class="capability-kind">types</span>
+      </header>
+
+      <div class="family-grid">
+        <div *ngFor="let demo of familyDemos" class="family-demo">
+          <div class="family-demo-heading">
+            <strong>{{ demo.label }}</strong>
+            <span>{{ demo.currentType }}</span>
+          </div>
+          <div class="type-switcher" role="group" [attr.aria-label]="'Type ' + demo.label">
+            <button
+              *ngFor="let type of demo.types"
+              type="button"
+              [class.is-active]="demo.currentType === type"
+              (click)="setFamilyType(demo, type)"
+            >{{ type }}</button>
+          </div>
+          <chart class="api-chart family-chart" [type]="demo.currentType" [config]="demo.config" [data]="demo.data"></chart>
+        </div>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-heading"><span>Code minimal</span></div>
+        <pre><code>import &#123; ChartComponent &#125; from '@oneteme/jquery-apexcharts';
+
+&lt;chart
+  type="rangeArea"
+  [config]="config"
+  [data]="rows"&gt;
+&lt;/chart&gt;
+
+// Pour une plage min/max :
+series: [&#123;
+  data: &#123; x: field('month'), y: rangeFields('min', 'max') &#125;
+&#125;]</code></pre>
+      </div>
+    </article>
+
+    <article class="capability-card" id="states">
+      <header class="capability-heading">
+        <div>
+          <p class="capability-index">WRAPPER</p>
+          <h3>Chargement et absence de données</h3>
+          <p>
+            <code>isLoading</code> modifie le message no-data utilisé par les directives. Pour rendre l’état observable,
+            la démonstration vide aussi les lignes ; les deux états restent distincts du graphique prêt à afficher.
+          </p>
+        </div>
+        <span class="capability-kind">isLoading</span>
+      </header>
+
+      <div class="demo-surface">
+        <div class="demo-controls">
+          <button type="button" [class.is-active]="!isLoadingDemo && !isEmptyDemo" (click)="setState('ready')">Données</button>
+          <button type="button" [class.is-active]="isLoadingDemo" (click)="setState('loading')">Chargement</button>
+          <button type="button" [class.is-active]="isEmptyDemo" (click)="setState('empty')">Aucune donnée</button>
+        </div>
+        <chart class="api-chart state-chart" type="line" [config]="toolbarConfig" [data]="stateData" [isLoading]="isLoadingDemo"></chart>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-heading"><span>Code minimal</span></div>
+        <pre><code>&lt;chart
+  type="line"
+  [config]="config"
+  [data]="rows"
+  [isLoading]="isLoading"&gt;
+&lt;/chart&gt;</code></pre>
+      </div>
+    </article>
+
+    <article class="capability-card" id="native-options">
+      <header class="capability-heading">
+        <div>
+          <p class="capability-index">WRAPPER → APEXCHARTS NATIF</p>
+          <h3>Options natives via <code>config.options</code></h3>
+          <p>
+            Les options propres à ApexCharts restent accessibles sans créer un nouvel input Angular. Le wrapper fusionne
+            ces options avec les dimensions, titres et séries construites depuis le provider.
+          </p>
+        </div>
+        <span class="capability-kind">options</span>
+      </header>
+
+      <div class="demo-surface">
+        <div class="native-option-proof">
+          <div><span class="proof-label">jquery-core</span><code>series · axes · données</code><small>Le provider décrit les données et le modèle commun.</small></div>
+          <div><span class="proof-label">ApexCharts</span><code>stroke · markers · tooltip · zoom</code><small><code>config.options</code> est fusionné après les options communes.</small></div>
+        </div>
+        <chart class="api-chart native-chart" type="line" [config]="nativeOptionsConfig" [data]="nativeOptionsData"></chart>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-heading"><span>Code minimal</span></div>
+        <pre><code>const config: ChartProvider&lt;string, number&gt; = &#123;
+  series: [&#123; name: 'Déploiements', data: &#123; x: field('week'), y: field('count') &#125; &#125;],
+  options: &#123;
+    stroke: &#123; curve: 'smooth', width: 3 &#125;,
+    dataLabels: &#123; enabled: false &#125;,
+    tooltip: &#123; shared: true &#125;,
+  &#125;,
+&#125;;</code></pre>
+      </div>
+    </article>
+
+    <article class="capability-card" id="toolbar">
+      <header class="capability-heading">
+        <div>
+          <p class="capability-index">WRAPPER</p>
+          <h3>Toolbar et navigation de type</h3>
+          <p>
+            <code>showToolbar</code> affiche la toolbar ApexCharts. Le wrapper y ajoute ses commandes précédent, suivant
+            et pivot ; elles modifient le type ou la configuration interne sans devenir des outputs publics.
+          </p>
+        </div>
+        <span class="capability-kind">showToolbar</span>
+      </header>
+
+      <div class="demo-surface">
+        <chart class="api-chart toolbar-chart" type="column" [config]="toolbarConfig" [data]="toolbarData"></chart>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-heading"><span>Code minimal</span></div>
+        <pre><code>const config = &#123;
+  showToolbar: true,
+  series: [&#123; data: &#123; x: field('day'), y: field('count') &#125; &#125;],
+&#125;;
+
+&lt;chart type="column" [config]="config" [data]="rows"&gt;&lt;/chart&gt;</code></pre>
+      </div>
+    </article>
+  </section>
+</div>

@@ -23,6 +23,8 @@ import { OrganizerDocumentationComponent } from './pages/organizer/organizer-doc
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
 import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
 import { CoreApiComponent } from './pages/core-api/core-api.component';
+import { ApexChartsApiComponent } from './pages/apexcharts/api/apexcharts-api.component';
+import { TableApiComponent } from './pages/table/api/table-api.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -37,6 +39,8 @@ const routes: Routes = [
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
   { path: 'api/core', component: CoreApiComponent },
+  { path: 'api/apexcharts', component: ApexChartsApiComponent },
+  { path: 'api/table', component: TableApiComponent },
   { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
 
   // jquery-table — shell avec tabs

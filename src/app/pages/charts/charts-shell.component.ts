@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgFor } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { ChartExampleNavigationService } from './chart-example-navigation.service';
+import { supportsChartExample } from './chart-example-sections';
 
 interface LibraryTab {
   label: string;
   path: string;
-  description: string;
-  badge: string;
 }
 
 @Component({
@@ -20,24 +20,33 @@ interface LibraryTab {
 })
 export class ChartsShellComponent implements OnInit, OnDestroy {
   readonly libraries: LibraryTab[] = [
-    { label: 'ECharts',    path: '/charts/echarts',    description: 'Apache ECharts 5',  badge: 'echarts'    },
-    { label: 'Highcharts', path: '/charts/highcharts', description: 'Highcharts 11',     badge: 'highcharts' },
-    { label: 'ApexCharts', path: '/charts/apexcharts', description: 'ApexCharts 3',      badge: 'apexcharts' },
+    { label: 'ECharts',    path: '/charts/echarts' },
+    { label: 'Highcharts', path: '/charts/highcharts' },
+    { label: 'ApexCharts', path: '/charts/apexcharts' },
   ];
 
-  private currentExampleType: string | null = null;
+  private currentExampleId: string | null = null;
+  private galleryOverviewActive = false;
   private readonly routerSubscription = new Subscription();
 
   constructor(
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly chartNavigation: ChartExampleNavigationService,
   ) {}
 
   ngOnInit(): void {
-    this.updateCurrentExampleType();
+    this.updateCurrentExampleFromUrl();
+    this.routerSubscription.add(
+      this.chartNavigation.currentExample$.subscribe(id => {
+        if (!this.galleryOverviewActive) return;
+        this.currentExampleId = id;
+        this.cdr.markForCheck();
+      })
+    );
     this.routerSubscription.add(
       this.router.events.subscribe(event => {
-        if (event instanceof NavigationEnd) this.updateCurrentExampleType();
+        if (event instanceof NavigationEnd) this.updateCurrentExampleFromUrl();
       })
     );
   }
@@ -47,14 +56,23 @@ export class ChartsShellComponent implements OnInit, OnDestroy {
   }
 
   libraryRoute(path: string): string[] {
-    return this.currentExampleType ? [path, this.currentExampleType] : [path];
+    const exampleId = this.currentExampleId;
+    if (this.galleryOverviewActive && path === this.currentLibraryPath()) return [path];
+    return exampleId && supportsChartExample(path, exampleId) ? [path, exampleId] : [path];
   }
 
-  private updateCurrentExampleType(): void {
+  private currentLibraryPath(): string | null {
     const segments = this.router.url.split(/[?#]/, 1)[0].split('/').filter(Boolean);
-    const nextType = segments[0] === 'charts' && segments.length >= 3 ? segments[2] : null;
-    if (nextType === this.currentExampleType) return;
-    this.currentExampleType = nextType;
+    return segments[0] === 'charts' && segments[1] ? `/charts/${segments[1]}` : null;
+  }
+
+  private updateCurrentExampleFromUrl(): void {
+    const segments = this.router.url.split(/[?#]/, 1)[0].split('/').filter(Boolean);
+    const isChartsRoute = segments[0] === 'charts';
+    const nextType = isChartsRoute && segments.length >= 3 ? segments[2] : null;
+    this.galleryOverviewActive = isChartsRoute && segments.length === 2;
+    this.currentExampleId = nextType;
+    if (this.galleryOverviewActive) this.chartNavigation.reset();
     this.cdr.markForCheck();
   }
 }

@@ -98,6 +98,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
       overflow: hidden;
       padding: 1rem;
+
       height: 360px;
       min-height: 360px;
       display: flex;
@@ -225,22 +226,6 @@
       }
     }
   }
-}
-
-.drilldown-doc-section {
-  margin-top: 32px;
-  padding: 24px;
-  border-top: 1px solid #d9e4e5;
-  background: #fff;
-}
-
-.drilldown-description {
-  max-width: 780px;
-  color: #526b73;
-}
-
-.drilldown-wrapper {
-  min-height: 420px;
 }
 
 // Pages de détail

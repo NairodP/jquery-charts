@@ -3,35 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ChartComponent } from '@oneteme/jquery-highcharts';
 import { HIGHCHARTS_EXAMPLES } from 'src/app/data/chart/highcharts-examples.data';
-import { ChartType } from '@oneteme/jquery-core';
+import type { ChartType } from '@oneteme/jquery-core';
 import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
 import { Subscription } from 'rxjs';
+import { ChartExampleSection, HIGHCHARTS_SECTIONS } from '../charts/chart-example-sections';
 
-interface HcSection { id: string; label: string; type: ChartType; exampleKey: string; }
-
-const SECTIONS: HcSection[] = [
-  { id: 'line',            label: 'Line',              type: 'line',            exampleKey: 'lineExample'              },
-  { id: 'spline',          label: 'Spline',            type: 'spline',          exampleKey: 'splineExample'            },
-  { id: 'areaspline',      label: 'Area Spline',       type: 'areaspline',      exampleKey: 'areasplineExample'        },
-  { id: 'area',            label: 'Area',              type: 'area',            exampleKey: 'areaExample'              },
-  { id: 'bar',             label: 'Bar (horizontal)',  type: 'bar',             exampleKey: 'barExample'               },
-  { id: 'column',          label: 'Column (vertical)', type: 'column',          exampleKey: 'columnExample'            },
-  { id: 'scatter',         label: 'Scatter',           type: 'scatter',         exampleKey: 'scatterExample'           },
-  { id: 'pie',             label: 'Pie',               type: 'pie',             exampleKey: 'pieExample'               },
-  { id: 'donut',           label: 'Donut',             type: 'donut',           exampleKey: 'donutExample'             },
-  { id: 'funnel',          label: 'Funnel',            type: 'funnel',          exampleKey: 'funnelExample'            },
-  { id: 'pyramid',         label: 'Pyramid',           type: 'pyramid',         exampleKey: 'pyramidExample'           },
-  { id: 'polar',           label: 'Polar',             type: 'polar',           exampleKey: 'polarExample'             },
-  { id: 'radar',           label: 'Radar (Web)',       type: 'radar',           exampleKey: 'radarExample'             },
-  { id: 'radarArea',       label: 'Radar Area',        type: 'radarArea',       exampleKey: 'radarAreaExample'         },
-  { id: 'radialBar',       label: 'Radial Bar',        type: 'radialBar',       exampleKey: 'radialBarExample'         },
-  { id: 'bubble',          label: 'Bubble',            type: 'bubble',          exampleKey: 'bubbleExample'            },
-  { id: 'heatmap',         label: 'Heatmap',           type: 'heatmap',         exampleKey: 'heatmapExample'           },
-  { id: 'treemap',         label: 'Treemap',           type: 'treemap',         exampleKey: 'treemapExample'           },
-  { id: 'columnrange',     label: 'Column Range',      type: 'columnrange',     exampleKey: 'columnrangeExample'       },
-  { id: 'arearange',       label: 'Area Range',        type: 'arearange',       exampleKey: 'arearangeExample'         },
-  { id: 'areasplinerange', label: 'Area Spline Range', type: 'areasplinerange', exampleKey: 'areasplinerangeExample'   },
-];
+const SECTIONS: readonly ChartExampleSection[] = HIGHCHARTS_SECTIONS;
 
 @Component({
   standalone: true,
@@ -71,9 +48,9 @@ const SECTIONS: HcSection[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HighchartsDetailComponent implements OnInit, OnDestroy {
-  section: HcSection | null = null;
-  prev: HcSection | null = null;
-  next: HcSection | null = null;
+  section: ChartExampleSection | null = null;
+  prev: ChartExampleSection | null = null;
+  next: ChartExampleSection | null = null;
   currentConfig: any = null;
   currentData: any = null;
   isCodeOpen = false;

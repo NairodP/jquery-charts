@@ -17,6 +17,7 @@
       *ngFor="let section of sections"
       class="chart-wrapper"
       [id]="section.id"
+      [attr.data-chart-example]="section.id"
     >
       <div class="chart-label">{{ section.label }}</div>
 
