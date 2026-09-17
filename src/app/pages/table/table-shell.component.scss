@@ -1,4 +1,4 @@
-// DESIGN: shell qui encapsule les 4 pages /table — header sticky + tab nav
+// Shell des exemples jquery-table — header fixe et navigation entre démonstrations.
 // Le :host est contraint à la hauteur exacte du viewport hors header global (64px).
 // Le scroll se fait uniquement dans .shell-content — jamais au niveau fenêtre.
 // Cela évite le bug sticky (top:0 sous le header fixe) et les z-index conflicts.
@@ -66,6 +66,16 @@
     font-size: 0.85rem;
     color: var(--clr-text-secondary, #475569);
     line-height: 1.5;
+  }
+
+  &__api {
+    flex: 0 0 auto;
+    color: var(--clr-accent, #176b72);
+    font-size: 0.8rem;
+    font-weight: 650;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
   }
 }
 
