@@ -146,23 +146,6 @@
         }
       }
 
-      .doc-btn {
-        display: flex;
-        align-items: center;
-        padding: 0.4rem 0.875rem;
-        background: transparent;
-        color: var(--clr-text-secondary, #475569);
-        border-radius: var(--radius-md, 8px);
-        font-size: 0.85rem;
-        font-family: var(--font-sans, sans-serif);
-        transition: all 0.15s ease;
-
-        &:hover {
-          background: var(--clr-surface-raised, #f1f5f9);
-          color: var(--clr-text-primary, #0f172a);
-        }
-      }
-
       // Bouton recherche rapide
       .search-btn {
         display: flex;

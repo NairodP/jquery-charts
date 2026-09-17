@@ -1,0 +1,156 @@
+<div class="start-page">
+  <header class="start-hero">
+    <div class="start-hero__copy">
+      <p class="eyebrow">Démarrage</p>
+      <h1>Démarrer avec jquery-charts</h1>
+      <p class="lede">
+        Un point d'entrée court pour choisir un composant, trouver un exemple
+        concret et rejoindre le contrat API qui correspond à votre intégration.
+      </p>
+      <div class="start-hero__actions">
+        <a class="button button--primary" routerLink="/charts">Voir les exemples</a>
+        <a class="button button--quiet" routerLink="/api/core">Ouvrir l'API core</a>
+      </div>
+    </div>
+    <div class="start-hero__signal" aria-hidden="true">
+      <span class="signal-line"></span>
+      <span class="signal-point signal-point--one"></span>
+      <span class="signal-point signal-point--two"></span>
+      <span class="signal-point signal-point--three"></span>
+    </div>
+  </header>
+
+  <section class="start-section start-section--install" aria-labelledby="install-title">
+    <div class="section-heading">
+      <p class="eyebrow">01 / Installation</p>
+      <h2 id="install-title">Installez le parcours choisi</h2>
+      <p>
+        Chaque wrapper graphique s'utilise avec <code>@oneteme/jquery-core</code>
+        et le moteur natif correspondant. Ajoutez uniquement la combinaison dont
+        votre application a besoin.
+      </p>
+    </div>
+
+    <div class="install-grid">
+      <div class="install-item">
+        <strong>ECharts</strong>
+        <span>Wrapper, contrat core et moteur ECharts.</span>
+        <code>npm install @oneteme/jquery-core @oneteme/jquery-echarts echarts</code>
+      </div>
+      <div class="install-item">
+        <strong>Highcharts</strong>
+        <span>Wrapper, contrat core et moteur Highcharts.</span>
+        <code>npm install @oneteme/jquery-core @oneteme/jquery-highcharts highcharts</code>
+      </div>
+      <div class="install-item">
+        <strong>ApexCharts</strong>
+        <span>Wrapper, contrat core et moteur ApexCharts.</span>
+        <code>npm install @oneteme/jquery-core @oneteme/jquery-apexcharts apexcharts</code>
+      </div>
+    </div>
+
+    <p class="install-note">
+      Pour les composants table et organizer, consultez directement leurs
+      <a routerLink="/api/table">références API</a> et leurs exemples dédiés.
+    </p>
+  </section>
+
+  <section class="start-section" aria-labelledby="paths-title">
+    <div class="section-heading">
+      <p class="eyebrow">02 / Parcours</p>
+      <h2 id="paths-title">Allez directement à l'écran utile</h2>
+      <p>
+        Les galeries montrent le comportement réel. Les pages API détaillent les
+        contrats publics et les différences propres à chaque wrapper.
+      </p>
+    </div>
+
+    <div class="path-grid">
+      <a class="path-link path-link--wide" routerLink="/charts/echarts">
+        <span class="path-link__index">A</span>
+        <span class="path-link__body">
+          <strong>Graphiques ECharts</strong>
+          <span>Galerie de types, interactions et exemples rendus.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="path-link path-link--wide" routerLink="/charts/highcharts">
+        <span class="path-link__index">B</span>
+        <span class="path-link__body">
+          <strong>Graphiques Highcharts</strong>
+          <span>Galerie des types disponibles avec le wrapper Highcharts.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="path-link path-link--wide" routerLink="/charts/apexcharts">
+        <span class="path-link__index">C</span>
+        <span class="path-link__body">
+          <strong>Graphiques ApexCharts</strong>
+          <span>Familles prises en charge et comportement du renderer.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="path-link" routerLink="/table">
+        <span class="path-link__body">
+          <strong>jquery-table</strong>
+          <span>Galerie du composant tableau.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="path-link" routerLink="/organizer">
+        <span class="path-link__body">
+          <strong>jquery-organizer</strong>
+          <span>Démonstration des menus et états de vue.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="start-section start-section--split" aria-labelledby="model-title">
+    <div class="section-heading">
+      <p class="eyebrow">03 / Modèle commun</p>
+      <h2 id="model-title">Un même point de départ, des APIs précises</h2>
+      <p>
+        Les wrappers graphiques partagent un modèle de données basé sur
+        <code>config</code>, <code>data</code> et les providers de
+        <code>@oneteme/jquery-core</code>. Les options natives et les capacités
+        supplémentaires restent documentées dans l'API du wrapper concerné.
+      </p>
+      <a class="text-link" routerLink="/api/core">Explorer le contrat core <span aria-hidden="true">→</span></a>
+    </div>
+
+    <pre class="code-block"><code>{{ commonExample }}</code></pre>
+  </section>
+
+  <section class="start-section" aria-labelledby="api-title">
+    <div class="section-heading">
+      <p class="eyebrow">04 / Références</p>
+      <h2 id="api-title">Choisissez la bonne API</h2>
+    </div>
+
+    <div class="api-grid">
+      <a routerLink="/api/core"><strong>jquery-core</strong><span>Providers, transformations, unités et utilitaires.</span></a>
+      <a routerLink="/api/echarts"><strong>jquery-echarts</strong><span>Inputs, événements et capacités ECharts.</span></a>
+      <a routerLink="/api/highcharts"><strong>jquery-highcharts</strong><span>Wrapper, options et intégration Highcharts.</span></a>
+      <a routerLink="/api/apexcharts"><strong>jquery-apexcharts</strong><span>Types supportés et limites du wrapper.</span></a>
+      <a routerLink="/api/table"><strong>jquery-table</strong><span>Colonnes, recherche, vues, export et snapshots.</span></a>
+      <a routerLink="/api/organizer"><strong>jquery-organizer</strong><span>Configuration, état, événements et slices.</span></a>
+    </div>
+  </section>
+
+  <section class="start-footer" aria-labelledby="next-title">
+    <div>
+      <p class="eyebrow">Pour aller plus loin</p>
+      <h2 id="next-title">Construisez et comparez votre propre vue</h2>
+      <p>
+        L'atelier permet de tester une configuration librement. Les snapshots
+        servent ensuite à conserver une vue visuelle réutilisable.
+      </p>
+    </div>
+    <div class="start-footer__links">
+      <a class="button button--primary" routerLink="/atelier-graphiques">Ouvrir l'atelier</a>
+      <a class="button button--quiet" routerLink="/snapshots">Voir les snapshots</a>
+    </div>
+  </section>
+</div>

@@ -1,5 +1,6 @@
-<button type="button" class="organizer-btn" [matMenuTriggerFor]="viewMenu" #mainMenuTrigger="matMenuTrigger" [attr.aria-label]="'View'">
-  <mat-icon class="organizer-btn-icon">{{ config.buttonIcon || 'settings' }}</mat-icon>
+<button type="button" class="organizer-btn" [class.organizer-btn--labeled]="!!config.buttonLabel" [matMenuTriggerFor]="viewMenu" #mainMenuTrigger="matMenuTrigger" [attr.aria-label]="config.buttonLabel || 'Personnaliser la vue'" [attr.title]="config.buttonLabel || 'Personnaliser la vue'">
+  <mat-icon *ngIf="config.showButtonIcon !== false" class="organizer-btn-icon">{{ config.buttonIcon || 'settings' }}</mat-icon>
+  <span *ngIf="config.buttonLabel" class="organizer-btn-label">{{ config.buttonLabel }}</span>
 </button>
 
 <mat-menu #viewMenu="matMenu" panelClass="organizer-menu-panel">

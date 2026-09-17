@@ -190,15 +190,31 @@ h1 {
 organizer-button {
   display: inline-flex;
   flex: 0 0 auto;
-  padding: .28rem;
-  border: 1px solid #176b72;
-  background: #176b72;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 organizer-button ::ng-deep .organizer-btn {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
+  border-color: #176b72;
+  background: #176b72;
   color: #fff;
+  box-shadow: 0 5px 12px rgba(23, 107, 114, .18);
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+organizer-button ::ng-deep .organizer-btn:hover {
+  border-color: #0f555b;
+  background: #0f555b;
+  box-shadow: 0 7px 16px rgba(23, 107, 114, .24);
+  transform: translateY(-1px);
+}
+
+organizer-button ::ng-deep .organizer-btn:focus-visible {
+  outline: 3px solid rgba(232, 198, 168, .9);
+  outline-offset: 3px;
 }
 
 .organizer-trigger-row organizer-button ::ng-deep .organizer-btn-icon {

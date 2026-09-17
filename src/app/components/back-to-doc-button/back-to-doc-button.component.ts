@@ -100,7 +100,7 @@ export class BackToDocButtonComponent implements OnInit, OnDestroy {
     if (this.docUrl) {
       this.router.navigateByUrl(this.docUrl);
     } else {
-      this.router.navigateByUrl('/documentation');
+      this.router.navigateByUrl('/documentation/demarrage');
     }
     this.showButton = false;
     this.navHistory = [];

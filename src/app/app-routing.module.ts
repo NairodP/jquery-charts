@@ -5,7 +5,6 @@ import { ChartWorkbenchComponent } from './pages/basic-test/basic-test.component
 import { ChartDataSandboxComponent } from './pages/basic-test/sandbox/sandbox.component';
 import { TableShellComponent } from './pages/table/table-shell.component';
 import { TableExempleComponent } from './pages/table/table.component';
-import { TableTestDocumentationComponent } from './pages/table/documentation/table-documentation.component';
 import { TableComparatifComponent } from './pages/table/comparatif/comparatif.component';
 import { SliceChartComponent } from './pages/table/slice-chart/slice-chart.component';
 import { ChartsShellComponent } from './pages/charts/charts-shell.component';
@@ -51,7 +50,7 @@ const routes: Routes = [
       { path: '', component: TableExempleComponent },
       { path: 'comparatif', component: TableComparatifComponent },
       { path: 'slice-chart', component: SliceChartComponent },
-      { path: 'documentation', component: TableTestDocumentationComponent },
+      { path: 'documentation', redirectTo: '/api/table', pathMatch: 'full' },
       { path: 'presentation', component: TablePresentationComponent },
     ],
   },

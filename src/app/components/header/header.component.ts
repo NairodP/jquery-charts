@@ -20,9 +20,6 @@ import { ChartTypesService } from 'src/app/core/services/chart-types.service';
             <span class="search-btn__label">Rechercher</span>
             <kbd class="search-btn__kbd">Ctrl K</kbd>
           </button>
-          <button class="doc-btn" (click)="goToDoc()">
-            <span>Documentation</span>
-          </button>
           <div class="install-dropdown">
             <button class="download-btn" (click)="toggleInstallMenu()">
               <span>Installer</span>
@@ -71,10 +68,6 @@ export class HeaderComponent {
   goHome() {
     this.chartTypesService.resetSelectedType();
     this.router.navigate(['/']);
-  }
-
-  goToDoc() {
-    this.router.navigate(['/documentation']);
   }
 
   toggleInstallMenu() {
