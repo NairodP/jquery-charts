@@ -6,6 +6,7 @@ import {
   ChartDrilldownConfig,
   ChartDrilldownRequest,
   ChartProvider,
+  ChartType,
   OrganizerConfig as ChartOrganizerConfig,
   OrganizerState as ChartOrganizerState,
   UnitConfig,
@@ -285,17 +286,28 @@ const nativeOption: Highcharts.Options = {
   [data]="[]"
   [renderedOption]="nativeOption">
 </chart>` },
-    { id: 'organizer', kind: 'organizer', title: 'Visibilité des séries via OrganizerState', description: 'Le menu émet visibleFields. Le parent traduit cet état en selectedFieldIds; le wrapper reconstruit ensuite les séries visibles sans muter la configuration source.', code: `const organizerMenuConfig = {
+    { id: 'organizer', kind: 'organizer', title: 'Séries et type de graphique via Organizer', description: 'Le menu émet la visibilité des séries et le type choisi. Le parent conserve l’état puis réinjecte ce type dans [type] du composant Highcharts.', code: `const organizerMenuConfig = {
+  chartTypes: [
+    { id: 'line', label: 'Courbe' },
+    { id: 'area', label: 'Aire' },
+    { id: 'column', label: 'Colonnes' },
+    { id: 'bar', label: 'Barres' },
+  ],
   fields: [
     { id: 'Ventes', label: 'Ventes', visible: true },
     { id: 'Objectif', label: 'Objectif', visible: true },
   ],
 };
-let organizerMenuState = { visibleFields: ['Ventes', 'Objectif'] };
+let organizerMenuState = {
+  visibleFields: ['Ventes', 'Objectif'],
+  selectedChartType: 'line',
+};
 let organizerState = { selectedFieldIds: ['Ventes', 'Objectif'] };
+let chartType = 'line';
 
 function onOrganizerChange(event: OrganizerButtonEvent) {
   organizerMenuState = event.state;
+  chartType = event.state.selectedChartType ?? chartType;
   organizerState = {
     ...organizerState,
     selectedFieldIds: event.state.visibleFields ?? [],
@@ -308,6 +320,7 @@ function onOrganizerChange(event: OrganizerButtonEvent) {
   (viewChange)="onOrganizerChange($event)">
 </organizer-button>
 <chart
+  [type]="chartType"
   [config]="organizerChartConfig"
   [organizer]="{ enabled: true }"
   [organizerState]="organizerState"
@@ -428,7 +441,16 @@ const config: ChartProvider<string, number> = {
     series: [{ type: 'areaspline', name: 'Option native', color: '#c2410c', data: [4, 7, 5, 9, 8, 11] }],
   };
   readonly organizerConfig: ChartOrganizerConfig = { enabled: true };
+  readonly organizerPossibleTypes: ChartType[] = ['line', 'area', 'column', 'bar'];
+  readonly organizerChartTypes: NonNullable<OrganizerMenuConfig['chartTypes']> = [
+    { id: 'line', label: 'Courbe', icon: 'show_chart' },
+    { id: 'area', label: 'Aire', icon: 'area_chart' },
+    { id: 'column', label: 'Colonnes', icon: 'bar_chart' },
+    { id: 'bar', label: 'Barres', icon: 'insert_chart' },
+  ];
+  organizerChartType: ChartType = 'line';
   readonly organizerMenuConfig: OrganizerMenuConfig = {
+    chartTypes: this.organizerChartTypes,
     fields: [
       { id: 'Ventes', label: 'Ventes', visible: true },
       { id: 'Objectif', label: 'Objectif', visible: true },
@@ -437,7 +459,10 @@ const config: ChartProvider<string, number> = {
     buttonIcon: 'tune',
     showButtonIcon: true,
   };
-  organizerMenuState: OrganizerMenuState = { visibleFields: ['Ventes', 'Objectif'] };
+  organizerMenuState: OrganizerMenuState = {
+    visibleFields: ['Ventes', 'Objectif'],
+    selectedChartType: 'line',
+  };
   organizerState: ChartOrganizerState = {
     selectedFieldIds: ['Ventes', 'Objectif'],
     groupByKey: null,
@@ -560,6 +585,9 @@ const config: ChartProvider<string, number> = {
 
   onOrganizerChange(event: OrganizerButtonEvent): void {
     this.organizerMenuState = event.state;
+    if (event.state.selectedChartType) {
+      this.organizerChartType = event.state.selectedChartType;
+    }
     const selected = new Set(event.state.visibleFields ?? []);
     this.organizerState = {
       ...this.organizerState,

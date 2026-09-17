@@ -41,6 +41,13 @@ export interface OrganizerViewSlice {
   icon?: string;
 }
 
+export interface OrganizerChartType {
+  id: string;
+  label: string;
+  icon?: string;
+  disabled?: boolean;
+}
+
 export interface OrganizerTemplate {
   id: string;
   label: string;
@@ -70,6 +77,7 @@ export interface OrganizerConfig {
   groups?: OrganizerViewGroup[];
   slices?: OrganizerViewSlice[];
   templates?: OrganizerTemplate[];
+  chartTypes?: OrganizerChartType[];
 
   onFetchFieldData?: (fieldId: string) => Promise<string[] | Record<string, any>[]>;
   onFetchSliceData?: (filterKey: string) => Observable<any[]> | Promise<any[]>;
@@ -117,6 +125,8 @@ export interface OrganizerState {
 
   visibleFields?: string[];
 
+  selectedChartType?: string;
+
   selectedX?: string;
   selectedY?: string;
   selectedYAggregate?: string;
@@ -127,7 +137,7 @@ export interface OrganizerState {
 }
 
 export interface OrganizerButtonEvent {
-  type: 'fieldToggled' | 'xSelected' | 'ySelected' | 'groupBySelected' | 'templateSelected' | 'sliceSelected' | 'reset' | 'viewSwitched';
+  type: 'fieldToggled' | 'xSelected' | 'ySelected' | 'groupBySelected' | 'templateSelected' | 'sliceSelected' | 'chartTypeSelected' | 'reset' | 'viewSwitched';
   state: OrganizerState;
   source?: 'user' | 'api';
   resolvedYUnit?: string | UnitConfig;

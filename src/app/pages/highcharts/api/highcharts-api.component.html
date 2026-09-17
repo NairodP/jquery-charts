@@ -133,7 +133,7 @@
               [state]="organizerMenuState"
               (viewChange)="onOrganizerChange($event)"
             ></organizer-button>
-            <span>{{ organizerState.selectedFieldIds.length }} / {{ organizerSeries.length }} séries visibles dans le chart</span>
+            <span>{{ organizerChartType }} · {{ organizerState.selectedFieldIds.length }} / {{ organizerSeries.length }} séries visibles dans le chart</span>
           </div>
           <div class="organizer-state-panel" aria-live="polite">
             <div class="organizer-state-heading">
@@ -159,9 +159,10 @@
             </dl>
           </div>
           <chart class="api-chart"
-            type="line"
+            [type]="organizerChartType"
             [config]="organizerChartConfig"
             [data]="baseData"
+            [possibleTypes]="organizerPossibleTypes"
             [organizer]="organizerConfig"
             [organizerState]="organizerState"
           ></chart>

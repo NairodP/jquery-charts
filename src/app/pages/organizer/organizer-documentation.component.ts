@@ -182,6 +182,7 @@ onViewChange(event: OrganizerButtonEvent): void {
       groupBySelected: 'Regroupement modifié',
       templateSelected: 'Template appliqué',
       sliceSelected: 'Filtre modifié',
+      chartTypeSelected: 'Type de graphique modifié',
       reset: 'État réinitialisé',
       viewSwitched: 'Vue modifiée',
     };

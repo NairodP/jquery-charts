@@ -114,6 +114,12 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
     this.emitChange('groupBySelected', { selectedGroupBy: current === groupId ? undefined : groupId });
   }
 
+  onChartTypeSelect(chartType: string): void {
+    const option = this.config.chartTypes?.find(type => type.id === chartType);
+    if (!option || option.disabled || this.state?.selectedChartType === chartType) return;
+    this.emitChange('chartTypeSelected', { selectedChartType: chartType });
+  }
+
   onTemplateSelect(templateId: string): void {
     console.debug('[OrganizerButton] Template selected', { templateId });
     if (!this.config.templates?.length) return;
@@ -238,6 +244,7 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
   hasMenuItemsBeforeActions(): boolean {
     return this.hasChartFields()
       || this.hasTableFields()
+      || (this.config.chartTypes?.length ?? 0) > 0
       || (this.config.groups?.length ?? 0) > 0
       || (this.config.slices?.length ?? 0) > 0
       || (this.config.templates?.length ?? 0) > 0;
@@ -329,6 +336,12 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
     return this.config.groups?.find(g => g.id === id)?.label ?? id;
   }
 
+  activeChartTypeLabel(): string {
+    const id = this.state?.selectedChartType;
+    if (!id) return '';
+    return this.config.chartTypes?.find(type => type.id === id)?.label ?? id;
+  }
+
   activeSlicesLabel(): string {
     const ids = this.state?.selectedSlices;
     if (!ids?.length) return '';
@@ -348,6 +361,10 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
     return (this.config.xFields?.length ?? 0) > 0 || (this.config.yFields?.length ?? 0) > 0;
   }
 
+  hasChartTypes(): boolean {
+    return (this.config.chartTypes?.length ?? 0) > 0;
+  }
+
   hasTableFields(): boolean {
     return (this.config.fields?.length ?? 0) > 0;
   }
@@ -358,6 +375,10 @@ export class OrganizerButtonComponent implements OnInit, OnDestroy {
 
   isYAggregateActive(yFieldId: string, aggregateId: string): boolean {
     return this.state?.selectedY === yFieldId && this.state?.selectedYAggregate === aggregateId;
+  }
+
+  isChartTypeActive(chartType: string): boolean {
+    return this.state?.selectedChartType === chartType;
   }
 
   private emitChange(type: OrganizerButtonEvent['type'], stateUpdate: Partial<OrganizerState> | OrganizerState): void {

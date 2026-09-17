@@ -28,6 +28,7 @@ export enum OrganizerButtonEventType {
   GROUP_BY_SELECTED = 'groupBySelected',
   TEMPLATE_SELECTED = 'templateSelected',
   SLICE_SELECTED = 'sliceSelected',
+  CHART_TYPE_SELECTED = 'chartTypeSelected',
   VIEW_SWITCHED = 'viewSwitched'
 }
 
