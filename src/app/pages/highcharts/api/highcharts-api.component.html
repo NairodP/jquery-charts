@@ -224,9 +224,16 @@
 
         <ng-container *ngSwitchCase="'unit-scale'">
           <div class="demo-controls unit-controls">
-            <span class="demo-hint">Les valeurs restent en secondes dans les données. Avec ces amplitudes, yUnit sélectionne automatiquement ms pour l’axe Y et le tooltip.</span>
+            <span class="demo-hint">Les valeurs restent dans l’unité source. Le maximum de cette série sélectionne automatiquement k pour l’axe Y et le tooltip; les exemples isolés montrent aussi les seuils unités et M.</span>
           </div>
-          <chart class="api-chart" type="line" [config]="durationConfig" [data]="durationData"></chart>
+          <div class="scale-reference" aria-label="Exemples de formatage des échelles">
+            <div *ngFor="let example of compactScaleExamples">
+              <span>{{ example.source }}</span>
+              <strong>{{ example.output }}</strong>
+              <small>échelle {{ example.selectedUnit }}</small>
+            </div>
+          </div>
+          <chart class="api-chart" type="line" [config]="compactConfig" [data]="compactData"></chart>
         </ng-container>
 
         <ng-container *ngSwitchCase="'toolbar'">

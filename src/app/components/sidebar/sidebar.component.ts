@@ -17,7 +17,6 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
       <div class="sidebar-section">
         <span class="sidebar-section-label">Composants</span>
         <ul>
-          <li [class.active]="isCoreDataRoute()" (click)="goToCoreData()">jquery-core</li>
           <li [class.active]="isTableRoute()" (click)="goToTable()">jquery-table</li>
           <li [class.active]="isOrganizerRoute()" (click)="goToOrganizer()">jquery-organizer</li>
         </ul>
@@ -43,6 +42,7 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
       <div class="sidebar-section">
         <span class="sidebar-section-label">API</span>
         <ul>
+          <li [class.active]="isCoreApiRoute()" (click)="goToCoreApi()">jquery-core</li>
           <li [class.active]="isApiRoute()" (click)="goToApi()">jquery-echarts</li>
           <li [class.active]="isHighchartsApiRoute()" (click)="goToHighchartsApi()">jquery-highcharts</li>
           <li [class.active]="isOrganizerApiRoute()" (click)="goToOrganizerApi()">jquery-organizer</li>
@@ -151,7 +151,7 @@ export class SidebarComponent implements OnInit {
 
   isTableRoute(): boolean { return this.router.url.startsWith('/table'); }
 
-  isCoreDataRoute(): boolean { return this.router.url === '/core-data'; }
+  isCoreApiRoute(): boolean { return this.router.url === '/api/core'; }
 
   isApiRoute(): boolean { return this.router.url === '/api/echarts'; }
 
@@ -174,8 +174,8 @@ export class SidebarComponent implements OnInit {
     if (this.isMenuOpen) this.toggleMenu();
   }
 
-  goToCoreData() {
-    this.router.navigate(['/core-data']);
+  goToCoreApi() {
+    this.router.navigate(['/api/core']);
     if (this.isMenuOpen) this.toggleMenu();
   }
 

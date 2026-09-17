@@ -12,7 +12,7 @@
       <a
         *ngFor="let lib of libraries"
         class="tab-bar__item"
-        [routerLink]="lib.path"
+        [routerLink]="libraryRoute(lib.path)"
         routerLinkActive="tab-bar__item--active"
         role="tab"
       >

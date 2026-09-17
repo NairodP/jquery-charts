@@ -15,6 +15,9 @@ import {
   createUnitConverter,
   defineLinearUnit,
   field,
+  formatChartValue,
+  formatUnitValue,
+  selectBestScale,
 } from '@oneteme/jquery-core';
 import { ChartComponent as HighchartsChartComponent } from '@oneteme/jquery-highcharts';
 import {
@@ -193,6 +196,7 @@ export class HighchartsApiComponent {
       entries: [
         { name: 'showToolbar', type: 'boolean', source: 'Wrapper', description: 'Ajoute la toolbar précédente et suivante au-dessus du rendu Highcharts.', code: 'config = { showToolbar: true, ...config };' },
         { name: 'height', type: 'number', source: 'Core', description: 'Dimension de mise en page explicite du host. Il s’agit d’une convention de conteneur, pas d’une capacité Highcharts particulière.', code: 'const config = { height: 280, series: [...] };' },
+        { name: 'yUnit', type: 'string | UnitConfig', source: 'Core', description: 'Ajoute une unité fixe ou sélectionne automatiquement une échelle selon le maximum des valeurs. La scale choisie est appliquée aux graduations et au tooltip.', code: "yUnit: { baseUnit: 'unités', scales: [{ unit: 'unités', scale: 1, threshold: 999 }, { unit: 'k', scale: 0.001, threshold: 999999 }, { unit: 'M', scale: 0.000001, threshold: Infinity }] }" },
         { name: 'donutCenter', type: 'DonutCenterOptions', source: 'Wrapper', description: 'Ajoute un contenu central dynamique ou fixe au donut.', code: 'options: { donutCenter: { enabled: true, title: "Total" } }' },
         { name: 'radialBar', type: 'RadialBarOptions', source: 'Wrapper', description: 'Ajoute une piste de fond et une valeur centrale au radialBar.', code: 'options: { radialBar: { track: { enabled: true } } }' },
         { name: 'mapEndpoint', type: 'string', source: 'Wrapper', description: 'Charge automatiquement le GeoJSON et associe les codes de données aux régions.', code: 'config = { mapEndpoint: "assets/france-geojson/", ...config };' },
@@ -359,22 +363,23 @@ const config: ChartProvider<string, number> = {
 };
 
 <chart type="column" [config]="config" [data]="data"></chart>` },
-    { id: 'unit-scale', kind: 'unit-scale', origin: 'CORE + HIGHCHARTS', title: 'Choisir automatiquement l’échelle d’affichage', description: 'Les données restent en secondes. La configuration yUnit sélectionne l’échelle la plus lisible et le renderer applique la même conversion à l’axe Y et au tooltip.', code: `const config: ChartProvider<string, number> = {
-  ytitle: 'Durée',
+    { id: 'unit-scale', kind: 'unit-scale', origin: 'CORE + HIGHCHARTS', title: 'Choisir automatiquement l’échelle d’affichage', description: 'Les données restent dans leur unité source. yUnit sélectionne unités, k ou M selon le maximum des valeurs, puis Highcharts applique la même conversion à l’axe Y et au tooltip.', code: `const config: ChartProvider<string, number> = {
+  ytitle: 'Volume',
   yUnit: {
-    baseUnit: 's',
+    baseUnit: 'unités',
     scales: [
-      { unit: 'ms', scale: 1000, threshold: 1 },
-      { unit: 's', scale: 1, threshold: Infinity },
+      { unit: 'unités', scale: 1, threshold: 999 },
+      { unit: 'k', scale: 0.001, threshold: 999999 },
+      { unit: 'M', scale: 0.000001, threshold: Infinity },
     ],
   },
   series: [{
-    name: 'Temps de réponse',
+    name: 'Volume',
     data: { x: field('step'), y: field('value') },
   }],
 };
 
-<chart type="line" [config]="config" [data]="durationRows"></chart>` },
+<chart type="line" [config]="config" [data]="rows"></chart>` },
     { id: 'toolbar', kind: 'toolbar', title: 'Toolbar', description: 'showToolbar ajoute les actions précédentes et suivantes au-dessus du rendu.', code: `<chart
   type="column"
   [config]="{ ...config, showToolbar: true }"
@@ -478,26 +483,34 @@ const config: ChartProvider<string, number> = {
       data: { x: field('month'), y: field('value') },
     }],
   };
-  readonly durationData = [
-    { step: 'Collecte', value: 0.12 },
-    { step: 'Calcul', value: 0.35 },
-    { step: 'Agrégation', value: 0.74 },
-    { step: 'Publication', value: 0.91 },
+  readonly compactData = [
+    { step: 'Collecte', value: 1200 },
+    { step: 'Calcul', value: 2350 },
+    { step: 'Agrégation', value: 4180 },
+    { step: 'Publication', value: 7600 },
   ];
-  readonly durationUnitConfig: UnitConfig = {
-    baseUnit: 's',
+  readonly compactUnitConfig: UnitConfig = {
+    baseUnit: 'unités',
     scales: [
-      { unit: 'ms', scale: 1000, threshold: 1 },
-      { unit: 's', scale: 1, threshold: Infinity },
+      { unit: 'unités', scale: 1, threshold: 999 },
+      { unit: 'k', scale: 0.001, threshold: 999_999 },
+      { unit: 'M', scale: 0.000001, threshold: Infinity },
     ],
-    precision: 0,
   };
-  readonly durationConfig: ChartProvider<string, number> = {
-    title: 'Temps de réponse',
-    ytitle: 'Durée',
-    yUnit: this.durationUnitConfig,
+  readonly compactScaleExamples = [999, 1234.567, 1_250_000].map(value => {
+    const scale = selectBestScale(this.compactUnitConfig, [value]);
+    return {
+      source: formatChartValue(value),
+      selectedUnit: scale.unit,
+      output: formatUnitValue(value, this.compactUnitConfig.baseUnit, scale),
+    };
+  });
+  readonly compactConfig: ChartProvider<string, number> = {
+    title: 'Échelle courte automatique',
+    ytitle: 'Volume',
+    yUnit: this.compactUnitConfig,
     series: [{
-      name: 'Temps de réponse',
+      name: 'Volume',
       color: '#c2410c',
       data: { x: field('step'), y: field('value') },
     }],
@@ -506,6 +519,7 @@ const config: ChartProvider<string, number> = {
   readonly toolbarConfig: ChartProvider<string, number> = { ...this.lineConfig, showToolbar: true };
   readonly mapConfig: ChartProvider<string, number> = {
     ...mapChartConfig,
+    showToolbar: false,
     mapEndpoint: '/assets/france-geojson/',
     title: 'Population par région',
   };

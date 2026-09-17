@@ -22,7 +22,7 @@ import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
 import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
-import { CoreDataUtilitiesComponent } from './pages/core-data-utilities/core-data-utilities.component';
+import { CoreApiComponent } from './pages/core-api/core-api.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -36,8 +36,8 @@ const routes: Routes = [
   { path: 'api/highcharts', component: HighchartsApiComponent },
   { path: 'organizer', component: OrganizerDocumentationComponent },
   { path: 'api/organizer', component: OrganizerApiComponent },
+  { path: 'api/core', component: CoreApiComponent },
   { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
-  { path: 'core-data', component: CoreDataUtilitiesComponent },
 
   // jquery-table — shell avec tabs
   {

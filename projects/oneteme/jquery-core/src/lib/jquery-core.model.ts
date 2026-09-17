@@ -293,16 +293,16 @@ function isUndefined(o: any): boolean {
 // Détecte automatiquement le meilleur format (µs, ms, s, etc.) basé sur l'ordre de grandeur des données.
 export interface UnitConfig {
   baseUnit: string;        // Unité source des données ('s', 'o', etc.)
-  scales: ScaleConfig[];   // Liste des formats disponibles (triée par seuil croissant)
+  scales: ScaleConfig[];   // Formats disponibles, choisis selon le maximum des valeurs
   precision?: number;      // Fixe les décimales (si non spécifié, utilise _smartFormatY adaptatif)
   formatter?: (v: number, selectedUnit: string) => string; // Formatage personnalisé
 }
 
 // Définit un format d'affichage avec sa plage d'applicabilité.
 export interface ScaleConfig {
-  unit: string;            // Unité affichée ('µs', 'ms', 's', 'KB', 'MB', etc.)
-  scale: number;           // Facteur de conversion (1000 pour s→ms, 1000000 pour s→µs)
-  threshold?: number;      // Utiliser ce format si l'amplitude maximale <= threshold (Infinity = défaut)
+  unit: string;            // Unité affichée ('µs', 'ms', 's', 'k', 'M', etc.)
+  scale: number;           // Facteur de conversion (1000 pour s→ms, 0.001 pour unités→k)
+  threshold?: number;      // Format utilisé si le maximum absolu des valeurs <= threshold
 }
 
 export interface ChartProvider<X extends XaxisType, Y extends YaxisType> {
