@@ -38,6 +38,8 @@ interface TableApiRow {
   updatedAt: string;
 }
 
+type DemoCodeTab = 'ts' | 'html' | 'scss';
+
 @Component({
   selector: 'app-table-api',
   standalone: true,
@@ -261,7 +263,65 @@ providers: [
     ],
   };
 
+  readonly demoCode: Record<DemoCodeTab, string> = {
+    ts: `import { col, TableProvider } from '@oneteme/jquery-table';
+
+interface Row {
+  reference: string;
+  team: string;
+  status: string;
+}
+
+readonly rows: Row[] = [
+  { reference: 'INT-2410', team: 'Raccordement', status: 'Terminé' },
+];
+
+readonly tableConfig: TableProvider<Row> = {
+  title: 'Interventions réseau',
+  search: { enabled: true, searchColumns: ['reference', 'team', 'status'] },
+  pagination: { enabled: true, pageSize: 5 },
+  view: { enabled: true, enableColumnRemoval: true },
+  columns: [
+    col('reference', 'Référence', { sortable: true }),
+    col('team', 'Équipe', { sortable: true }),
+    col('status', 'Statut', { sortable: true }),
+  ],
+};`,
+    html: `<jquery-table
+  #apiTable
+  [config]="tableConfig"
+  [data]="rows"
+  [isLoading]="isLoadingDemo"
+  (rowSelected)="onRowSelected($event)"
+  (searchChange)="lastSearch = $event">
+  <ng-template jqtCellDef="status" let-row>
+    <span class="status-chip" [attr.data-status]="row.status">
+      {{ row.status }}
+    </span>
+  </ng-template>
+</jquery-table>`,
+    scss: `.table-demo-surface {
+  padding: .85rem;
+  border: 1px solid #d7e3e3;
+  background: #f7faf9;
+}
+
+.api-table-component {
+  display: block;
+  height: 420px;
+  min-height: 420px;
+}
+
+.status-chip {
+  display: inline-flex;
+  min-height: 24px;
+  padding: .15rem .45rem;
+  border-radius: 12px;
+}`,
+  };
+
   isLoadingDemo = false;
+  activeCodeTab: DemoCodeTab = 'ts';
   clearSearchToken = 0;
   selectedRow: TableApiRow | null = null;
   lastSearch = '';
@@ -272,6 +332,10 @@ providers: [
   lastCategory = '';
   snapshotDraft: VisualSnapshotDraft | null = null;
   lastSnapshot: VisualSnapshot | null = null;
+
+  setCodeTab(tab: DemoCodeTab): void {
+    this.activeCodeTab = tab;
+  }
 
   toggleLoading(): void {
     this.isLoadingDemo = !this.isLoadingDemo;

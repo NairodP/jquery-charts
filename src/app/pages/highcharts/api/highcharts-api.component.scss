@@ -7,7 +7,7 @@
 .api-page {
   max-width: 1480px;
   margin: 0 auto;
-  padding: 2.5rem clamp(1rem, 3vw, 3.5rem) 4rem;
+  padding: 2.5rem clamp(1rem, 3vw, 3.5rem) 1.5rem;
   color: #18323a;
 }
 
@@ -203,6 +203,7 @@ pre {
   border-bottom: 1px solid #cbd9da;
   background: transparent;
 }
+.capability-card:last-child { border-bottom: 0; margin-bottom: 0; }
 
 .capability-heading {
   display: flex;

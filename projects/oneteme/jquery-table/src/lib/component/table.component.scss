@@ -96,8 +96,9 @@
   grid-template-columns: minmax(155px, 190px) minmax(0, 1fr);
   gap: 12px;
   align-items: stretch;
-  min-height: inherit;
-  height: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
 
   &.no-slice {
     grid-template-columns: minmax(0, 1fr);
