@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { DocumentationComponent } from './documentation.component';
 import { DocumentationStartComponent } from './pages/start/start.component';
 
@@ -51,6 +52,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
+    MatIconModule,
   ],
 })
 export class DocumentationModule {}

@@ -35,17 +35,65 @@
       <div class="install-item">
         <strong>ECharts</strong>
         <span>Wrapper, contrat core et moteur ECharts.</span>
-        <code>npm install @oneteme/jquery-core @oneteme/jquery-echarts echarts</code>
+        <div class="install-code">
+          <div class="install-code__viewport">
+            <div class="install-code__track">
+              <code>{{ installCommands.echarts }}</code>
+              <code aria-hidden="true">{{ installCommands.echarts }}</code>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="install-code__copy"
+            [attr.aria-label]="copiedInstallCommand === installCommands.echarts ? 'Commande ECharts copiée' : 'Copier la commande ECharts'"
+            [attr.title]="copiedInstallCommand === installCommands.echarts ? 'Commande copiée' : 'Copier la commande'"
+            (click)="copyInstallCommand(installCommands.echarts)"
+          >
+            <mat-icon aria-hidden="true">{{ copiedInstallCommand === installCommands.echarts ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+        </div>
       </div>
       <div class="install-item">
         <strong>Highcharts</strong>
         <span>Wrapper, contrat core et moteur Highcharts.</span>
-        <code>npm install @oneteme/jquery-core @oneteme/jquery-highcharts highcharts</code>
+        <div class="install-code">
+          <div class="install-code__viewport">
+            <div class="install-code__track">
+              <code>{{ installCommands.highcharts }}</code>
+              <code aria-hidden="true">{{ installCommands.highcharts }}</code>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="install-code__copy"
+            [attr.aria-label]="copiedInstallCommand === installCommands.highcharts ? 'Commande Highcharts copiée' : 'Copier la commande Highcharts'"
+            [attr.title]="copiedInstallCommand === installCommands.highcharts ? 'Commande copiée' : 'Copier la commande'"
+            (click)="copyInstallCommand(installCommands.highcharts)"
+          >
+            <mat-icon aria-hidden="true">{{ copiedInstallCommand === installCommands.highcharts ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+        </div>
       </div>
       <div class="install-item">
         <strong>ApexCharts</strong>
         <span>Wrapper, contrat core et moteur ApexCharts.</span>
-        <code>npm install @oneteme/jquery-core @oneteme/jquery-apexcharts apexcharts</code>
+        <div class="install-code">
+          <div class="install-code__viewport">
+            <div class="install-code__track">
+              <code>{{ installCommands.apexcharts }}</code>
+              <code aria-hidden="true">{{ installCommands.apexcharts }}</code>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="install-code__copy"
+            [attr.aria-label]="copiedInstallCommand === installCommands.apexcharts ? 'Commande ApexCharts copiée' : 'Copier la commande ApexCharts'"
+            [attr.title]="copiedInstallCommand === installCommands.apexcharts ? 'Commande copiée' : 'Copier la commande'"
+            (click)="copyInstallCommand(installCommands.apexcharts)"
+          >
+            <mat-icon aria-hidden="true">{{ copiedInstallCommand === installCommands.apexcharts ? 'check' : 'content_copy' }}</mat-icon>
+          </button>
+        </div>
       </div>
     </div>
 

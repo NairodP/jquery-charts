@@ -268,15 +268,95 @@
   line-height: 1.45;
 }
 
-.install-item code {
-  display: block;
-  overflow-x: auto;
+.install-code {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 44px;
   margin-top: 15px;
-  padding-top: 12px;
+  padding: 12px 0 4px;
   border-top: 1px solid var(--start-border);
+}
+
+.install-code__viewport {
+  overflow: hidden;
+  padding-right: 36px;
+}
+
+.install-code__track {
+  display: flex;
+  width: max-content;
+  animation: install-code-marquee 18s linear infinite;
+}
+
+.install-code code {
+  display: block;
+  flex: 0 0 auto;
+  padding-right: 3rem;
   color: var(--start-teal);
   font: 0.72rem/1.5 Consolas, 'Courier New', monospace;
   white-space: nowrap;
+}
+
+.install-code__copy {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--start-border);
+  border-radius: 3px;
+  background: var(--start-teal-soft);
+  color: var(--start-teal);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.install-code__copy:hover {
+  border-color: var(--start-teal);
+  background: var(--start-teal);
+  color: #fff;
+}
+
+.install-code__copy .mat-icon {
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+  line-height: 17px;
+}
+
+.install-item:hover .install-code__track,
+.install-code:focus-within .install-code__track {
+  animation-play-state: paused;
+}
+
+@keyframes install-code-marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  90%,
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-code__track {
+    width: auto;
+    animation: none;
+  }
+
+  .install-code code {
+    white-space: normal;
+  }
+
+  .install-code code[aria-hidden='true'] {
+    display: none;
+  }
 }
 
 .install-note {
