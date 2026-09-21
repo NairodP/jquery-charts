@@ -53,6 +53,7 @@
 
         <jquery-table
           class="demo-table"
+          [class.demo-table--styled]="example.id === 'overview'"
           [config]="example.config"
           [data]="rows"
           (rowSelected)="onRowSelected($event)"

@@ -68,12 +68,17 @@ export class TableExempleComponent {
     title: 'Interventions réseau',
     search: { enabled: true, searchColumns: ['reference', 'subject', 'team', 'status'] },
     pagination: { enabled: true, pageSize: 5, pageSizeOptions: [5, 10] },
+    view: { enabled: true, enableColumnRemoval: true, enableColumnDragDrop: true },
+    organizer: { buttonLabel: 'Vue', buttonIcon: 'tune', showButtonIcon: true },
+    slices: [
+      { title: 'Statut', columnKey: 'status', multiSelect: true },
+    ],
     columns: [
-      col<DemoRow>('reference', 'Référence', { sortable: true, width: '130px' }),
-      col<DemoRow>('subject', 'Intervention', { sortable: true }),
-      col<DemoRow>('team', 'Équipe', { sortable: true }),
-      col<DemoRow>('status', 'Statut', { sortable: true }),
-      col<DemoRow>('updatedAt', 'Mise à jour', { sortable: true }),
+      col<DemoRow>('reference', 'Référence', { width: '130px', sortable: false, groupable: false, sliceable: false }),
+      col<DemoRow>('subject', 'Intervention', { groupable: false, sliceable: false }),
+      col<DemoRow>('team', 'Équipe'),
+      col<DemoRow>('status', 'Statut'),
+      col<DemoRow>('updatedAt', 'Mise à jour', { sortable: false, groupable: false, sliceable: false }),
     ],
   };
 
@@ -132,22 +137,27 @@ export class TableExempleComponent {
     {
       id: 'overview',
       index: '01',
-      title: 'Recherche, tri et pagination',
-      description: 'Le socle d’un tableau métier : une configuration courte, des colonnes triables et une recherche limitée aux champs utiles.',
-      tags: ['search', 'sort', 'pagination'],
+      title: 'Recherche, tri et pagination + stylisation des différents éléments',
+      description: 'Le socle d’un tableau métier : recherche ciblée, organizer configurable et règles SCSS pour compacter le header et le footer.',
+      tags: ['search', 'sort', 'pagination', 'style', 'organizer'],
       config: this.overviewConfig,
       code: {
         ts: `const config: TableProvider<Intervention> = {
+  view: { enabled: true, enableColumnRemoval: true, enableColumnDragDrop: true },
+  organizer: { buttonLabel: 'Vue', buttonIcon: 'tune', showButtonIcon: true },
+  slices: [{ title: 'Statut', columnKey: 'status', multiSelect: true }],
   search: { enabled: true, searchColumns: ['subject', 'team'] },
   pagination: { enabled: true, pageSize: 5 },
   columns: [
-    col('reference', 'Référence', { sortable: true }),
-    col('subject', 'Intervention', { sortable: true }),
-    col('team', 'Équipe', { sortable: true }),
+    col('reference', 'Référence', { sortable: false, groupable: false, sliceable: false }),
+    col('subject', 'Intervention', { groupable: false, sliceable: false }),
+    col('team', 'Équipe'),
+    col('status', 'Statut'),
+    col('updatedAt', 'Mise à jour', { sortable: false, groupable: false, sliceable: false }),
   ],
 };`,
         html: `<jquery-table
-  class="demo-table"
+  class="demo-table demo-table--styled"
   [config]="config"
   [data]="rows">
 </jquery-table>`,
@@ -159,6 +169,26 @@ export class TableExempleComponent {
 .demo-table {
   display: block;
   height: 100%;
+}
+
+.demo-table--styled {
+  --jqt-primary-color: #176b72;
+  --jqt-header-bg: #e8f3f1;
+  --jqt-header-text-color: #175b61;
+  --jqt-footer-bg: #f6f8f8;
+  --jqt-footer-text-color: #526b73;
+  --jqt-footer-icon-color: #176b72;
+  --jqt-border-color: #c7d9d8;
+  --jqt-header-height: 40px;
+  --jqt-header-cell-padding-y: 0px;
+  --jqt-footer-height: 40px;
+  --jqt-organizer-button-height: 30px;
+  --jqt-organizer-button-radius: 4px;
+  --jqt-organizer-button-border-color: #176b72;
+  --jqt-organizer-button-background: #e8f3f1;
+  --jqt-organizer-button-hover-border-color: #bc5b35;
+  --jqt-organizer-button-hover-background: #fff5ef;
+  --jqt-organizer-button-icon-color: #176b72;
 }`,
       },
       activeCodeTab: 'ts',

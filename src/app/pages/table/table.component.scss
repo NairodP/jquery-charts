@@ -150,7 +150,26 @@ h1 {
   display: block;
   height: 420px;
   min-height: 420px;
-  --jqt-primary: #176b72;
+  --jqt-primary-color: #176b72;
+}
+
+.demo-table--styled {
+  --jqt-header-bg: #e8f3f1;
+  --jqt-header-text-color: #175b61;
+  --jqt-footer-bg: #f6f8f8;
+  --jqt-footer-text-color: #526b73;
+  --jqt-footer-icon-color: #176b72;
+  --jqt-border-color: #c7d9d8;
+  --jqt-header-height: 40px;
+  --jqt-header-cell-padding-y: 0px;
+  --jqt-footer-height: 40px;
+  --jqt-organizer-button-height: 30px;
+  --jqt-organizer-button-radius: 4px;
+  --jqt-organizer-button-border-color: #176b72;
+  --jqt-organizer-button-background: #e8f3f1;
+  --jqt-organizer-button-hover-border-color: #bc5b35;
+  --jqt-organizer-button-hover-background: #fff5ef;
+  --jqt-organizer-button-icon-color: #176b72;
 }
 
 .status-chip,
