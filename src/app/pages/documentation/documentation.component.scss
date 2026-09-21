@@ -1,6 +1,6 @@
 .documentation-container {
   min-height: calc(100vh - 64px);
-  background: #f7faf9;
+  background: var(--clr-bg, #f8fafc);
 }
 
 .doc-content {

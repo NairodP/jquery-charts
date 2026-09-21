@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   ChartClickEvent,
@@ -93,6 +93,8 @@ interface DrilldownRow {
   styleUrls: ['./highcharts-api.component.scss'],
 })
 export class HighchartsApiComponent {
+  @ViewChild('exportChart') exportChart?: HighchartsChartComponent<string, number>;
+
   readonly apiSections: ApiSection[] = [
     {
       id: 'component',
@@ -348,12 +350,17 @@ const config: ChartProvider<string, number> = {
   [drilldown]="drilldown"
   (drilldownRequest)="onDrilldown($event)">
 </chart>` },
-    { id: 'export', kind: 'export', title: 'Export image, données et snapshot', description: 'Les méthodes publiques permettent d’intégrer les actions dans vos propres contrôles.', code: `<chart #chart type="column" [config]="config" [data]="data"></chart>
+    { id: 'export', kind: 'export', title: 'Export image, données et snapshot', description: 'Les méthodes publiques restent disponibles, mais l’Organizer les regroupe dans un menu unique : export du visuel, export des données, snapshot et plein écran.', code: `readonly organizerConfig: OrganizerConfig = {
+  showExport: true,
+  onExportVisual: () => this.chart?.exportImage('sales', 'png', 2),
+  onExportData: () => this.chart?.exportData('sales', ';'),
+  showActions: true,
+  onCopyVisual: () => this.chart?.copyVisualSnapshot('Sales'),
+  onToggleFullscreen: () => this.chart?.toggleFullscreen(),
+};
 
-  <button (click)="chart.exportImage('sales', 'png', 2)">PNG</button>
-  <button (click)="chart.exportData('sales', ';')">CSV</button>
-  <button (click)="chart.createVisualSnapshot('Sales')">Préparer un draft</button>
-  <button (click)="chart.copyVisualSnapshot('Sales')">Persister le snapshot</button>` },
+<organizer-button [config]="organizerConfig"></organizer-button>
+<chart #chart type="column" [config]="config" [data]="data"></chart>` },
     { id: 'axes', kind: 'axes', title: 'Axes multiples et unités par série', description: 'Chaque série peut choisir son axe, conserver son unité dans le tooltip et masquer cette unité sur les graduations; un axe sans série visible disparaît.', code: `const config = {
   ytitle: ['Énergie', 'Température'],
   series: [
@@ -479,6 +486,19 @@ const config: ChartProvider<string, number> = {
     { name: 'Ventes', color: '#0f766e' },
     { name: 'Objectif', color: '#d97732' },
   ];
+  readonly exportOrganizerConfig: OrganizerMenuConfig = {
+    buttonLabel: 'Organizer',
+    buttonIcon: 'tune',
+    showButtonIcon: true,
+    showExport: true,
+    onExportVisual: () => this.exportVisual(),
+    onExportData: () => this.exportData(),
+    showActions: true,
+    actions: { label: 'Actions du graphique', showCopy: true, showFullscreen: true },
+    onCopyVisual: () => this.copyExportSnapshot(),
+    onToggleFullscreen: () => this.toggleExportFullscreen(),
+  };
+  readonly exportOrganizerState: OrganizerMenuState = {};
   readonly distanceSourceData = [
     { month: 'Jan', value: 1250 },
     { month: 'Fév', value: 1600 },
@@ -634,8 +654,23 @@ const config: ChartProvider<string, number> = {
     this.lastSnapshot = snapshot;
   }
 
-  prepareSnapshot(chart: HighchartsChartComponent<string, number>): void {
+  exportVisual(): void {
+    this.exportChart?.exportImage('highcharts-api', 'png', 2);
+  }
+
+  exportData(): void {
+    this.exportChart?.exportData('highcharts-api', ';');
+  }
+
+  copyExportSnapshot(): void {
+    const chart = this.exportChart;
+    if (!chart) return;
     this.snapshotDraft = chart.createVisualSnapshot('API Highcharts');
+    chart.copyVisualSnapshot('API Highcharts');
+  }
+
+  toggleExportFullscreen(): void {
+    void this.exportChart?.toggleFullscreen();
   }
 
   formatJson(value: unknown): string {

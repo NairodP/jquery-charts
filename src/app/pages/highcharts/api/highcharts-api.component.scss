@@ -237,7 +237,7 @@ pre {
   background: transparent;
 }
 
-.demo-surface > .api-chart { display: block; min-height: 260px; }
+.demo-surface > .api-chart { display: block; min-height: 260px; height: 260px; }
 .demo-surface > .api-chart[style*='height'] { min-height: 0; }
 
 .demo-controls {

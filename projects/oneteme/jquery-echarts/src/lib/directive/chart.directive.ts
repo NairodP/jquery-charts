@@ -273,6 +273,10 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
     return [gs];
   }
 
+  resize(): void {
+    this._chartInstance?.resize();
+  }
+
   private _syncDataZoom(params: any): void {
     if (this._isSyncing || !this._group) return;
     const peers = ChartDirective._groupRegistry.get(this._group);

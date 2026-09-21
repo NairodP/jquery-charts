@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   ChartClickEvent,
@@ -69,6 +69,8 @@ interface CapabilityDemo {
   styleUrls: ['./echarts-api.component.scss'],
 })
 export class EChartsApiComponent {
+  @ViewChild('exportChart') exportChart?: ChartComponent<string, number>;
+
   readonly sections: ApiSection[] = [
     {
       id: 'component',
@@ -201,14 +203,19 @@ export class EChartsApiComponent {
       kind: 'export',
       origin: 'WRAPPER',
       title: 'Export image, données et snapshot',
-      description: 'Les méthodes publiques du composant permettent d’intégrer l’export PNG, SVG ou CSV, le plein écran et la capture d’un snapshot dans vos propres contrôles.',
-      code: `<chart #chart type="column" [config]="config" [data]="data"
-  [copyFeedback]="{ enabled: true }"></chart>
+      description: 'Les méthodes publiques du composant restent disponibles, mais l’Organizer les regroupe dans un menu unique : export du visuel, export des données, snapshot et plein écran.',
+      code: `readonly organizerConfig: OrganizerConfig = {
+  showExport: true,
+  onExportVisual: () => this.chart?.exportImage('sales', 'png', 2),
+  onExportData: () => this.chart?.exportData('sales', ';'),
+  showActions: true,
+  onCopyVisual: () => this.chart?.copyVisualSnapshot('Sales'),
+  onToggleFullscreen: () => this.chart?.toggleFullscreen(),
+};
 
-<button (click)="chart.exportImage('sales', 'png', 2)">PNG</button>
-<button (click)="chart.exportData('sales', ';')">CSV</button>
-<button (click)="chart.toggleFullscreen()">Plein écran</button>
-<button (click)="chart.copyVisualSnapshot('Sales')">Snapshot</button>`,
+<organizer-button [config]="organizerConfig"></organizer-button>
+<chart #chart type="column" [config]="config" [data]="data"
+  [copyFeedback]="{ enabled: true }"></chart>`,
     },
   ];
 
@@ -265,6 +272,19 @@ export class EChartsApiComponent {
     { name: 'Ventes', color: '#0f766e' },
     { name: 'Objectif', color: '#d97732' },
   ];
+  readonly exportOrganizerConfig: OrganizerMenuConfig = {
+    buttonLabel: 'Organizer',
+    buttonIcon: 'tune',
+    showButtonIcon: true,
+    showExport: true,
+    onExportVisual: () => this.exportVisual(),
+    onExportData: () => this.exportData(),
+    showActions: true,
+    actions: { label: 'Actions du graphique', showCopy: true, showFullscreen: true },
+    onCopyVisual: () => this.copyExportSnapshot(),
+    onToggleFullscreen: () => this.toggleExportFullscreen(),
+  };
+  readonly exportOrganizerState: OrganizerMenuState = {};
 
   readonly group = 'echarts-api-sync';
   private readonly emptyData: typeof this.baseData = [];
@@ -326,8 +346,23 @@ export class EChartsApiComponent {
     this.lastSnapshot = snapshot;
   }
 
-  prepareSnapshot(chart: ChartComponent<string, number>): void {
+  exportVisual(): void {
+    this.exportChart?.exportImage('echarts-api', 'png', 2);
+  }
+
+  exportData(): void {
+    this.exportChart?.exportData('echarts-api', ';');
+  }
+
+  copyExportSnapshot(): void {
+    const chart = this.exportChart;
+    if (!chart) return;
     this.snapshotDraft = chart.createVisualSnapshot('API ECharts');
+    chart.copyVisualSnapshot('API ECharts');
+  }
+
+  toggleExportFullscreen(): void {
+    void this.exportChart?.toggleFullscreen();
   }
 
   onDrilldownRequest(request: ChartDrilldownRequest): void {

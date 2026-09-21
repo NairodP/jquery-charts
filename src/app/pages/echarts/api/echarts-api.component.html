@@ -215,13 +215,12 @@
         </ng-container>
 
         <ng-container *ngSwitchCase="'export'">
-          <div class="demo-controls">
-            <button type="button" (click)="exportChart.exportImage('echarts-api', 'png', 2)">Exporter PNG</button>
-            <button type="button" (click)="exportChart.exportImage('echarts-api', 'svg')">Exporter SVG</button>
-            <button type="button" (click)="exportChart.exportData('echarts-api', ';')">Exporter CSV</button>
-            <button type="button" (click)="prepareSnapshot(exportChart)">Préparer le draft</button>
-            <button type="button" (click)="exportChart.copyVisualSnapshot('API ECharts')">Créer un snapshot</button>
-            <button type="button" (click)="exportChart.toggleFullscreen()">Plein écran</button>
+          <div class="organizer-demo-bar">
+            <organizer-button
+              [config]="exportOrganizerConfig"
+              [state]="exportOrganizerState"
+            ></organizer-button>
+            <span>Organizer centralise l’export du visuel, des données, du snapshot et du plein écran.</span>
           </div>
           <chart class="api-chart"
             #exportChart

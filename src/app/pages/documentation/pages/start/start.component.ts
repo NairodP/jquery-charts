@@ -40,6 +40,20 @@ const config = {
     }
   }
 
+  scrollToSection(event: Event, id: string): void {
+    event.preventDefault();
+
+    const target = document.getElementById(id);
+    const scrollContainer = document.querySelector('main') as HTMLElement | null;
+    if (!target || !scrollContainer) return;
+
+    const top = scrollContainer.scrollTop
+      + target.getBoundingClientRect().top
+      - scrollContainer.getBoundingClientRect().top;
+
+    scrollContainer.scrollTo({ top: Math.max(0, top) });
+  }
+
   private async writeToClipboard(command: string): Promise<void> {
     if (navigator.clipboard?.writeText) {
       try {

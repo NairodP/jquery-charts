@@ -71,12 +71,12 @@ export class SidebarComponent implements OnInit {
 
   readonly libs: LibItem[] = [
     {
-      key: 'echarts', label: 'jquery-echarts', route: '/charts/echarts',
-      types: ECHARTS_DETAIL_SECTIONS.map(({ id, label }) => ({ id, label }))
-    },
-    {
       key: 'highcharts', label: 'jquery-highcharts', route: '/charts/highcharts',
       types: HIGHCHARTS_SECTIONS.map(({ id, label }) => ({ id, label }))
+    },
+    {
+      key: 'echarts', label: 'jquery-echarts', route: '/charts/echarts',
+      types: ECHARTS_DETAIL_SECTIONS.map(({ id, label }) => ({ id, label }))
     },
     {
       key: 'apexcharts', label: 'jquery-apexcharts', route: '/charts/apexcharts',
@@ -90,14 +90,18 @@ export class SidebarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Init : expand lib active au démarrage
-    this.libs.forEach(lib => { if (this.isChartsLib(lib.key)) this.expandedLibs.add(lib.key); });
+    this.expandActiveLib();
 
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
-      // Auto-expand la lib active (sans replier les autres)
-      this.libs.forEach(lib => { if (this.isChartsLib(lib.key)) this.expandedLibs.add(lib.key); });
+      this.expandActiveLib();
       this.cdr.markForCheck();
     });
+  }
+
+  private expandActiveLib(): void {
+    const activeLib = this.libs.find(lib => this.isChartsLib(lib.key));
+    this.expandedLibs.clear();
+    if (activeLib) this.expandedLibs.add(activeLib.key);
   }
 
   trackByFn(_index: number, item: ChartTypeItem): string { return item.id; }
@@ -174,9 +178,17 @@ export class SidebarComponent implements OnInit {
   }
 
   goToLib(lib: LibItem) {
+    const wasExpanded = this.expandedLibs.has(lib.key);
     this.expandedLibs.clear();
-    this.expandedLibs.add(lib.key);
-    this.router.navigate([lib.route]);
+    if (!wasExpanded) this.expandedLibs.add(lib.key);
+    this.cdr.markForCheck();
+
+    this.router.navigate([lib.route]).then(() => {
+      if (wasExpanded) {
+        this.expandedLibs.delete(lib.key);
+        this.cdr.markForCheck();
+      }
+    });
     if (this.isMenuOpen) this.toggleMenu();
   }
 

@@ -84,6 +84,7 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
 
   copyFeedbackMessage = '';
   private _copyFeedbackTimer?: number;
+  private _fullscreenResizeFrame?: number;
   private drilldownPath: Record<string, unknown> = {};
 
   @ViewChild(ChartDirective) private _directive: ChartDirective<X, Y>;
@@ -162,6 +163,7 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
   @HostListener('document:fullscreenchange')
   onFullscreenChange(): void {
     this._isFullscreen = FullscreenManager.isActive(this._element.nativeElement);
+    this.scheduleFullscreenResize();
   }
 
   /** Capture les données courantes et la configuration sérialisable du graphique. */
@@ -242,7 +244,23 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     if (this._copyFeedbackTimer !== undefined && typeof window !== 'undefined') {
       window.clearTimeout(this._copyFeedbackTimer);
     }
+    if (this._fullscreenResizeFrame !== undefined && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(this._fullscreenResizeFrame);
+    }
     this._organizerFacade.destroy();
+  }
+
+  private scheduleFullscreenResize(): void {
+    if (typeof window === 'undefined') return;
+    if (this._fullscreenResizeFrame !== undefined) {
+      window.cancelAnimationFrame(this._fullscreenResizeFrame);
+    }
+    this._fullscreenResizeFrame = window.requestAnimationFrame(() => {
+      this._fullscreenResizeFrame = window.requestAnimationFrame(() => {
+        this._fullscreenResizeFrame = undefined;
+        this._directive?.resize();
+      });
+    });
   }
 
   private showCopyFeedback(): void {

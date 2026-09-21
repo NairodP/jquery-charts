@@ -41,12 +41,12 @@
   border-right: 1px solid #e2e8f0;
   color: #475569;
   padding: 16px 12px;
-  height: calc(100vh - 64px);
+  height: calc(100vh - var(--header-height));
   overflow-y: auto;
   overscroll-behavior: contain;
   position: fixed;
   left: 0;
-  top: 64px;
+  top: var(--header-height);
   z-index: 97;
 
   &::-webkit-scrollbar { width: 3px; }

@@ -4,11 +4,11 @@
 
   <main [class.with-sidebar]="showSidebar">
     <router-outlet></router-outlet>
+    <app-footer></app-footer>
   </main>
 
   <!-- Palette de recherche rapide globale -->
   <app-quick-search #quickSearch></app-quick-search>
 
   <app-back-to-doc-button></app-back-to-doc-button>
-  <app-footer></app-footer>
 </div>

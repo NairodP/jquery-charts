@@ -2,25 +2,24 @@
   <header class="start-hero">
     <div class="start-hero__copy">
       <p class="eyebrow">Démarrage</p>
-      <h1>Démarrer avec jquery-charts</h1>
+      <h1>Démarrer avec <span class="start-hero__product">jquery-charts</span></h1>
       <p class="lede">
-        Un point d'entrée court pour choisir un composant, trouver un exemple
-        concret et rejoindre le contrat API qui correspond à votre intégration.
+        Choisissez un composant, testez un exemple et consultez sa documentation API.
       </p>
       <div class="start-hero__actions">
         <a class="button button--primary" routerLink="/charts">Voir les exemples</a>
-        <a class="button button--quiet" routerLink="/api/core">Ouvrir l'API core</a>
       </div>
     </div>
-    <div class="start-hero__signal" aria-hidden="true">
-      <span class="signal-line"></span>
-      <span class="signal-point signal-point--one"></span>
-      <span class="signal-point signal-point--two"></span>
-      <span class="signal-point signal-point--three"></span>
-    </div>
+    <nav class="start-hero__index" aria-label="Parcours de démarrage">
+      <span class="start-hero__index-label">Le parcours</span>
+      <a href="#install-section" (click)="scrollToSection($event, 'install-section')"><span>01</span><strong>Installation</strong></a>
+      <a href="#paths-section" (click)="scrollToSection($event, 'paths-section')"><span>02</span><strong>Parcours</strong></a>
+      <a href="#model-section" (click)="scrollToSection($event, 'model-section')"><span>03</span><strong>Modèle commun</strong></a>
+      <a href="#api-section" (click)="scrollToSection($event, 'api-section')"><span>04</span><strong>Références</strong></a>
+    </nav>
   </header>
 
-  <section class="start-section start-section--install" aria-labelledby="install-title">
+  <section id="install-section" class="start-section start-section--install" aria-labelledby="install-title">
     <div class="section-heading">
       <p class="eyebrow">01 / Installation</p>
       <h2 id="install-title">Installez le parcours choisi</h2>
@@ -103,7 +102,7 @@
     </p>
   </section>
 
-  <section class="start-section" aria-labelledby="paths-title">
+  <section id="paths-section" class="start-section" aria-labelledby="paths-title">
     <div class="section-heading">
       <p class="eyebrow">02 / Parcours</p>
       <h2 id="paths-title">Allez directement à l'écran utile</h2>
@@ -155,7 +154,7 @@
     </div>
   </section>
 
-  <section class="start-section start-section--split" aria-labelledby="model-title">
+  <section id="model-section" class="start-section start-section--split" aria-labelledby="model-title">
     <div class="section-heading">
       <p class="eyebrow">03 / Modèle commun</p>
       <h2 id="model-title">Un même point de départ, des APIs précises</h2>
@@ -171,7 +170,7 @@
     <pre class="code-block"><code>{{ commonExample }}</code></pre>
   </section>
 
-  <section class="start-section" aria-labelledby="api-title">
+  <section id="api-section" class="start-section" aria-labelledby="api-title">
     <div class="section-heading">
       <p class="eyebrow">04 / Références</p>
       <h2 id="api-title">Choisissez la bonne API</h2>
