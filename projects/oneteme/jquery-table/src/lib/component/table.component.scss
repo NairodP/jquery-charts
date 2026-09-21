@@ -37,10 +37,13 @@
   // Header & cellules (Angular Material)
   --jqt-header-bg:          #f5f5f5;      // fond des cellules d'en-tête (doit être opaque pour sticky)
   --jqt-header-text-color:  #374151;      // texte des cellules d'en-tête
+  --jqt-header-height:      56px;         // hauteur des lignes d'en-tête
+  --jqt-header-cell-padding-y: 0px;       // espacement vertical des cellules d'en-tête
   --jqt-cell-bg:            #ffffff;      // fond des cellules de corps
   --jqt-footer-bg:          #f5f5f5;      // fond de la barre footer/paginator
   --jqt-footer-text-color:  #374151;      // texte paginator (label, nombre de pages)
   --jqt-footer-icon-color:  #374151;      // icônes/flèches navigateur de page
+  --jqt-footer-height:      var(--jqt-header-height); // hauteur du footer/paginator
 }
 
 :host.visual-fullscreen {
@@ -673,11 +676,17 @@
 
 :host ::ng-deep .mat-mdc-header-row {
   background: var(--jqt-header-bg);
+  height: var(--jqt-header-height);
+  min-height: var(--jqt-header-height);
 }
 
 :host ::ng-deep .mat-mdc-header-cell {
   background: var(--jqt-header-bg);
   color: var(--jqt-header-text-color);
+  height: var(--jqt-header-height);
+  min-height: var(--jqt-header-height);
+  padding-top: var(--jqt-header-cell-padding-y);
+  padding-bottom: var(--jqt-header-cell-padding-y);
 }
 
 :host ::ng-deep .mat-mdc-row,
@@ -806,7 +815,7 @@
   align-items: center;
   flex-wrap: nowrap;
   min-height: 0;
-  height: var(--actual-header-height, 56px);
+  height: var(--jqt-footer-height, var(--actual-header-height, 56px));
   padding: 0 8px;
   box-sizing: border-box;
 }

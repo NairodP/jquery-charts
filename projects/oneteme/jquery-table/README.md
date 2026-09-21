@@ -288,13 +288,13 @@ Seuls les champs fournis écrasent les défauts français. Voir `JqtI18n` pour l
 
 ## Fonctionnalité — Group by
 
-Le regroupement s'active en ajoutant `groupable: true` sur une ou plusieurs colonnes. L'utilisateur choisit ensuite la colonne de regroupement depuis le menu View.
+Le regroupement est disponible par défaut pour les colonnes qui possèdent un `header`. Utilisez `groupable: false` pour retirer une colonne du menu Group by ; `groupable: true` reste utile pour une colonne sans `header`.
 
 ```ts
 columns: [
-  { key: 'team',   header: 'Équipe',  groupable: true },
-  { key: 'status', header: 'Statut',  groupable: true },
-  { key: 'name',   header: 'Nom' },
+  { key: 'team',   header: 'Équipe' },
+  { key: 'status', header: 'Statut' },
+  { key: 'name',   header: 'Nom', groupable: false },
 ],
 view:       { enabled: true },
 pagination: {
@@ -339,11 +339,12 @@ slices: [
 
 ### Slices dynamiques (depuis le menu View)
 
-Une colonne avec `sliceable: true` peut être ajoutée dynamiquement comme slice depuis le menu View.
+Les colonnes qui possèdent un `header` sont disponibles par défaut comme slices dynamiques depuis le menu View. Utilisez `sliceable: false` pour retirer une colonne ; `sliceable: true` reste utile pour une colonne sans `header`.
 
 ```ts
 columns: [
-  { key: 'team', header: 'Équipe', sliceable: true },
+  { key: 'team', header: 'Équipe' },
+  { key: 'reference', header: 'Référence', sliceable: false },
 ],
 view: { enabled: true },
 ```
@@ -505,8 +506,44 @@ jquery-table {
   /* Accent & danger */
   --jqt-primary-color:     #1d4ed8;
   --jqt-danger-color:      #dc2626;
+
+  /* Header / footer */
+  --jqt-header-bg:             #f5f5f5;
+  --jqt-header-text-color:     #374151;
+  --jqt-header-height:         56px;
+  --jqt-header-cell-padding-y: 0px;
+  --jqt-footer-bg:             #f5f5f5;
+  --jqt-footer-text-color:     #374151;
+  --jqt-footer-icon-color:     #374151;
+  --jqt-footer-height:         56px;
+
+  /* Bouton Organizer */
+  --jqt-organizer-button-height:          34px;
+  --jqt-organizer-button-width:           34px;
+  --jqt-organizer-button-min-width:       34px;
+  --jqt-organizer-button-radius:          8px;
+  --jqt-organizer-button-border-color:    #e0e0e0;
+  --jqt-organizer-button-background:      #ffffff;
+  --jqt-organizer-button-hover-border-color: #9e9e9e;
+  --jqt-organizer-button-hover-background:   #ffffff;
+  --jqt-organizer-button-icon-color:      #000000;
 }
 ```
+
+Le bouton Organizer intégré peut aussi être configuré via `TableProvider` :
+
+```ts
+const table: TableProvider<Row> = {
+  organizer: {
+    buttonLabel: 'Vue',
+    buttonIcon: 'tune',
+    showButtonIcon: true,
+    hideMenuValues: false,
+  },
+};
+```
+
+Les variables CSS sont héritées par le tableau et son Organizer. Elles permettent notamment de réduire le header/footer et de modifier le bouton sans cibler les classes internes Angular Material.
 
 ---
 

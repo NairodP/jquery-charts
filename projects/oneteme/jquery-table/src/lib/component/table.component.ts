@@ -364,6 +364,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   get organizerConfig(): OrganizerConfig {
     if (this._organizerConfigCache) return this._organizerConfigCache;
     const allCols = [...this._organizer.menuBaseFields, ...this._organizer.menuOptionalFields];
+    const organizerOptions = this.resolvedConfig.organizer;
     this._organizerConfigCache = {
       fields: this._organizer.showFields ? allCols.map(c => ({
         id: c.key,
@@ -381,6 +382,9 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
         label: item.title,
         icon: item.icon,
       })) : undefined,
+      buttonLabel: organizerOptions?.buttonLabel,
+      buttonIcon: organizerOptions?.buttonIcon,
+      showButtonIcon: organizerOptions?.showButtonIcon,
       showExport: this.showExportButton,
       onExport: () => this.onExport(),
       showPreferences: this.showPreferencesMenu,
@@ -394,6 +398,10 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
       isFullscreen: this._isFullscreen,
     };
     return this._organizerConfigCache;
+  }
+
+  get organizerHideMenuValues(): boolean {
+    return this.resolvedConfig.organizer?.hideMenuValues === true;
   }
 
   get organizerState(): OrganizerState {
