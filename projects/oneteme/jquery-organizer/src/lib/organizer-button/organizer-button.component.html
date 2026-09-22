@@ -5,9 +5,9 @@
 
 <mat-menu #viewMenu="matMenu" panelClass="organizer-menu-panel">
 
-  <!-- Type de graphique -->
+  <!-- Type -->
   <button *ngIf="hasChartTypes()" mat-menu-item [matMenuTriggerFor]="chartTypesSubMenu" class="organizer-menu-trigger">
-    <span class="organizer-menu-label">Type de graphique</span>
+    <span class="organizer-menu-label">Type</span>
     <span class="organizer-menu-value" *ngIf="!hideMenuValues && activeChartTypeLabel()">{{ activeChartTypeLabel() }}</span>
   </button>
 
