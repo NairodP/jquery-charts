@@ -2,6 +2,9 @@
   --home-accent: #c6532f;
   --home-accent-hover: #a9472b;
   --home-accent-soft: rgba(198, 83, 47, 0.12);
+  --home-echarts: #c6532f;
+  --home-highcharts: #2c605d;
+  --home-apexcharts: #718c62;
   padding: var(--sp-8, 32px) var(--sp-6, 24px);
   max-width: 1100px;
   margin: 0 auto;
@@ -9,8 +12,13 @@
 
 // ── Hero ─────────────────────────────────────────────────────────────────
 .hero {
-  text-align: center;
-  padding: var(--sp-10, 40px) 0 var(--sp-8, 32px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(270px, 0.75fr);
+  gap: clamp(32px, 7vw, 88px);
+  align-items: center;
+  padding: var(--sp-10, 40px) 0 var(--sp-12, 48px);
+
+  &__copy { min-width: 0; }
 
   &__badge {
     display: inline-block;
@@ -42,7 +50,7 @@
     font-size: 1.1rem;
     color: var(--clr-text-secondary, #64748b);
     max-width: 600px;
-    margin: 0 auto 2rem;
+    margin: 0 0 2rem;
     line-height: 1.7;
     strong { color: var(--clr-text-primary, #1e293b); font-weight: 600; }
   }
@@ -50,12 +58,80 @@
   &__actions {
     display: flex;
     gap: 0.75rem;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  &__manifest {
+    min-width: 0;
+    padding: 18px 20px 20px;
+    border: 1px solid var(--clr-border, #d8e0dc);
+    border-top: 3px solid var(--home-accent);
+    background: var(--clr-surface, #fff);
+    box-shadow: 12px 12px 0 rgba(44, 96, 93, 0.08);
+
+    p {
+      margin-top: 16px;
+      color: var(--clr-text-secondary, #526568);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+  }
+
+  &__manifest-top,
+  &__manifest-line {
+    display: grid;
+    align-items: center;
+  }
+
+  &__manifest-top {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--clr-border, #d8e0dc);
+    color: var(--home-accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  &__manifest-version {
+    color: var(--clr-text-muted, #849694);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  &__manifest-line {
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    min-height: 39px;
+    border-bottom: 1px solid var(--clr-border, #d8e0dc);
+
+    > span {
+      color: var(--home-accent);
+      font: 0.68rem var(--font-mono, monospace);
+    }
+
+    code {
+      color: var(--clr-secondary, #2c605d);
+      font: 0.8rem var(--font-mono, monospace);
+    }
+
+    strong {
+      color: var(--clr-text-secondary, #526568);
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-align: right;
+    }
   }
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
   padding: 0.65rem 1.5rem;
   border-radius: var(--radius-md, 8px);
   font-size: 0.9rem;
@@ -64,6 +140,7 @@
   transition: all 0.15s ease;
   border: none;
   font-family: var(--font-sans, sans-serif);
+  text-decoration: none;
 
   &--primary {
     background: var(--home-accent);
@@ -115,9 +192,9 @@
     &::before { opacity: 1; }
   }
 
-  &:nth-child(1)::before { background: linear-gradient(90deg, #f97316, #ef4444); }
-  &:nth-child(2)::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-  &:nth-child(3)::before { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+  &:nth-child(1)::before { background: var(--home-echarts); }
+  &:nth-child(2)::before { background: var(--home-highcharts); }
+  &:nth-child(3)::before { background: var(--home-apexcharts); }
 
   &__badge {
     display: inline-block;
@@ -129,9 +206,9 @@
     border-radius: 4px;
     margin-bottom: 0.9rem;
 
-    &.echarts    { background: rgba(249,115,22,0.1);  color: #ea580c; }
-    &.highcharts { background: rgba(59,130,246,0.1);  color: #2563eb; }
-    &.apex       { background: rgba(139,92,246,0.1);  color: #7c3aed; }
+    &.echarts    { background: rgba(198, 83, 47, 0.1); color: var(--home-echarts); }
+    &.highcharts { background: rgba(44, 96, 93, 0.1); color: var(--home-highcharts); }
+    &.apex       { background: rgba(113, 140, 98, 0.14); color: var(--home-apexcharts); }
   }
 
   &__name {
@@ -158,8 +235,8 @@
     span {
       font-family: var(--font-mono, monospace);
       font-size: 0.72rem;
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--clr-surface-raised, #edf2ef);
+      color: var(--clr-text-secondary, #526568);
       padding: 0.15rem 0.5rem;
       border-radius: 4px;
     }
@@ -175,7 +252,7 @@
 // ── Principe / Code compare ───────────────────────────────────────────────
 .principle {
   margin: var(--sp-10, 40px) 0;
-  background: #f8fafc;
+  background: var(--clr-surface-raised, #edf2ef);
   border: 1px solid var(--clr-border, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   padding: 2rem 2rem 1.5rem;
@@ -222,7 +299,7 @@
   gap: 1rem;
 
   &__col {
-    background: #0f172a;
+    background: var(--clr-sidebar-bg, #152a2d);
     border-radius: var(--radius-md, 8px);
     overflow: hidden;
   }
@@ -235,8 +312,8 @@
     border-bottom: 1px solid rgba(255,255,255,0.06);
     font-size: 0.8rem;
     font-weight: 600;
-    color: #94a3b8;
-    background: rgba(255,255,255,0.03);
+    color: #d5e9e7;
+    background: #1d383b;
   }
 }
 
@@ -245,9 +322,9 @@
   height: 8px;
   border-radius: 50%;
   display: inline-block;
-  &.echarts    { background: #f97316; }
-  &.highcharts { background: #3b82f6; }
-  &.apex       { background: #8b5cf6; }
+  &.echarts    { background: var(--home-echarts); }
+  &.highcharts { background: var(--home-highcharts); }
+  &.apex       { background: var(--home-apexcharts); }
 }
 
 .code-block {
@@ -257,10 +334,22 @@
   font-size: 0.78rem;
   line-height: 1.7;
   color: #e2e8f0;
-  .kw  { color: #c084fc; }
-  .str { color: #86efac; }
-  .tag { color: #67e8f9; }
-  .attr{ color: #fde68a; }
+  .kw  { color: #f2b8a7; }
+  .str { color: #b5d7d4; }
+  .tag { color: #ffc5b2; }
+  .attr{ color: #d5e9e7; }
+}
+
+@media (max-width: 780px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+
+    &__desc { margin-inline: auto; }
+    &__actions { justify-content: center; }
+    &__manifest { text-align: left; }
+  }
 }
 
 
