@@ -89,17 +89,19 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
   chartLibrary: ChartLibrary = 'echarts';
   dataMode: DataMode = 'series';
 
-  readonly organizerMenuConfig: OrganizerMenuConfig = {
+  organizerMenuConfig: OrganizerMenuConfig = {
     fields: [
       { id: 'Ventes', label: 'Ventes', visible: true },
       { id: 'Objectif', label: 'Objectif', visible: true },
     ],
-    buttonLabel: 'Séries',
+    chartTypes: [],
+    buttonLabel: 'Organiser',
     buttonIcon: 'tune',
     showButtonIcon: true,
   };
   organizerMenuState: OrganizerMenuState = {
     visibleFields: ['Ventes', 'Objectif'],
+    selectedChartType: this.chartType,
   };
 
   private readonly compactConfig: ChartProvider<string, number> = {
@@ -149,6 +151,7 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
   private loadTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
+    this.syncOrganizerChartTypes();
     this.loadChartData();
   }
 
@@ -168,6 +171,10 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
     return this.availableTypes.find(section => section.type === this.chartType)?.label ?? this.chartType;
   }
 
+  trackByChartType(_index: number, section: ChartExampleSection): string {
+    return section.type;
+  }
+
   private buildEffectiveChartConfig(sourceConfig: ChartProvider<string, number>): ChartProvider<string, number> {
     const selectedFields = new Set(this.organizerMenuState.visibleFields ?? []);
     return {
@@ -180,6 +187,23 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
 
   private updateEffectiveChartConfig(): void {
     this.effectiveChartConfig = this.buildEffectiveChartConfig(this.chartConfig);
+  }
+
+  private syncOrganizerChartTypes(): void {
+    this.organizerMenuConfig = {
+      ...this.organizerMenuConfig,
+      chartTypes: this.availableTypes.map(section => ({
+        id: section.type,
+        label: section.label,
+      })),
+    };
+  }
+
+  private syncOrganizerChartTypeState(): void {
+    this.organizerMenuState = {
+      ...this.organizerMenuState,
+      selectedChartType: this.chartType,
+    };
   }
 
   get visibleSeriesCount(): number {
@@ -217,11 +241,15 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
     if (!this.availableTypes.some(section => section.type === this.chartType)) {
       this.chartType = this.availableTypes[0]?.type ?? 'line';
     }
+    this.syncOrganizerChartTypes();
+    this.syncOrganizerChartTypeState();
     this.loadChartData();
   }
 
   setChartType(type: ChartType): void {
+    if (!this.availableTypes.some(section => section.type === type)) return;
     this.chartType = type;
+    this.syncOrganizerChartTypeState();
     this.loadChartData();
   }
 
@@ -236,7 +264,23 @@ export class ChartWorkbenchComponent implements OnDestroy, OnInit {
   }
 
   onOrganizerChange(event: OrganizerButtonEvent): void {
-    this.organizerMenuState = event.state;
+    const selectedChartType = event.state.selectedChartType as ChartType | undefined;
+    const typeChanged = event.type === 'chartTypeSelected'
+      && !!selectedChartType
+      && this.availableTypes.some(section => section.type === selectedChartType);
+
+    this.organizerMenuState = {
+      ...event.state,
+      selectedChartType: this.chartType,
+    };
+
+    if (typeChanged && selectedChartType) {
+      this.chartType = selectedChartType;
+      this.syncOrganizerChartTypeState();
+      this.loadChartData();
+      return;
+    }
+
     this.updateEffectiveChartConfig();
   }
 

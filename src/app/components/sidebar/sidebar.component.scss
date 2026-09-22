@@ -60,12 +60,23 @@
 
   .sidebar-section-label {
     font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-family: var(--font-mono, monospace);
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--clr-sidebar-text-section, #6f8f8b);
+    color: var(--clr-secondary, #2c605d);
     padding: 0 12px 8px;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+      content: '';
+      width: 12px;
+      height: 2px;
+      flex: 0 0 auto;
+      background: var(--clr-border-strong, #b9c8c2);
+    }
   }
 
   ul {
@@ -80,6 +91,7 @@
       margin-bottom: 1px;
       color: var(--clr-sidebar-text, #a6bcba);
       font-size: 0.875rem;
+      font-family: var(--font-sans, sans-serif);
       font-weight: 400;
       display: flex;
       flex-wrap: wrap;

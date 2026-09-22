@@ -10,10 +10,11 @@ const routes: Routes = [
     path: '',
     component: DocumentationComponent,
     children: [
-      { path: '', redirectTo: 'demarrage', pathMatch: 'full' },
-      { path: 'demarrage', component: DocumentationStartComponent },
-      { path: 'start', redirectTo: 'demarrage', pathMatch: 'full' },
-      { path: 'getting-started', redirectTo: 'demarrage', pathMatch: 'full' },
+      { path: '', component: DocumentationStartComponent, pathMatch: 'full' },
+      { path: 'prise-en-main', redirectTo: '/demarrer', pathMatch: 'full' },
+      { path: 'demarrage', redirectTo: '/demarrer', pathMatch: 'full' },
+      { path: 'start', redirectTo: '/demarrer', pathMatch: 'full' },
+      { path: 'getting-started', redirectTo: '/demarrer', pathMatch: 'full' },
       { path: 'graph-types', redirectTo: '/charts', pathMatch: 'full' },
       {
         path: 'configuration',

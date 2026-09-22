@@ -9,12 +9,12 @@
         <span class="hero__accent">3 bibliothèques graphiques</span>
       </h1>
       <p class="hero__desc">
-        Créez des graphiques interactifs avec <strong>ECharts</strong>,
-        <strong>Highcharts</strong> et <strong>ApexCharts</strong> via une
+        Créez des graphiques interactifs avec <strong>Highcharts</strong>,
+        <strong>ECharts</strong> et <strong>ApexCharts</strong> via une
         configuration Angular identique — sans changer votre code métier.
       </p>
       <div class="hero__actions">
-        <a class="btn btn--primary" routerLink="/documentation/demarrage">Démarrer avec jquery-charts</a>
+        <a class="btn btn--primary" routerLink="/demarrer">Démarrer avec jquery-charts</a>
       </div>
     </div>
 
@@ -46,17 +46,6 @@
   <section class="libs">
     <div class="libs__grid">
 
-      <a class="lib-card" routerLink="/charts/echarts">
-        <div class="lib-card__badge echarts">ECharts</div>
-        <h3 class="lib-card__name">jquery-echarts</h3>
-        <p class="lib-card__desc">Apache ECharts 5 — rendu Canvas ultra-performant, animations fluides, support des grands volumes de données.</p>
-        <div class="lib-card__types">
-          <span>bar</span><span>line</span><span>pie</span><span>scatter</span>
-          <span>heatmap</span><span>treemap</span><span>radar</span><span>+9</span>
-        </div>
-        <div class="lib-card__arrow">Explorer →</div>
-      </a>
-
       <a class="lib-card" routerLink="/charts/highcharts">
         <div class="lib-card__badge highcharts">Highcharts</div>
         <h3 class="lib-card__name">jquery-highcharts</h3>
@@ -64,6 +53,17 @@
         <div class="lib-card__types">
           <span>line</span><span>spline</span><span>area</span><span>bar</span>
           <span>polar</span><span>bubble</span><span>range</span><span>+14</span>
+        </div>
+        <div class="lib-card__arrow">Explorer →</div>
+      </a>
+
+      <a class="lib-card" routerLink="/charts/echarts">
+        <div class="lib-card__badge echarts">ECharts</div>
+        <h3 class="lib-card__name">jquery-echarts</h3>
+        <p class="lib-card__desc">Apache ECharts 5 — rendu Canvas ultra-performant, animations fluides, support des grands volumes de données.</p>
+        <div class="lib-card__types">
+          <span>bar</span><span>line</span><span>pie</span><span>scatter</span>
+          <span>heatmap</span><span>treemap</span><span>radar</span><span>+9</span>
         </div>
         <div class="lib-card__arrow">Explorer →</div>
       </a>
@@ -93,11 +93,11 @@
     <div class="code-compare">
       <div class="code-compare__col">
         <div class="code-compare__header">
-          <span class="dot echarts"></span>
-          ECharts
+          <span class="dot highcharts"></span>
+          Highcharts
         </div>
         <pre class="code-block"><code><span class="kw">import</span> &#123; ChartComponent &#125;
-  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-echarts'</span>;
+  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-highcharts'</span>;
 
 <span class="tag">&lt;chart</span>
   <span class="attr">type</span>=<span class="str">"bar"</span>
@@ -108,11 +108,11 @@
 
       <div class="code-compare__col">
         <div class="code-compare__header">
-          <span class="dot highcharts"></span>
-          Highcharts
+          <span class="dot echarts"></span>
+          ECharts
         </div>
         <pre class="code-block"><code><span class="kw">import</span> &#123; ChartComponent &#125;
-  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-highcharts'</span>;
+  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-echarts'</span>;
 
 <span class="tag">&lt;chart</span>
   <span class="attr">type</span>=<span class="str">"bar"</span>

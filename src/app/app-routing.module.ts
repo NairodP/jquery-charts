@@ -28,10 +28,12 @@ import { TableApiComponent } from './pages/table/api/table-api.component';
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
 
-  { path: 'basic-test/sandbox', redirectTo: 'atelier-graphiques/sandbox', pathMatch: 'full' },
-  { path: 'basic-test', redirectTo: 'atelier-graphiques', pathMatch: 'full' },
-  { path: 'atelier-graphiques', component: ChartWorkbenchComponent },
-  { path: 'atelier-graphiques/sandbox', component: ChartDataSandboxComponent },
+  { path: 'basic-test/sandbox', redirectTo: 'atelier/sandbox', pathMatch: 'full' },
+  { path: 'basic-test', redirectTo: 'atelier', pathMatch: 'full' },
+  { path: 'atelier-graphiques/sandbox', redirectTo: 'atelier/sandbox', pathMatch: 'full' },
+  { path: 'atelier-graphiques', redirectTo: 'atelier', pathMatch: 'full' },
+  { path: 'atelier/sandbox', component: ChartDataSandboxComponent },
+  { path: 'atelier', component: ChartWorkbenchComponent, pathMatch: 'full' },
   { path: 'snapshots', component: SnapshotsComponent },
   { path: 'api/echarts', component: EChartsApiComponent },
   { path: 'api/highcharts', component: HighchartsApiComponent },
@@ -70,6 +72,15 @@ const routes: Routes = [
     ],
   },
 
+  {
+    path: 'demarrer',
+    loadChildren: () =>
+      import('./pages/documentation/documentation.module').then(
+        (m) => m.DocumentationModule
+      ),
+  },
+  { path: 'prise-en-main', redirectTo: 'demarrer', pathMatch: 'full' },
+  { path: 'documentation', redirectTo: 'demarrer', pathMatch: 'full' },
   {
     path: 'documentation',
     loadChildren: () =>

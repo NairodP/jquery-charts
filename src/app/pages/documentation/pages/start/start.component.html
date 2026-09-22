@@ -7,7 +7,7 @@
         Choisissez un composant, testez un exemple et consultez sa documentation API.
       </p>
       <div class="start-hero__actions">
-        <a class="button button--primary" routerLink="/charts">Voir les exemples</a>
+        <a class="button button--primary" routerLink="/charts/highcharts">Voir les exemples</a>
       </div>
     </div>
     <nav class="start-hero__index" aria-label="Parcours de démarrage">
@@ -113,19 +113,19 @@
     </div>
 
     <div class="path-grid">
-      <a class="path-link path-link--wide" routerLink="/charts/echarts">
-        <span class="path-link__index">A</span>
-        <span class="path-link__body">
-          <strong>Graphiques ECharts</strong>
-          <span>Galerie de types, interactions et exemples rendus.</span>
-        </span>
-        <span class="path-link__arrow" aria-hidden="true">→</span>
-      </a>
       <a class="path-link path-link--wide" routerLink="/charts/highcharts">
-        <span class="path-link__index">B</span>
+        <span class="path-link__index">A</span>
         <span class="path-link__body">
           <strong>Graphiques Highcharts</strong>
           <span>Galerie des types disponibles avec le wrapper Highcharts.</span>
+        </span>
+        <span class="path-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="path-link path-link--wide" routerLink="/charts/echarts">
+        <span class="path-link__index">B</span>
+        <span class="path-link__body">
+          <strong>Graphiques ECharts</strong>
+          <span>Galerie de types, interactions et exemples rendus.</span>
         </span>
         <span class="path-link__arrow" aria-hidden="true">→</span>
       </a>
@@ -178,11 +178,11 @@
 
     <div class="api-grid">
       <a routerLink="/api/core"><strong>jquery-core</strong><span>Providers, transformations, unités et utilitaires.</span></a>
-      <a routerLink="/api/echarts"><strong>jquery-echarts</strong><span>Inputs, événements et capacités ECharts.</span></a>
+      <a routerLink="/api/organizer"><strong>jquery-organizer</strong><span>Configuration, état, événements et slices.</span></a>
       <a routerLink="/api/highcharts"><strong>jquery-highcharts</strong><span>Wrapper, options et intégration Highcharts.</span></a>
+      <a routerLink="/api/echarts"><strong>jquery-echarts</strong><span>Inputs, événements et capacités ECharts.</span></a>
       <a routerLink="/api/apexcharts"><strong>jquery-apexcharts</strong><span>Types supportés et limites du wrapper.</span></a>
       <a routerLink="/api/table"><strong>jquery-table</strong><span>Colonnes, recherche, vues, export et snapshots.</span></a>
-      <a routerLink="/api/organizer"><strong>jquery-organizer</strong><span>Configuration, état, événements et slices.</span></a>
     </div>
   </section>
 
@@ -196,7 +196,7 @@
       </p>
     </div>
     <div class="start-footer__links">
-      <a class="button button--primary" routerLink="/atelier-graphiques">Ouvrir l'atelier</a>
+      <a class="button button--primary" routerLink="/atelier">Ouvrir l'atelier</a>
     </div>
   </section>
 </div>

@@ -17,7 +17,7 @@ interface LibItem { key: string; label: string; route: string; types: ChartTypeI
 
       <div class="sidebar-section sidebar-section--start">
         <ul>
-          <li [class.active]="isDocumentationRoute()" (click)="goToDocumentation()">Démarrage</li>
+          <li [class.active]="isDocumentationRoute()" (click)="goToDocumentation()">Démarrer</li>
         </ul>
       </div>
 
@@ -108,7 +108,9 @@ export class SidebarComponent implements OnInit {
 
   isTableRoute(): boolean { return this.router.url.startsWith('/table'); }
 
-  isDocumentationRoute(): boolean { return this.router.url.startsWith('/documentation'); }
+  isDocumentationRoute(): boolean {
+    return this.router.url.startsWith('/demarrer') || this.router.url.startsWith('/prise-en-main') || this.router.url.startsWith('/documentation');
+  }
 
   isCoreApiRoute(): boolean { return this.router.url === '/api/core'; }
 
@@ -138,7 +140,7 @@ export class SidebarComponent implements OnInit {
   }
 
   goToDocumentation() {
-    this.router.navigate(['/documentation/demarrage']);
+    this.router.navigate(['/demarrer']);
     if (this.isMenuOpen) this.toggleMenu();
   }
 

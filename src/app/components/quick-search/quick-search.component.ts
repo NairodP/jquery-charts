@@ -40,7 +40,7 @@ function normalizeSearchText(value: string): string {
 const SEARCH_INDEX: SearchItem[] = [
   // Parcours principaux affichés dès l'ouverture de la recherche
   { label: 'Accueil', route: '/', category: 'Navigation' },
-  { label: 'Démarrage', sublabel: 'Choisir une galerie, un composant ou une API', route: '/documentation/demarrage', category: 'Navigation', keywords: ['documentation', 'demarrer', 'commencer', 'installation'] },
+  { label: 'Démarrer', sublabel: 'Choisir une galerie, un composant ou une API', route: '/demarrer', category: 'Navigation', keywords: ['documentation', 'prise en main', 'commencer', 'installation'] },
   { label: 'Graphiques — Toutes les galeries', sublabel: 'ECharts, Highcharts et ApexCharts', route: '/charts', category: 'Graphiques', keywords: ['charts', 'exemples', 'renderer'] },
   { label: 'ECharts — Galerie', sublabel: 'Exemples et types disponibles', route: '/charts/echarts', category: 'ECharts', keywords: ['graphique', 'exemple'] },
   { label: 'Highcharts — Galerie', sublabel: 'Exemples et types disponibles', route: '/charts/highcharts', category: 'Highcharts', keywords: ['graphique', 'exemple'] },
@@ -49,8 +49,8 @@ const SEARCH_INDEX: SearchItem[] = [
   { label: 'jquery-organizer — Démo', sublabel: 'Menus et états de vue', route: '/organizer', category: 'jquery-organizer', keywords: ['organiseur', 'composant'] },
 
   // Outils et écrans secondaires
-  { label: 'Atelier graphiques', sublabel: 'Tester une configuration librement', route: '/atelier-graphiques', category: 'Outils', keywords: ['atelier', 'sandbox', 'configuration'] },
-  { label: 'Atelier graphiques — Sandbox', sublabel: 'Tester les données et providers', route: '/atelier-graphiques/sandbox', category: 'Outils', keywords: ['atelier', 'sandbox', 'data'] },
+  { label: 'Atelier', sublabel: 'Tester une configuration librement', route: '/atelier', category: 'Outils', keywords: ['atelier', 'sandbox', 'configuration'] },
+  { label: 'Atelier — Sandbox', sublabel: 'Tester les données et providers', route: '/atelier/sandbox', category: 'Outils', keywords: ['atelier', 'sandbox', 'data'] },
   { label: 'Snapshots visuels', sublabel: 'Copier et composer un dashboard', route: '/snapshots', category: 'Outils', keywords: ['snapshot', 'dashboard', 'copie'] },
   { label: 'Dashboard EMS', sublabel: 'Démonstration métier énergie', route: '/demo/dashboard-ems', category: 'Démonstrations', keywords: ['dashboard', 'ems', 'energie'] },
 
