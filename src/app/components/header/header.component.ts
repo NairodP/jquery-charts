@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { ChartTypesService } from 'src/app/core/services/chart-types.service';
 
 @Component({
@@ -102,11 +102,20 @@ export class HeaderComponent {
   }
 
   isUsageActive(): boolean {
-    return !this.isProductActive();
+    return !this.isProductActive() && !this.isNotFoundRoute();
   }
 
   private get currentPath(): string {
     return this.router.url.split(/[?#]/)[0] || '/';
+  }
+
+  private isNotFoundRoute(): boolean {
+    let route: ActivatedRouteSnapshot = this.router.routerState.snapshot.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+
+    return route.data['notFound'] === true;
   }
 
   toggleInstallMenu() {

@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -35,7 +35,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private shouldShowSidebar(url: string): boolean {
     const path = url.split(/[?#]/)[0] || '/';
-    return path !== '/' && path !== '/produit';
+    return path !== '/' && path !== '/produit' && !this.isNotFoundRoute();
+  }
+
+  private isNotFoundRoute(): boolean {
+    let route: ActivatedRouteSnapshot = this.router.routerState.snapshot.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+
+    return route.data['notFound'] === true;
   }
 
   private scrollMainToTop(): void {

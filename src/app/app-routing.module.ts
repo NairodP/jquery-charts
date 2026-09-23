@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { ChartWorkbenchComponent } from './pages/basic-test/basic-test.component';
-import { ChartDataSandboxComponent } from './pages/basic-test/sandbox/sandbox.component';
 import { TableShellComponent } from './pages/table/table-shell.component';
 import { TableExempleComponent } from './pages/table/table.component';
 import { TableComparatifComponent } from './pages/table/comparatif/comparatif.component';
@@ -20,21 +19,18 @@ import { TablePresentationComponent } from './pages/table/table-presentation.com
 import { SnapshotsComponent } from './pages/snapshots/snapshots.component';
 import { OrganizerDocumentationComponent } from './pages/organizer/organizer-documentation.component';
 import { OrganizerApiComponent } from './pages/organizer/api/organizer-api.component';
-import { DashboardEmsDemoComponent } from './pages/dashboard-ems-demo/dashboard-ems-demo.component';
 import { CoreApiComponent } from './pages/core-api/core-api.component';
 import { ApexChartsApiComponent } from './pages/apexcharts/api/apexcharts-api.component';
 import { TableApiComponent } from './pages/table/api/table-api.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'produit', component: HomeComponent, pathMatch: 'full' },
   { path: 'product', redirectTo: 'produit', pathMatch: 'full' },
 
-  { path: 'basic-test/sandbox', redirectTo: 'atelier/sandbox', pathMatch: 'full' },
   { path: 'basic-test', redirectTo: 'atelier', pathMatch: 'full' },
-  { path: 'atelier-graphiques/sandbox', redirectTo: 'atelier/sandbox', pathMatch: 'full' },
   { path: 'atelier-graphiques', redirectTo: 'atelier', pathMatch: 'full' },
-  { path: 'atelier/sandbox', component: ChartDataSandboxComponent },
   { path: 'atelier', component: ChartWorkbenchComponent, pathMatch: 'full' },
   { path: 'snapshots', component: SnapshotsComponent },
   { path: 'api/echarts', component: EChartsApiComponent },
@@ -44,8 +40,6 @@ const routes: Routes = [
   { path: 'api/core', component: CoreApiComponent },
   { path: 'api/apexcharts', component: ApexChartsApiComponent },
   { path: 'api/table', component: TableApiComponent },
-  { path: 'demo/dashboard-ems', component: DashboardEmsDemoComponent },
-
   // jquery-table — shell avec tabs
   {
     path: 'table',
@@ -90,6 +84,7 @@ const routes: Routes = [
         (m) => m.DocumentationModule
       ),
   },
+  { path: '**', component: NotFoundComponent, data: { notFound: true } },
 ];
 
 @NgModule({

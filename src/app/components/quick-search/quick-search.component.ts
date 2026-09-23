@@ -49,10 +49,8 @@ const SEARCH_INDEX: SearchItem[] = [
   { label: 'jquery-organizer — Démo', sublabel: 'Menus et états de vue', route: '/organizer', category: 'jquery-organizer', keywords: ['organiseur', 'composant'] },
 
   // Outils et écrans secondaires
-  { label: 'Atelier', sublabel: 'Tester une configuration librement', route: '/atelier', category: 'Outils', keywords: ['atelier', 'sandbox', 'configuration'] },
-  { label: 'Atelier — Sandbox', sublabel: 'Tester les données et providers', route: '/atelier/sandbox', category: 'Outils', keywords: ['atelier', 'sandbox', 'data'] },
+  { label: 'Atelier', sublabel: 'Tester une configuration librement', route: '/atelier', category: 'Outils', keywords: ['atelier', 'configuration'] },
   { label: 'Snapshots visuels', sublabel: 'Copier et composer un dashboard', route: '/snapshots', category: 'Outils', keywords: ['snapshot', 'dashboard', 'copie'] },
-  { label: 'Dashboard EMS', sublabel: 'Démonstration métier énergie', route: '/demo/dashboard-ems', category: 'Démonstrations', keywords: ['dashboard', 'ems', 'energie'] },
 
   // APIs publiques
   { label: 'jquery-core — API', sublabel: 'Providers, transformations et utilitaires', route: '/api/core', category: 'API', keywords: ['data', 'provider', 'field', 'values'] },
