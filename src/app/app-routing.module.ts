@@ -77,13 +77,6 @@ const routes: Routes = [
   },
   { path: 'prise-en-main', redirectTo: 'demarrer', pathMatch: 'full' },
   { path: 'documentation', redirectTo: 'demarrer', pathMatch: 'full' },
-  {
-    path: 'documentation',
-    loadChildren: () =>
-      import('./pages/documentation/documentation.module').then(
-        (m) => m.DocumentationModule
-      ),
-  },
   { path: '**', component: NotFoundComponent, data: { notFound: true } },
 ];
 
