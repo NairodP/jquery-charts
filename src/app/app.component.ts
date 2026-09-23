@@ -35,7 +35,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private shouldShowSidebar(url: string): boolean {
     const path = url.split(/[?#]/)[0] || '/';
-    return path !== '/';
+    return path !== '/' && path !== '/produit';
   }
 
   private scrollMainToTop(): void {

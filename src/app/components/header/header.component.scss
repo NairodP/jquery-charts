@@ -61,16 +61,19 @@
         transition: color 0.18s ease;
 
         &::after {
-          content: '';
+          content: 'By JARVIS';
           position: absolute;
-          left: 0;
-          width: 2.5rem;
-          bottom: -0.35rem;
-          height: 2px;
-          background: linear-gradient(90deg, var(--clr-secondary, #2c605d), var(--clr-accent, #c6532f));
-          transform: scaleX(0);
-          transform-origin: left center;
-          transition: transform 0.22s ease, width 0.22s ease;
+          right: -0.5rem;
+          top: calc(100% - 0.16rem);
+          color: var(--clr-text-primary, #0f172a);
+          font-size: 0.6rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          line-height: 1;
+          white-space: nowrap;
+          opacity: 0;
+          transform: translateY(-2px);
+          transition: opacity 0.19s ease, transform 0.19s ease;
         }
 
         &:hover,
@@ -78,8 +81,8 @@
           color: var(--clr-text-primary, #0f172a);
 
           &::after {
-            width: 100%;
-            transform: scaleX(1);
+            opacity: 1;
+            transform: translateY(0);
           }
         }
       }

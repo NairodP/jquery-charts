@@ -3,7 +3,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy } from '@
 import { ChartComponent } from '@oneteme/jquery-highcharts';
 import { HIGHCHARTS_EXAMPLES } from 'src/app/data/chart/highcharts-examples.data';
 import type { ChartType } from '@oneteme/jquery-core';
-import { HIGHCHARTS_SECTIONS } from '../charts/chart-example-sections';
+import { ChartExampleSection, HIGHCHARTS_SECTIONS } from '../charts/chart-example-sections';
 import { ChartExampleNavigationService } from '../charts/chart-example-navigation.service';
 import { trackVisibleChartExample } from '../charts/chart-example-tracker';
 import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
@@ -21,7 +21,6 @@ export class HighchartsGalleryComponent implements AfterViewInit, OnDestroy {
   readonly examples = HIGHCHARTS_EXAMPLES;
 
   readonly sections = HIGHCHARTS_SECTIONS;
-  readonly firstSectionId = HIGHCHARTS_SECTIONS[0]?.id;
 
   openCodeBlocks: Record<string, boolean> = {};
   activeCodeBlock: string | null = null;
@@ -68,12 +67,11 @@ export class HighchartsGalleryComponent implements AfterViewInit, OnDestroy {
     return this.openCodeBlocks[id] ?? false;
   }
 
-  openInStackBlitz(section: (typeof HIGHCHARTS_SECTIONS)[number], event: Event): void {
+  openInStackBlitz(section: ChartExampleSection, event: Event): void {
     event.stopPropagation();
-    if (section.id !== this.firstSectionId) return;
 
     const example = (this.examples as Record<string, { config: unknown; data: unknown[] }>)[section.exampleKey];
-    if (example) this.stackBlitzService.openHighchartsExample(section, example);
+    if (example) this.stackBlitzService.openExample('highcharts', section, example);
   }
 
   getHighlightedCode(type: ChartType, exampleKey: string): string {

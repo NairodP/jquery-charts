@@ -5,6 +5,7 @@ import { ChartComponent } from '@oneteme/jquery-highcharts';
 import { HIGHCHARTS_EXAMPLES } from 'src/app/data/chart/highcharts-examples.data';
 import type { ChartType } from '@oneteme/jquery-core';
 import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
+import { StackBlitzService } from 'src/app/core/services/stackblitz.service';
 import { Subscription } from 'rxjs';
 import { ChartExampleSection, HIGHCHARTS_SECTIONS } from '../charts/chart-example-sections';
 
@@ -33,6 +34,10 @@ const SECTIONS: readonly ChartExampleSection[] = HIGHCHARTS_SECTIONS;
             [config]="currentConfig"
             [data]="currentData"
           ></chart>
+          <button class="stackblitz-toggle" (click)="openInStackBlitz($event)" aria-label="Modifier cet exemple dans StackBlitz" title="Modifier dans StackBlitz">
+            <span aria-hidden="true">↗</span>
+            <span class="tooltip">Modifier dans StackBlitz</span>
+          </button>
           <button class="code-toggle" (click)="toggleCode()" aria-label="Voir le code">
             <img src="assets/icons/code.svg" class="code-icon" alt="code" />
             <span class="tooltip">Voir le code</span>
@@ -62,6 +67,7 @@ export class HighchartsDetailComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
+    private readonly stackBlitzService: StackBlitzService,
   ) {}
 
   ngOnInit() {
@@ -84,6 +90,15 @@ export class HighchartsDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy() { this.paramSub?.unsubscribe(); }
 
   toggleCode() { this.isCodeOpen = !this.isCodeOpen; this.cdr.markForCheck(); }
+
+  openInStackBlitz(event: Event): void {
+    event.stopPropagation();
+    if (!this.section) return;
+    this.stackBlitzService.openExample('highcharts', this.section, {
+      config: this.currentConfig,
+      data: this.currentData ?? [],
+    });
+  }
 
   private _buildCode(type: ChartType, exampleKey: string): string {
     const example = (HIGHCHARTS_EXAMPLES as any)[exampleKey];

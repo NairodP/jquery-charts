@@ -5,9 +5,10 @@ import { ChartComponent } from '@oneteme/jquery-echarts';
 import { ECHARTS_EXAMPLES } from 'src/app/data/chart/echarts-examples.data';
 import type { ChartType } from '@oneteme/jquery-core';
 import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
-import { ECHARTS_SECTIONS } from '../charts/chart-example-sections';
+import { ChartExampleSection, ECHARTS_SECTIONS } from '../charts/chart-example-sections';
 import { ChartExampleNavigationService } from '../charts/chart-example-navigation.service';
 import { trackVisibleChartExample } from '../charts/chart-example-tracker';
+import { StackBlitzService } from 'src/app/core/services/stackblitz.service';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ export class EChartsComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly hostElement: ElementRef<HTMLElement>,
     private readonly chartNavigation: ChartExampleNavigationService,
+    private readonly stackBlitzService: StackBlitzService,
   ) {}
 
   ngAfterViewInit(): void {
@@ -64,6 +66,12 @@ export class EChartsComponent implements AfterViewInit, OnDestroy {
 
   isCodeOpen(id: string): boolean {
     return this.openCodeBlocks[id] ?? false;
+  }
+
+  openInStackBlitz(section: ChartExampleSection, event: Event): void {
+    event.stopPropagation();
+    const example = this.examples[section.exampleKey];
+    if (example) this.stackBlitzService.openExample('echarts', section, example);
   }
 
   getHighlightedCode(type: ChartType, exampleKey: string): string {

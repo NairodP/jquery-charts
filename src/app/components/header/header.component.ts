@@ -14,7 +14,7 @@ import { ChartTypesService } from 'src/app/core/services/chart-types.service';
           </div>
           <div class="primary-nav" role="navigation" aria-label="Navigation principale">
             <a
-              routerLink="/"
+              routerLink="/produit"
               class="primary-nav__link"
               [class.active]="isProductActive()"
               [attr.aria-current]="isProductActive() ? 'page' : null"
@@ -98,7 +98,7 @@ export class HeaderComponent {
   }
 
   isProductActive(): boolean {
-    return this.currentPath === '/';
+    return this.currentPath === '/' || this.currentPath === '/produit';
   }
 
   isUsageActive(): boolean {

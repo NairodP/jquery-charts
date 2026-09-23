@@ -27,6 +27,8 @@ import { TableApiComponent } from './pages/table/api/table-api.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
+  { path: 'produit', component: HomeComponent, pathMatch: 'full' },
+  { path: 'product', redirectTo: 'produit', pathMatch: 'full' },
 
   { path: 'basic-test/sandbox', redirectTo: 'atelier/sandbox', pathMatch: 'full' },
   { path: 'basic-test', redirectTo: 'atelier', pathMatch: 'full' },
