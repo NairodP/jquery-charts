@@ -3,19 +3,20 @@
   <!-- Hero -->
   <section class="hero">
     <div class="hero__copy">
-      <div class="hero__badge">jquery-charts / atelier de rendu</div>
       <h1 class="hero__title">
         Une API unifiée pour<br>
-        <span class="hero__accent">3 bibliothèques graphiques</span>
+        <span class="hero__accent">vos bibliothèques graphiques</span>
       </h1>
       <p class="hero__desc">
-        Créez des graphiques interactifs avec <strong>Highcharts</strong>,
-        <strong>ECharts</strong> et <strong>ApexCharts</strong> via une
-        configuration Angular identique — sans changer votre code métier.
+        Avec <strong>jquery-charts</strong>, vous pouvez changer de bibliothèque de graphiques sans
+        réécrire vos données métier ni vos composants Angular. Elle vous évite de refaire les mêmes
+        branchements pour chaque bibliothèque
+        et vous donne une base commune pour les séries, le chargement et les données absentes,
+        tout en laissant les API natives disponibles quand il le faut. Son écosystème ne s’arrête
+        pas aux graphiques : l’<strong>Organizer</strong> permet de gérer les filtres et les
+        regroupements et offre, plus largement, une personnalisation complète de vos vues,
+        tandis que <strong>jquery-table</strong> reprend une configuration proche pour les tableaux.
       </p>
-      <div class="hero__actions">
-        <a class="btn btn--primary" routerLink="/demarrer">Démarrer avec jquery-charts</a>
-      </div>
     </div>
 
     <aside class="hero__manifest" aria-label="Contrat commun jquery-charts">
@@ -91,51 +92,35 @@
     </div>
 
     <div class="code-compare">
-      <div class="code-compare__col">
+      <div class="code-compare__col code-compare__col--single">
         <div class="code-compare__header">
-          <span class="dot highcharts"></span>
-          Highcharts
+          <span class="dot dot--accent"></span>
+          <span>Même composant avec</span>
+          <span class="code-library-cycle" aria-label="Highcharts, ECharts et ApexCharts">
+            <span class="code-library-cycle__value code-library-cycle__value--highcharts" aria-hidden="true">Highcharts</span>
+            <span class="code-library-cycle__value code-library-cycle__value--echarts" aria-hidden="true">ECharts</span>
+            <span class="code-library-cycle__value code-library-cycle__value--apexcharts" aria-hidden="true">ApexCharts</span>
+          </span>
         </div>
         <pre class="code-block"><code><span class="kw">import</span> &#123; ChartComponent &#125;
-  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-highcharts'</span>;
+  <span class="kw">from</span> <span class="str code-import" aria-label="Les packages Highcharts, ECharts et ApexCharts"><span class="code-import__value code-import__value--highcharts" aria-hidden="true">'&#64;oneteme/jquery-highcharts'</span><span class="code-import__value code-import__value--echarts" aria-hidden="true">'&#64;oneteme/jquery-echarts'</span><span class="code-import__value code-import__value--apexcharts" aria-hidden="true">'&#64;oneteme/jquery-apexcharts'</span></span>;
 
 <span class="tag">&lt;chart</span>
   <span class="attr">type</span>=<span class="str">"bar"</span>
-  <span class="attr">[config]</span>=<span class="str">"config"</span>
-  <span class="attr">[data]</span>=<span class="str">"data"</span>
-<span class="tag">&gt;&lt;/chart&gt;</span></code></pre>
-      </div>
-
-      <div class="code-compare__col">
-        <div class="code-compare__header">
-          <span class="dot echarts"></span>
-          ECharts
-        </div>
-        <pre class="code-block"><code><span class="kw">import</span> &#123; ChartComponent &#125;
-  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-echarts'</span>;
-
-<span class="tag">&lt;chart</span>
-  <span class="attr">type</span>=<span class="str">"bar"</span>
-  <span class="attr">[config]</span>=<span class="str">"config"</span>
-  <span class="attr">[data]</span>=<span class="str">"data"</span>
-<span class="tag">&gt;&lt;/chart&gt;</span></code></pre>
-      </div>
-
-      <div class="code-compare__col">
-        <div class="code-compare__header">
-          <span class="dot apex"></span>
-          ApexCharts
-        </div>
-        <pre class="code-block"><code><span class="kw">import</span> &#123; ChartComponent &#125;
-  <span class="kw">from</span> <span class="str">'&#64;oneteme/jquery-apexcharts'</span>;
-
-<span class="tag">&lt;chart</span>
-  <span class="attr">type</span>=<span class="str">"bar"</span>
-  <span class="attr">[config]</span>=<span class="str">"config"</span>
+  <span class="attr">[config]</span>=<span class="str">"&#123;
+    series: [&#123; data: &#123; xField: 'month', yField: 'value' &#125; &#125;]
+  &#125;"</span>
   <span class="attr">[data]</span>=<span class="str">"data"</span>
 <span class="tag">&gt;&lt;/chart&gt;</span></code></pre>
       </div>
     </div>
   </section>
+
+  <div class="home__actions">
+    <a class="btn btn--primary" routerLink="/demarrer">
+      <span>Démarrer avec Jquery-Charts</span>
+      <span class="btn__icon" aria-hidden="true">&#8594;</span>
+    </a>
+  </div>
 
 </div>

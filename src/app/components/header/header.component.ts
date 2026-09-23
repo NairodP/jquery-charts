@@ -7,9 +7,25 @@ import { ChartTypesService } from 'src/app/core/services/chart-types.service';
   template: `
     <header class="header">
       <nav class="nav">
-        <div class="header-left" (click)="goHome()">
-          <img src="assets/logo/app-logo.webp" alt="Logo" class="logo" />
-          <h1>Jquery-Charts</h1>
+        <div class="header-main">
+          <div class="header-left" (click)="goHome()">
+            <img src="assets/logo/app-logo.webp" alt="Logo" class="logo" />
+            <h1>Jquery-Charts</h1>
+          </div>
+          <div class="primary-nav" role="navigation" aria-label="Navigation principale">
+            <a
+              routerLink="/"
+              class="primary-nav__link"
+              [class.active]="isProductActive()"
+              [attr.aria-current]="isProductActive() ? 'page' : null"
+            >Produit</a>
+            <a
+              routerLink="/demarrer"
+              class="primary-nav__link"
+              [class.active]="isUsageActive()"
+              [attr.aria-current]="isUsageActive() ? 'page' : null"
+            >Utilisation</a>
+          </div>
         </div>
         <div class="header-right">
           <!-- Bouton Recherche rapide (Ctrl+K) -->
@@ -79,6 +95,18 @@ export class HeaderComponent {
   goHome() {
     this.chartTypesService.resetSelectedType();
     this.router.navigate(['/']);
+  }
+
+  isProductActive(): boolean {
+    return this.currentPath === '/';
+  }
+
+  isUsageActive(): boolean {
+    return !this.isProductActive();
+  }
+
+  private get currentPath(): string {
+    return this.router.url.split(/[?#]/)[0] || '/';
   }
 
   toggleInstallMenu() {

@@ -20,8 +20,8 @@ interface LibraryTab {
 })
 export class ChartsShellComponent implements OnInit, OnDestroy {
   readonly libraries: LibraryTab[] = [
-    { label: 'ECharts',    path: '/charts/echarts' },
     { label: 'Highcharts', path: '/charts/highcharts' },
+    { label: 'ECharts',    path: '/charts/echarts' },
     { label: 'ApexCharts', path: '/charts/apexcharts' },
   ];
 

@@ -7,6 +7,7 @@ import { HIGHCHARTS_SECTIONS } from '../charts/chart-example-sections';
 import { ChartExampleNavigationService } from '../charts/chart-example-navigation.service';
 import { trackVisibleChartExample } from '../charts/chart-example-tracker';
 import { buildChartCode, highlightChartCode } from 'src/app/core/chart-code-snippet.util';
+import { StackBlitzService } from 'src/app/core/services/stackblitz.service';
 
 @Component({
   standalone: true,
@@ -20,6 +21,7 @@ export class HighchartsGalleryComponent implements AfterViewInit, OnDestroy {
   readonly examples = HIGHCHARTS_EXAMPLES;
 
   readonly sections = HIGHCHARTS_SECTIONS;
+  readonly firstSectionId = HIGHCHARTS_SECTIONS[0]?.id;
 
   openCodeBlocks: Record<string, boolean> = {};
   activeCodeBlock: string | null = null;
@@ -29,6 +31,7 @@ export class HighchartsGalleryComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly hostElement: ElementRef<HTMLElement>,
     private readonly chartNavigation: ChartExampleNavigationService,
+    private readonly stackBlitzService: StackBlitzService,
   ) {}
 
   ngAfterViewInit(): void {
@@ -63,6 +66,14 @@ export class HighchartsGalleryComponent implements AfterViewInit, OnDestroy {
 
   isCodeOpen(id: string): boolean {
     return this.openCodeBlocks[id] ?? false;
+  }
+
+  openInStackBlitz(section: (typeof HIGHCHARTS_SECTIONS)[number], event: Event): void {
+    event.stopPropagation();
+    if (section.id !== this.firstSectionId) return;
+
+    const example = (this.examples as Record<string, { config: unknown; data: unknown[] }>)[section.exampleKey];
+    if (example) this.stackBlitzService.openHighchartsExample(section, example);
   }
 
   getHighlightedCode(type: ChartType, exampleKey: string): string {

@@ -86,6 +86,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private loadedMapData: any = null;
   private mapCodeToName: Map<string, string> = new Map();
   private resizeObserver: ResizeObserver | null = null;
+  private lastChartSize: { width: number; height: number } | null = null;
   private chartCreationPending = false;
   private destroyed = false;
   private renderGeneration = 0;
@@ -157,7 +158,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
         if (width <= 0 || height <= 0) return;
 
         if (this.chart) {
-          this.chart.setSize(width, height, false);
+          this.resizeChart(width, height);
         } else if (this.chartCreationPending) {
           this.updateChart();
         }
@@ -257,9 +258,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
 
       if (this.chart) {
         const { width, height } = element.getBoundingClientRect();
-        if (width > 0 && height > 0) {
-          this.chart.setSize(width, height, false);
-        }
+        this.resizeChart(width, height);
       }
 
       updateChartLoadingState(this.chart, true, false, false, this.loadingLabel, this.noDataLabel);
@@ -291,9 +290,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
       // Force un premier redimensionnement si nécessaire
       if (this.chart) {
         const { width, height } = element.getBoundingClientRect();
-        if (width > 0 && height > 0) {
-          this.chart.setSize(width, height, false);
-        }
+        this.resizeChart(width, height);
       }
 
       if (this.dataValidationError) {
@@ -332,6 +329,18 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
   private hasRenderableSize(): boolean {
     const { width, height } = this.elementRef.nativeElement.getBoundingClientRect();
     return width > 0 && height > 0;
+  }
+
+  private resizeChart(width: number, height: number): void {
+    const nextSize = {
+      width: Math.round(width),
+      height: Math.round(height),
+    };
+    if (nextSize.width <= 0 || nextSize.height <= 0) return;
+    if (this.lastChartSize?.width === nextSize.width && this.lastChartSize.height === nextSize.height) return;
+
+    this.lastChartSize = nextSize;
+    this.chartController.resize(nextSize.width, nextSize.height);
   }
 
   private shouldLoadMapData(): boolean {
@@ -791,6 +800,7 @@ export class ChartDirective<X extends XaxisType, Y extends YaxisType>
 
   private destroyChart(): void {
     this.unregisterGroup();
+    this.lastChartSize = null;
     if (!this.chart) return;
     this.chartController.destroy();
     this.debug && console.log('Graphique détruit');
