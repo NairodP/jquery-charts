@@ -106,6 +106,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   private _paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
   @ViewChild('tableBodyScroll') tableBodyScrollRef?: ElementRef<HTMLElement>;
+  @ViewChild('tableShell') tableShellRef?: ElementRef<HTMLElement>;
   @ViewChild(SlicePanelComponent) slicePanelRef?: SlicePanelComponent<T>;
   @ContentChildren(JqtCellDefDirective) _cellDefs!: QueryList<JqtCellDefDirective>;
   /** Map clé→TemplateRef pré-calculée depuis _cellDefs. Mise à jour dans ngAfterContentInit et sur _cellDefs.changes. */
@@ -144,6 +145,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   _showSlicePanel = false;
   /** Snapshot stable de l'état collapsed du panneau slice, mis à jour via (collapsedChange) */
   _slicePanelCollapsed = false;
+  private _initialSlicePanelCollapsedApplied = false;
 
   // Délégués vers _view (conservés pour compatibilité template sans refactoring HTML)
   get _staticSlicesForMenu(): Array<{ key: string; title: string; icon?: string }> { return this._organizer.staticSlicesForMenu; }
@@ -183,7 +185,10 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   private _cdr = inject(ChangeDetectorRef);
   private _el = inject(ElementRef<HTMLElement>);
   private _ngZone = inject(NgZone);
+  private _paginatorIntl = inject(MatPaginatorIntl);
   private _i18nRaw = inject(JQT_I18N, { optional: true });
+  private _tableShellResizeObserver?: ResizeObserver;
+  private readonly _fullItemsPerPageLabel = this._paginatorIntl.itemsPerPageLabel;
   copyFeedbackMessage = '';
   private _copyFeedbackTimer?: number;
 
@@ -294,7 +299,26 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     this.attachPaginator();
     this.attachSort();
     this._measureHeaderHeight();
+    this._observeTableShellWidth();
     this._applyPendingDynamicSliceKeys();
+  }
+
+  private _observeTableShellWidth(): void {
+    const tableShell = this.tableShellRef?.nativeElement;
+    if (!tableShell || typeof ResizeObserver === 'undefined') return;
+
+    this._tableShellResizeObserver = new ResizeObserver(([entry]) => {
+      const compact = entry.contentRect.width < 660;
+      const label = compact ? 'Par page :' : this._fullItemsPerPageLabel;
+      if (this._paginatorIntl.itemsPerPageLabel === label) return;
+
+      this._ngZone.run(() => {
+        this._paginatorIntl.itemsPerPageLabel = label;
+        this._paginatorIntl.changes.next();
+        this._cdr.markForCheck();
+      });
+    });
+    this._tableShellResizeObserver.observe(tableShell);
   }
 
   private _applyPendingDynamicSliceKeys(): void {
@@ -329,6 +353,7 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
   }
 
   ngOnDestroy(): void {
+    this._tableShellResizeObserver?.disconnect();
     if (this._copyFeedbackTimer !== undefined) window.clearTimeout(this._copyFeedbackTimer);
     if (this._pendingRender !== null) {
       clearTimeout(this._pendingRender);
@@ -1289,6 +1314,11 @@ export class TableComponent<T = any> implements OnChanges, AfterContentInit, Aft
     this._resolvedData = this.resolveData();
     this.resolvedConfig = this.buildEffectiveConfig();
     this._columnMap = new Map((this.resolvedConfig.columns || []).map(c => [c.key, c]));
+
+    if (!this._initialSlicePanelCollapsedApplied) {
+      this._slicePanelCollapsed = this.resolvedConfig.slicePanelCollapsed === true;
+      this._initialSlicePanelCollapsedApplied = true;
+    }
 
     // ── Initialiser le gestionnaire de préférences si l'option est activée
     const prefsId = this.resolvedConfig.preferences?.enabled

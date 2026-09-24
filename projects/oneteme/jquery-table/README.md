@@ -517,6 +517,20 @@ jquery-table {
   --jqt-footer-icon-color:     #374151;
   --jqt-footer-height:         56px;
 
+  /* Contrôles de la toolbar */
+  --jqt-toolbar-control-height: 34px;
+
+  /* Panneau de slices */
+  --jqt-slice-panel-min-width:         155px;
+  --jqt-slice-panel-max-width:         190px;
+  --jqt-slice-header-height:           34px;
+  --jqt-slice-header-margin-bottom:    8px;
+  --jqt-slice-body-padding:            4px 10px 10px;
+  --jqt-slice-section-title-font-size: 14px;
+  --jqt-slice-item-font-size:          13px;
+  --jqt-slice-item-min-height:         30px;
+  --jqt-slice-item-padding:            5px 10px 5px 16px;
+
   /* Bouton Organizer */
   --jqt-organizer-button-height:          34px;
   --jqt-organizer-button-width:           34px;
@@ -543,7 +557,7 @@ const table: TableProvider<Row> = {
 };
 ```
 
-Les variables CSS sont héritées par le tableau et son Organizer. Elles permettent notamment de réduire le header/footer et de modifier le bouton sans cibler les classes internes Angular Material.
+Les variables CSS sont héritées par le tableau, son panneau de slices et son Organizer. Elles permettent notamment de réduire le header/footer, d'ajuster la largeur et la densité des filtres, et de modifier le bouton sans cibler les classes internes Angular Material.
 
 ---
 

@@ -164,6 +164,8 @@ export interface TableProvider<T = any> {
   onCopyVisual?: () => void;
   onToggleFullscreen?: () => void;
   slices?: SliceConfig<T>[];
+  /** État initial du panneau de slices. Une préférence sauvegardée reste prioritaire. */
+  slicePanelCollapsed?: boolean;
   /** Affiche le bouton toggle pour replier/déplier le panneau de slices. Par défaut : `true`. */
   enableSliceToggle?: boolean;
   /**

@@ -1,16 +1,22 @@
-import { CommonChart, Coordinate2D, XaxisType, YaxisType, ChartProvider, mergeDeep } from '@oneteme/jquery-core';
+import { ChartClickEvent, CommonChart, Coordinate2D, XaxisType, YaxisType, ChartProvider, mergeDeep } from '@oneteme/jquery-core';
 import { ICONS } from '../../assets/icons/icons';
 import { ElementRef, EventEmitter, NgZone } from '@angular/core';
 import ApexCharts from 'apexcharts';
 
 export type ChartCustomEvent = 'previous' | 'next' | 'pivot';
 
+export interface ApexChartRuntimeEvents {
+  onZoomed?: (chartContext: any, xaxis: any) => void;
+  onMouseMove?: (event: any, chartContext: any, config: any) => void;
+  onMouseLeave?: () => void;
+}
+
 /**
  * Crée les boutons personnalisés pour la barre d'outils
  */
 export function customIcons(
   event: (arg: ChartCustomEvent) => void,
-  canPivot: boolean
+  canPivot: boolean = false
 ): any[] {
   let customIcons = [
     {
@@ -81,7 +87,9 @@ export function initCommonChartOptions(
   customEvent: EventEmitter<ChartCustomEvent>,
   ngZone: NgZone,
   chartType: string,
-  canPivot: boolean = true
+  canPivot: boolean = false,
+  chartClick?: EventEmitter<ChartClickEvent>,
+  runtimeEvents?: ApexChartRuntimeEvents,
 ) {
   return {
     shouldRedraw: true,
@@ -103,13 +111,40 @@ export function initCommonChartOptions(
         },
       },
       events: {
-        mouseMove: function () {
+        mouseMove: function (event: any, chartContext: any, config: any) {
           let toolbar = node.nativeElement.querySelector('.apexcharts-toolbar');
           if (toolbar) toolbar.style.visibility = 'visible';
+          runtimeEvents?.onMouseMove?.(event, chartContext, config);
         },
         mouseLeave: function () {
           let toolbar = node.nativeElement.querySelector('.apexcharts-toolbar');
           if (toolbar) toolbar.style.visibility = 'hidden';
+          runtimeEvents?.onMouseLeave?.();
+        },
+        zoomed: function (chartContext: any, payload: any) {
+          runtimeEvents?.onZoomed?.(chartContext, payload?.xaxis);
+        },
+        dataPointSelection: function (event: any, chartContext: any, config: any) {
+          if (!chartClick) return;
+          const seriesIndex = config?.seriesIndex;
+          const dataPointIndex = config?.dataPointIndex;
+          const series = chartContext?.w?.config?.series?.[seriesIndex];
+          const value = series?.data?.[dataPointIndex];
+          const categoryLabels = chartContext?.w?.globals?.categoryLabels
+            ?? chartContext?.w?.globals?.labels
+            ?? chartContext?.w?.config?.xaxis?.categories;
+          const name = categoryLabels?.[dataPointIndex]
+            ?? (value && typeof value === 'object' ? value.x : undefined);
+          chartClick.emit({
+            componentType: 'series',
+            seriesType: chartContext?.w?.config?.chart?.type,
+            seriesIndex,
+            dataIndex: dataPointIndex,
+            name,
+            value,
+            data: value,
+            event,
+          });
         },
       },
       zoom: {
