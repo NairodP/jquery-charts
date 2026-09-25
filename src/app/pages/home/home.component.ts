@@ -127,6 +127,7 @@ export class HomeComponent {
       {
         key: 'revenue',
         header: 'Chiffre d’affaires',
+        width: '28%',
         sortable: true,
         value: row => `${row.revenue.toLocaleString('fr-FR')} €`,
         sortValue: row => row.revenue,

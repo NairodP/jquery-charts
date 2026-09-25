@@ -269,11 +269,14 @@ export class ChartComponent<X extends XaxisType, Y extends YaxisType> implements
     this.activeDirective?.exportData(fileName, separator);
   }
 
-  async toggleFullscreen(): Promise<void> {
+  async toggleFullscreen(): Promise<boolean> {
     try {
-      await FullscreenManager.toggle(this.element.nativeElement);
+      const isFullscreen = await FullscreenManager.toggle(this.element.nativeElement);
+      this.isFullscreen = isFullscreen;
+      return isFullscreen;
     } catch {
       this.isFullscreen = false;
+      return false;
     }
   }
 

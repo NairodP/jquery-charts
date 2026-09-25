@@ -61,7 +61,6 @@ export abstract class ApexChartDirectiveBase<
   private groupSyncUnregister: (() => void) | null = null;
   private readonly groupSyncSource = Symbol('jquery-apexcharts');
   private isSyncing = false;
-  private lastTooltipPoint: { seriesIndex: number; dataPointIndex: number } | null = null;
   private _isLoading = false;
   private _loadingLabel = 'Chargement des données...';
   private _noDataLabel = 'Aucune donnée';
@@ -155,7 +154,7 @@ export abstract class ApexChartDirectiveBase<
       this.chartClick,
       {
         onZoomed: (_chartContext, xaxis) => this.publishDataZoom(xaxis),
-        onMouseMove: (_event, _chartContext, config) => this.publishTooltip(config),
+        onMouseMove: (event, _chartContext, config) => this.publishTooltip(config, event),
         onMouseLeave: () => this.publishTooltip(null),
       },
     );
@@ -225,9 +224,25 @@ export abstract class ApexChartDirectiveBase<
     const chart = this.chartInstance();
     if (!chart) return;
 
+    if (type === 'svg') {
+      const source = this.el.nativeElement.querySelector('.apexcharts-svg') as SVGElement | null;
+      if (!source) return;
+      const svg = source.cloneNode(true) as SVGElement;
+      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      this.download(url, `${fileName}.svg`);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
     void chart.dataURI({ scale: pixelRatio }).then((result) => {
       if (!('imgURI' in result)) return;
-      this.download(result.imgURI, `${fileName}.${type}`);
+      if (type === 'png') {
+        this.download(result.imgURI, `${fileName}.png`);
+        return;
+      }
+      this.downloadJpeg(result.imgURI, `${fileName}.jpeg`);
     });
   }
 
@@ -267,7 +282,10 @@ export abstract class ApexChartDirectiveBase<
           animate,
           updateSyncedCharts,
         )
-        .then(() => fixToolbarSvgIds(this.el.nativeElement))
+        .then(() => {
+          this.syncSeriesVisibility(chart);
+          fixToolbarSvgIds(this.el.nativeElement);
+        })
         .catch((error) => this.handleRenderError(error)),
     );
   }
@@ -306,11 +324,21 @@ export abstract class ApexChartDirectiveBase<
   }
 
   private getEffectiveOptions(specificOptions?: any): any {
-    const options = this.renderedOption
-      ? mergeDeep({}, this._options, this.renderedOption as object)
+    const options = specificOptions
+      ? mergeDeep({}, this._options, specificOptions)
       : mergeDeep({}, this._options);
 
-    return specificOptions ? mergeDeep(options, specificOptions) : options;
+    return this.renderedOption
+      ? mergeDeep(options, this.renderedOption as object)
+      : options;
+  }
+
+  private syncSeriesVisibility(chart: ApexCharts): void {
+    for (const series of this._options.series ?? []) {
+      if (!series.name) continue;
+      if (series.hidden === true) chart.hideSeries(series.name);
+      else chart.showSeries(series.name);
+    }
   }
 
   private createCustomIcons(): any[] {
@@ -326,7 +354,6 @@ export abstract class ApexChartDirectiveBase<
     this.groupSyncUnregister?.();
     this.groupSyncUnregister = null;
     destroyChart(this.chartInstance);
-    this.lastTooltipPoint = null;
   }
 
   private handleRenderError(error: unknown): Promise<void> {
@@ -360,9 +387,18 @@ export abstract class ApexChartDirectiveBase<
     });
   }
 
-  private publishTooltip(config: any): void {
+  private publishTooltip(config: any, event?: MouseEvent): void {
     if (!this.group || !this.syncs('tooltip') || this.isSyncing) return;
-    const index = config?.dataPointIndex;
+    const xValues = this.getXAxisValues();
+    let index = config?.dataPointIndex;
+    if (typeof index !== 'number' || index < 0) {
+      const grid = this.el.nativeElement.querySelector('.apexcharts-grid') as SVGElement | null;
+      if (grid && xValues.length > 1 && event) {
+        const bounds = grid.getBoundingClientRect();
+        const ratio = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+        index = Math.round(ratio * (xValues.length - 1));
+      }
+    }
     if (typeof index !== 'number' || index < 0) {
       publishChartGroupSync({
         group: this.group,
@@ -374,7 +410,7 @@ export abstract class ApexChartDirectiveBase<
     }
 
     const point = this._options.series?.[config.seriesIndex ?? 0]?.data?.[index];
-    const xValue = this._options.xaxis?.categories?.[index] ?? (point && typeof point === 'object' ? point.x : index);
+  const xValue = xValues[index] ?? (point && typeof point === 'object' ? point.x : index);
     publishChartGroupSync({
       group: this.group,
       action: 'tooltip',
@@ -401,23 +437,43 @@ export abstract class ApexChartDirectiveBase<
   }
 
   private applyTooltip(xValue: unknown): void {
-    const chart = this.chartInstance();
-    if (!chart) return;
-
-    if (this.lastTooltipPoint) {
-      chart.toggleDataPointSelection(
-        this.lastTooltipPoint.seriesIndex,
-        this.lastTooltipPoint.dataPointIndex,
-      );
-      this.lastTooltipPoint = null;
+    const target = this.el.nativeElement.querySelector('.apexcharts-inner') as SVGElement | null;
+    if (!target) return;
+    if (xValue === null || xValue === undefined) {
+      target.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      return;
     }
-    if (xValue === null || xValue === undefined) return;
+    const xValues = this.getXAxisValues();
+    const normalizedXValue = this.normalizeXAxisValue(xValue);
+    const index = xValues.indexOf(normalizedXValue);
+    if (index < 0) return;
+    const grid = this.el.nativeElement.querySelector('.apexcharts-grid') as SVGElement | null;
+    if (!grid || xValues.length < 2) return;
 
-    const index = this._options.xaxis?.categories?.indexOf(xValue);
-    if (typeof index !== 'number' || index < 0) return;
-    const seriesIndex = 0;
-    chart.toggleDataPointSelection(seriesIndex, index);
-    this.lastTooltipPoint = { seriesIndex, dataPointIndex: index };
+    const bounds = grid.getBoundingClientRect();
+    target.dispatchEvent(new MouseEvent('mousemove', {
+      bubbles: true,
+      clientX: bounds.left + (index / (xValues.length - 1)) * bounds.width,
+      clientY: bounds.top + bounds.height / 2,
+    }));
+  }
+
+  private getXAxisValues(): Array<string | number | null> {
+    const categories = this._options.xaxis?.categories;
+    if (Array.isArray(categories) && categories.length) {
+      return categories.map(value => this.normalizeXAxisValue(value));
+    }
+    const data = this._options.series?.[0]?.data;
+    if (!Array.isArray(data)) return [];
+    return data.map((point, index) => this.normalizeXAxisValue(
+      point && typeof point === 'object' ? point.x : index,
+    ));
+  }
+
+  private normalizeXAxisValue(value: unknown): string | number | null {
+    if (typeof value === 'string' || typeof value === 'number') return value;
+    if (value instanceof Date) return value.getTime();
+    return null;
   }
 
   private syncs(action: GroupSyncAction): boolean {
@@ -432,5 +488,22 @@ export abstract class ApexChartDirectiveBase<
     link.href = href;
     link.download = fileName;
     link.click();
+  }
+
+  private downloadJpeg(source: string, fileName: string): void {
+    if (typeof document === 'undefined') return;
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0);
+      this.download(canvas.toDataURL('image/jpeg'), fileName);
+    };
+    image.src = source;
   }
 }

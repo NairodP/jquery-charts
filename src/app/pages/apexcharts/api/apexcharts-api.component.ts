@@ -324,6 +324,11 @@ await chart.toggleFullscreen();`,
     },
   ];
 
+  readonly deploymentConfig: ChartProvider<string, number> = {
+    title: 'Déploiements',
+    series: [{ name: 'Déploiements', data: { x: field('day'), y: field('count') } }],
+  };
+
   readonly toolbarConfig: ChartProvider<string, number> = {
     title: 'Toolbar du wrapper',
     subtitle: 'Les boutons custom sont gérés en interne par ChartComponent',
@@ -363,9 +368,25 @@ await chart.toggleFullscreen();`,
     { week: 'S6', count: 38 },
   ];
 
-  readonly renderedOptionConfig: ChartProvider<string, number> = { series: [] };
+  readonly renderedOptionConfig: ChartProvider<string, number> = {
+    title: 'Titre construit par le provider',
+    series: [],
+    options: {
+      colors: ['#bc5b35'],
+      stroke: { curve: 'straight', width: 1 },
+      chart: { toolbar: { show: false } },
+    },
+  };
   readonly renderedOption: Record<string, unknown> = {
-    chart: { type: 'line', zoom: { enabled: true } },
+    chart: {
+      type: 'line',
+      zoom: { enabled: true },
+      toolbar: {
+        show: true,
+        tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: false, reset: true },
+      },
+    },
+    colors: ['#2e9fe6'],
     title: { text: 'Option ApexCharts fournie directement' },
     xaxis: { categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'] },
     series: [{ name: 'Option native', data: [4, 7, 5, 9, 8, 11] }],
@@ -561,11 +582,27 @@ await chart.toggleFullscreen();`,
   readonly group = 'apexcharts-api-sync';
   readonly syncLineConfig: ChartProvider<string, number> = {
     title: 'Ventes',
+    showToolbar: true,
     series: [{ name: 'Ventes', data: { x: field('month'), y: field('value') } }],
+    options: {
+      tooltip: { shared: true, intersect: false },
+      chart: {
+        zoom: { enabled: true, type: 'x' },
+        toolbar: { tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: false, reset: true } },
+      },
+    },
   };
   readonly syncAreaConfig: ChartProvider<string, number> = {
     title: 'Ventes cumulées',
+    showToolbar: true,
     series: [{ name: 'Ventes', data: { x: field('month'), y: field('value') } }],
+    options: {
+      tooltip: { shared: true, intersect: false },
+      chart: {
+        zoom: { enabled: true, type: 'x' },
+        toolbar: { tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: false, reset: true } },
+      },
+    },
   };
   readonly syncData = [
     { month: 'Jan', value: 14 },
@@ -584,12 +621,13 @@ await chart.toggleFullscreen();`,
   };
   drilldown = { ...this.drilldownConfig };
   activeDrilldownConfig: ChartProvider<string, number> = this.createDrilldownConfig('region');
-  drilldownData = [
+  private readonly drilldownRows = [
     { region: 'Nord', site: 'Lille', value: 42 },
     { region: 'Nord', site: 'Arras', value: 31 },
     { region: 'Sud', site: 'Toulouse', value: 27 },
     { region: 'Sud', site: 'Montpellier', value: 36 },
   ];
+  drilldownData = this.createDrilldownRootData();
   readonly exportOrganizerConfig: OrganizerMenuConfig = {
     buttonLabel: 'Actions',
     buttonIcon: 'tune',
@@ -683,14 +721,14 @@ await chart.toggleFullscreen();`,
         this.setCompleteOrganizerAction('Le graphique est encore en préparation');
         return;
       }
-      const nextValue = !this.completeOrganizerIsFullscreen;
-      this.completeOrganizerIsFullscreen = nextValue;
-      this.completeOrganizerConfig = { ...this.completeOrganizerConfig, isFullscreen: nextValue };
-      this.setCompleteOrganizerAction(nextValue ? 'Plein écran activé' : 'Plein écran quitté');
-      void this.completeOrganizerChart.toggleFullscreen().catch(() => {
-        this.completeOrganizerIsFullscreen = !nextValue;
-        this.completeOrganizerConfig = { ...this.completeOrganizerConfig, isFullscreen: !nextValue };
-        this.setCompleteOrganizerAction('Plein écran indisponible dans ce contexte');
+      const wasFullscreen = this.completeOrganizerIsFullscreen;
+      void this.completeOrganizerChart.toggleFullscreen().then(isFullscreen => {
+        this.completeOrganizerIsFullscreen = isFullscreen;
+        this.completeOrganizerConfig = { ...this.completeOrganizerConfig, isFullscreen };
+        let status = 'Plein écran indisponible dans ce contexte';
+        if (isFullscreen) status = 'Plein écran activé';
+        else if (wasFullscreen) status = 'Plein écran quitté';
+        this.setCompleteOrganizerAction(status);
       });
     }
 
@@ -792,7 +830,7 @@ await chart.toggleFullscreen();`,
         subtitle: `${this.getCompleteOrganizerLabel('x', xField)}${groupLabel}`,
         height: 340,
         series,
-        options: { tooltip: { shared: true } },
+        options: { tooltip: { shared: true, intersect: false } },
       };
       this.completeOrganizerChartData = projectedRows;
       this.completeOrganizerTableColumns = seriesNames.map(seriesName => ({
@@ -934,19 +972,14 @@ await chart.toggleFullscreen();`,
     if (request.toLevel !== 'site') return;
     const region = typeof request.value === 'string' ? request.value : '';
     if (!region) return;
-    this.drilldownData = this.drilldownData.filter(row => row.region === region);
+    this.drilldownData = this.drilldownRows.filter(row => row.region === region);
     this.drilldown = { ...this.drilldown, activeLevel: 'site' };
     this.activeDrilldownConfig = this.createDrilldownConfig('site');
   }
 
   onDrilldownNavigate(levelId: string): void {
     if (levelId !== 'region') return;
-    this.drilldownData = [
-      { region: 'Nord', site: 'Lille', value: 42 },
-      { region: 'Nord', site: 'Arras', value: 31 },
-      { region: 'Sud', site: 'Toulouse', value: 27 },
-      { region: 'Sud', site: 'Montpellier', value: 36 },
-    ];
+    this.drilldownData = this.createDrilldownRootData();
     this.drilldown = { ...this.drilldown, activeLevel: 'region' };
     this.activeDrilldownConfig = this.createDrilldownConfig('region');
   }
@@ -959,5 +992,13 @@ await chart.toggleFullscreen();`,
     return level === 'site'
       ? { title: 'Sites', series: [{ name: 'Valeur', data: { x: field('site'), y: field('value') } }] }
       : { title: 'Régions', series: [{ name: 'Valeur', data: { x: field('region'), y: field('value') } }] };
+  }
+
+  private createDrilldownRootData(): Array<{ region: string; site: string; value: number }> {
+    const totals = new Map<string, number>();
+    for (const row of this.drilldownRows) {
+      totals.set(row.region, (totals.get(row.region) ?? 0) + row.value);
+    }
+    return [...totals].map(([region, value]) => ({ region, site: '', value }));
   }
 }

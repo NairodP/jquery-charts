@@ -10,7 +10,7 @@
         transverses du contrat public actuel.
       </p>
     </div>
-    <a class="official-link" href="https://apexcharts.com/docs/options/" target="_blank" rel="noopener">
+    <a class="official-link" href="https://apexcharts.com/" target="_blank" rel="noopener">
       Documentation officielle ApexCharts ↗
     </a>
   </header>
@@ -144,7 +144,7 @@ series: [&#123;
           <button type="button" [class.is-active]="isLoadingDemo" (click)="setState('loading')">Chargement</button>
           <button type="button" [class.is-active]="isEmptyDemo" (click)="setState('empty')">Aucune donnée</button>
         </div>
-        <chart class="api-chart state-chart" type="line" [config]="toolbarConfig" [data]="stateData" [isLoading]="isLoadingDemo"></chart>
+        <chart class="api-chart state-chart" type="line" [config]="deploymentConfig" [data]="stateData" [isLoading]="isLoadingDemo"></chart>
       </div>
 
       <div class="code-panel">
@@ -209,13 +209,13 @@ series: [&#123;
         <div class="native-option-proof">
           <div>
             <span class="proof-label">ChartProvider</span>
-            <code>series=[] · data=rows</code>
-            <small>Le provider ne fournit aucune série native pour cette démonstration.</small>
+            <code>titre concurrent · toolbar=false · courbe droite orange</code>
+            <small>Le provider fournit volontairement des valeurs qui doivent être écrasées.</small>
           </div>
           <div>
             <span class="proof-label">renderedOption</span>
-            <code>titre · catégories · séries · zoom</code>
-            <small>L’option ApexCharts fournie remplit directement le rendu.</small>
+            <code>titre natif · courbe bleue lissée · toolbar de zoom</code>
+            <small>Le rendu visible confirme la priorité de l’option ApexCharts.</small>
           </div>
         </div>
         <chart
@@ -335,7 +335,7 @@ series: [&#123;
       </header>
 
       <div class="demo-surface">
-        <p class="demo-hint">Survolez ou zoomez l’un des graphiques : les deux instances utilisent le même groupe.</p>
+        <p class="demo-hint">Survolez une catégorie ou utilisez les contrôles de zoom : les deux instances utilisent le même groupe.</p>
         <div class="sync-grid">
           <chart class="api-chart" type="line" [config]="syncLineConfig" [data]="syncData" [group]="group" groupSync="all"></chart>
           <chart class="api-chart" type="area" [config]="syncAreaConfig" [data]="syncData" [group]="group" groupSync="all"></chart>
@@ -344,7 +344,12 @@ series: [&#123;
 
       <div class="code-panel">
         <div class="code-panel-heading"><span>Code minimal</span></div>
-        <pre><code>&lt;chart [config]="lineConfig" [data]="rows"
+        <pre><code>const syncOptions = &#123;
+  tooltip: &#123; shared: true, intersect: false &#125;,
+  chart: &#123; zoom: &#123; enabled: true, type: 'x' &#125; &#125;,
+&#125;;
+
+&lt;chart [config]="lineConfig" [data]="rows"
   group="sales-dashboard" groupSync="all"&gt;&lt;/chart&gt;
 &lt;chart [config]="areaConfig" [data]="rows"
   group="sales-dashboard" groupSync="all"&gt;&lt;/chart&gt;</code></pre>
@@ -420,7 +425,7 @@ series: [&#123;
           #exportChart
           class="api-chart export-chart"
           type="column"
-          [config]="toolbarConfig"
+          [config]="deploymentConfig"
           [data]="toolbarData"
           [copyFeedback]="{ enabled: true, message: 'Snapshot créé' }"
           (visualCopied)="onSnapshotCreated($event)"

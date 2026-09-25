@@ -130,10 +130,9 @@ export function initCommonChartOptions(
           const dataPointIndex = config?.dataPointIndex;
           const series = chartContext?.w?.config?.series?.[seriesIndex];
           const value = series?.data?.[dataPointIndex];
-          const categoryLabels = chartContext?.w?.globals?.categoryLabels
-            ?? chartContext?.w?.globals?.labels
-            ?? chartContext?.w?.config?.xaxis?.categories;
-          const name = categoryLabels?.[dataPointIndex]
+          const name = chartContext?.w?.globals?.categoryLabels?.[dataPointIndex]
+            ?? chartContext?.w?.globals?.labels?.[dataPointIndex]
+            ?? chartContext?.w?.config?.xaxis?.categories?.[dataPointIndex]
             ?? (value && typeof value === 'object' ? value.x : undefined);
           chartClick.emit({
             componentType: 'series',
