@@ -2,6 +2,18 @@
 
 Bibliothèque Angular qui encapsule Angular Material Table avec une API orientée configuration runtime.
 
+> **Documentation et démonstrations** : [ouvrir l'application de documentation](https://oneteme.github.io/jquery-charts/)
+>
+> La documentation interactive présente les colonnes configurables, la recherche, le Group by, les slices, les préférences et l'intégration avec l'Organizer.
+
+## Nouveautés intégrées
+
+- préférences persistantes par tableau via `TablePreferencesConfig` et `localStorage` ;
+- export CSV limité aux lignes filtrées et aux colonnes visibles, avec transformation personnalisable ;
+- Group by avec pagination indépendante et slices dynamiques depuis le menu View ;
+- colonnes lazy avec états `idle`, `loading`, `loaded` et `error` ;
+- snapshots de configuration pour conserver les colonnes visibles, l'ordre, les largeurs, le tri, le regroupement et les filtres.
+
 ## Features
 
 - Configuration déclarative du tableau via `TableProvider`

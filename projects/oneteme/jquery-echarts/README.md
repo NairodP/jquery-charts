@@ -2,11 +2,24 @@
 
 Angular renderer for [Apache ECharts](https://echarts.apache.org/), built on top of [@oneteme/jquery-core](https://www.npmjs.com/package/@oneteme/jquery-core).
 
+> **Documentation et démonstrations** : [ouvrir l'application de documentation](https://oneteme.github.io/jquery-charts/)
+>
+> La documentation interactive permet de comparer les types ECharts, les états de chargement et d'absence de données, l'Organizer et la synchronisation entre graphiques.
+
 ## Overview
 
 This library provides an Angular component and directive to render interactive charts using Apache ECharts, with full integration with the `@oneteme/jquery-core` data model.
 
 **Supported chart types:** `bar`, `column`, `columnpyramid`, `line`, `spline`, `area`, `areaspline`, `mixed`, `pie`, `donut`, `scatter`, `bubble`, `heatmap`, `radar`, `radarArea`, `treemap`, `funnel`, `pyramid`, `rangeBar`, `rangeColumn`, `arearange`, `areasplinerange`, `columnrange`
+
+## Fonctionnalités intégrées
+
+- **Renderer configurable** : SVG par défaut, ou Canvas via `[renderer]`.
+- **Thème ECharts** : le thème est fourni à la création de l'instance via `[theme]`.
+- **Options natives** : `[renderedOption]` permet de fournir une option ECharts déjà construite ; les événements et états du wrapper restent actifs.
+- **Synchronisation** : `[group]` et `[groupSync]` synchronisent le tooltip et/ou le zoom avec d'autres graphiques, y compris avec les renderers de la suite.
+- **Organizer contrôlé** : `[organizer]` et `[organizerState]` pilotent la visibilité des séries sans coupler le composant à l'interface Organizer.
+- **Drilldown, export et snapshots** : les événements de navigation, `exportImage`, `exportData`, `createVisualSnapshot` et `applyVisualSnapshot` sont disponibles sur `ChartComponent`.
 
 ## Installation
 

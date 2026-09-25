@@ -14,6 +14,17 @@ Bibliothèque Angular autonome pour la gestion décentralisée des configuration
 - **Slice loading unification** dans le composant organizer (Promise/Observable dual-support)
 - **Chart binding facade** pour simplifier l'intégration ChartConfig ↔ Organizer (50% réduction de boilerplate)
 
+> **Documentation et démonstrations** : [ouvrir l'application de documentation](https://oneteme.github.io/jquery-charts/)
+>
+> L'application montre l'Organizer avec les tableaux et les trois renderers de graphiques, notamment les sélections, les regroupements, les slices, les exports et le plein écran.
+
+## Nouveautés intégrées
+
+- **Façade de binding** : `buildOrganizerChartBinding()` et `handleOrganizerChartEvent()` regroupent la conversion de configuration, la normalisation d'état et la décision de rechargement.
+- **État contrôlé** : les événements exposent un état complet et peuvent être réinjectés dans un graphique ou un tableau sans dépendance au renderer.
+- **Chargement de slices unifié** : `Promise` et `Observable` sont acceptés par `onFetchSliceData`.
+- **Actions visuelles** : export, copie et plein écran peuvent être branchés via `OrganizerConfig.actions` et les callbacks associés.
+
 ---
 
 ## Quick Start

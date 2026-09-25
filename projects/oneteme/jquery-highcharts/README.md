@@ -2,6 +2,18 @@
 
 Une bibliothèque Angular qui implémente l'interface `@oneteme/jquery-core` en utilisant Highcharts comme moteur de rendu. Cette bibliothèque agit comme un **wrapper** pour Highcharts, permettant d'utiliser la syntaxe unifiée de jQuery-Charts tout en bénéficiant de la puissance et des fonctionnalités avancées de Highcharts.
 
+> **Documentation et démonstrations** : [ouvrir l'application de documentation](https://oneteme.github.io/jquery-charts/)
+>
+> L'application documente les types de graphiques, les options natives Highcharts et les fonctionnalités communes du wrapper dans des exemples interactifs.
+
+## Fonctionnalités intégrées
+
+- contrat commun `ChartProvider` partagé avec ECharts et ApexCharts ;
+- options Highcharts natives via `config.options` et option de rendu via `[renderedOption]` ;
+- synchronisation du tooltip et du zoom avec `[group]` et `[groupSync]` ;
+- Organizer, drilldown, export d'image ou de données, snapshots visuels et plein écran ;
+- toolbar de navigation optionnelle, masquée par défaut tant que `showToolbar` n'est pas activé.
+
 ## Table des matières
 
 - [Installation](#installation)

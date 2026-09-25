@@ -2,6 +2,20 @@
 
 `@oneteme/jquery-core` fournit les contrats de donnees et les transformations partages par les bibliotheques `@oneteme/jquery-echarts`, `@oneteme/jquery-highcharts`, `@oneteme/jquery-apexcharts` et `@oneteme/jquery-table`. Le package ne rend aucun composant : il centralise les providers, la preparation de donnees, l'etat Organizer, les snapshots et les utilitaires associes.
 
+> **Documentation et démonstrations** : [ouvrir l'application de documentation](https://oneteme.github.io/jquery-charts/)
+>
+> L'application présente les contrats communs en situation, avec des exemples de graphiques, de tableaux, d'Organizer, de synchronisation, de drilldown et de snapshots visuels.
+
+## Nouveautés intégrées
+
+Les contrats transverses couvrent désormais les fonctionnalités utilisées par les renderers :
+
+- synchronisation de groupe des tooltips et du zoom via `GroupSyncMode` ;
+- navigation hiérarchique avec `ChartDrilldownConfig`, `ChartDrilldownRequest` et `ChartDrilldownState` ;
+- snapshots visuels sérialisables avec `VisualSnapshotStorage` ;
+- copie/restauration de configuration et gestion du plein écran via `FullscreenManager` ;
+- transformations de dates, nombres et unités conservant un comportement explicite pour les valeurs invalides.
+
 ## Installation
 
 ```bash
