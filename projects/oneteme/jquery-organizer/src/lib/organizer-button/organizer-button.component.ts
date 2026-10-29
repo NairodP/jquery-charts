@@ -8,7 +8,8 @@ import { Subject, Subscription, combineLatest, from, isObservable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { OrganizerConfig, OrganizerButtonEvent, OrganizerSliceState, OrganizerState, OrganizerViewSlice } from '../models';
-import { buildSliceCategories, normalizeOrganizerState, resolveMatchingTemplateId } from '../models/organizer-utils';
+import { normalizeOrganizerState, resolveMatchingTemplateId } from '../models/organizer-utils';
+import { buildCategoriesFromRows } from '../slice-panel/slice-categories';
 import { TemplateManager } from './template-manager.utility';
 
 @Component({
@@ -179,7 +180,7 @@ export class OrganizerButtonComponent implements OnDestroy {
         sliceConfigs: slices.map((s, i) => ({
           title: s.label ?? s.id,
           columnKey: s.id,
-          ...(single ? {} : { categories: buildSliceCategories(s.id, results[i]) })
+          ...(single ? {} : { categories: buildCategoriesFromRows(results[i], row => row?.[s.id]) })
         })),
         tasks: results.flat(),
         filterApplied: false  // Panel vient d'être ouvert, pas de filtre sélectionné encore

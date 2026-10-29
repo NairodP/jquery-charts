@@ -1,6 +1,5 @@
 import { OrganizerConfig, OrganizerState, OrganizerTemplate } from './organizer-config.interface';
 import {
-  buildSliceCategories,
   buildYFields,
   normalizeOrganizerState,
   normalizeTemplateToState,
@@ -24,28 +23,6 @@ const config = (templates: OrganizerTemplate[] = []): Cfg => ({
 });
 
 describe('organizer-utils', () => {
-
-  describe('buildSliceCategories', () => {
-    it('construit les catégories triées avec leurs effectifs et « Vide » en dernier', () => {
-      const rows = [{ s: 'b' }, { s: 'a' }, { s: 'b' }, { s: null }, { s: '' }, {}];
-      const categories = buildSliceCategories('s', rows);
-
-      expect(categories.map(c => [c.key, c.label, c.count])).toEqual([['a', 'a', 1], ['b', 'b', 2], ['__empty__', 'Vide', 3]]);
-    });
-
-    it('les filtres des catégories ne retiennent que les lignes de leur valeur', () => {
-      const [a, , empty] = buildSliceCategories('s', [{ s: 'a' }, { s: 'b' }, { s: null }]);
-
-      expect([{ s: 'a' }, { s: 'b' }, { s: null }, {}].map(r => a.filter!(r))).toEqual([true, false, false, false]);
-      expect([{ s: 'a' }, { s: null }, { s: '' }, {}].map(r => empty.filter!(r))).toEqual([false, true, true, true]);
-    });
-
-    it('ne crée pas de catégorie « Vide » sans valeur vide, ni de catégorie sans lignes', () => {
-      expect(buildSliceCategories('s', [{ s: 1 }]).map(c => c.key)).toEqual(['1']);
-      expect(buildSliceCategories('s', [])).toEqual([]);
-      expect(buildSliceCategories('s', undefined as any)).toEqual([]);
-    });
-  });
 
   describe('buildYFields', () => {
     it('regroupe les indicateurs par groupe en conservant l\'ordre de première apparition', () => {
