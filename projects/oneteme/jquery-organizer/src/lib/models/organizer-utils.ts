@@ -1,4 +1,35 @@
 import { OrganizerConfig, OrganizerState, OrganizerTemplate, OrganizerYField } from './organizer-config.interface';
+import { EMPTY_CATEGORY_KEY, EMPTY_CATEGORY_LABEL, SliceCategory } from '../slice-panel/slice-panel.model';
+
+/** Catégories d'un slice (valeurs distinctes triées, « vide » en dernier) calculées depuis les lignes de sa colonne. */
+export function buildSliceCategories(columnKey: string, rows: any[]): SliceCategory[] {
+  const counts = new Map<string, number>();
+  let empty = 0;
+  (rows ?? []).forEach(row => {
+    const value = row?.[columnKey];
+    if (value == null || value === '') {
+      empty++;
+    } else {
+      const text = String(value);
+      counts.set(text, (counts.get(text) ?? 0) + 1);
+    }
+  });
+  const categories: SliceCategory[] = [...counts.keys()].sort().map(key => ({
+    key,
+    label: key,
+    count: counts.get(key),
+    filter: (row: any) => String(row?.[columnKey] ?? '') === key
+  }));
+  if (empty > 0) {
+    categories.push({
+      key: EMPTY_CATEGORY_KEY,
+      label: EMPTY_CATEGORY_LABEL,
+      count: empty,
+      filter: (row: any) => row?.[columnKey] == null || row?.[columnKey] === ''
+    });
+  }
+  return categories;
+}
 
 type OrganizerStateConfig = Pick<OrganizerConfig, 'xFields' | 'yFields' | 'groups' | 'slices' | 'templates' | 'chartTypes'>;
 

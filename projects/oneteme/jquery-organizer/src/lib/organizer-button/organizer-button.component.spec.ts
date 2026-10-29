@@ -202,6 +202,21 @@ describe('OrganizerButtonComponent', () => {
       expect(last().state.selectedSlices).toEqual(['ko']);
     });
 
+    it('charge les données de tous les slices sélectionnés et construit une catégorie par colonne', () => {
+      const onFetchSliceData = jasmine.createSpy('onFetchSliceData').and.callFake((key: string) =>
+        of(key === 'ok' ? [{ ok: 'a' }, { ok: 'b' }] : [{ ko: 'x' }, { ko: null }]));
+      const { component, sliceStates } = setup({ ...baseConfig(), onFetchSliceData }, { selectedSlices: ['ok'] });
+
+      component.onSliceClick('ko');
+      expect(onFetchSliceData).toHaveBeenCalledWith('ok');
+      expect(onFetchSliceData).toHaveBeenCalledWith('ko');
+      const state = sliceStates.at(-1)!;
+      expect(state.sliceConfigs.map(s => s.columnKey)).toEqual(['ok', 'ko']);
+      expect(state.sliceConfigs[0].categories!.map(c => c.key)).toEqual(['a', 'b']);
+      expect(state.sliceConfigs[1].categories!.map(c => c.key)).toEqual(['x', '__empty__']);
+      expect(state.tasks.length).toBe(4);
+    });
+
     it('accepte une promesse et signale une erreur de chargement sans bloquer la sélection', async () => {
       const failing = setup({ ...baseConfig(), onFetchSliceData: () => Promise.reject(new Error('boom')) });
       spyOn(console, 'error');

@@ -1,10 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostBinding, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
-import { SliceColumnDef, SliceConfig } from './slice-panel.model';
-
-const EMPTY_CATEGORY_KEY = '__empty__';
-const EMPTY_CATEGORY_LABEL = 'Vide';
+import { EMPTY_CATEGORY_KEY, EMPTY_CATEGORY_LABEL, SliceColumnDef, SliceConfig } from './slice-panel.model';
 
 const I18N = {
   expandFilterTitle: 'Déplier le filtre',
